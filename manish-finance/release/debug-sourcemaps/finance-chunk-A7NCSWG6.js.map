@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../src/pages/lab/LabPage.tsx"],
-  "sourcesContent": ["import { PageHead } from \"../../components/PageHead\";\n\nexport default function LabPage() {\n  return <PageHead title=\"Lab\" />;\n}\n"],
-  "mappings": "yDAGS,IAAAA,EAAA,SADM,SAARC,GAA2B,CAChC,SAAO,OAACC,EAAA,CAAS,MAAM,MAAM,CAC/B",
-  "names": ["import_jsx_runtime", "LabPage", "PageHead"]
-}

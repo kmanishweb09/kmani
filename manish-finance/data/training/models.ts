@@ -107,7 +107,7 @@ export const trainingModels: TrainingModel[] = [
     currency: "USD",
     unit: "million",
     inputs: {
-      target: { name: "Orbit Software (fictional)", revenue: 420, ebitda: 88, netIncome: 52, bookEquity: 610 },
+      target: { name: "Orbit Software (fictional)", revenue: 420, ebitda: 88, netIncome: 52, bookEquity: 610, netDebt: -40, dilutedShares: 120 },
       peers: [
         { name: "Aster Cloud (fictional)", equityValue: 5200, netDebt: -300, revenue: 900, ebitda: 210, netIncome: 140, bookEquity: 1900 },
         { name: "Birch Systems (fictional)", equityValue: 2100, netDebt: 150, revenue: 520, ebitda: 105, netIncome: 60, bookEquity: 700 },

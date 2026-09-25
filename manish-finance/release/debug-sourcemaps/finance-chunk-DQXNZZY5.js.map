@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../src/pages/notebook/NotebookPage.tsx"],
-  "sourcesContent": ["import { PageHead } from \"../../components/PageHead\";\n\nexport default function NotebookPage() {\n  return <PageHead title=\"Notebook\" />;\n}\n"],
-  "mappings": "yDAGS,IAAAA,EAAA,SADM,SAARC,GAAgC,CACrC,SAAO,OAACC,EAAA,CAAS,MAAM,WAAW,CACpC",
-  "names": ["import_jsx_runtime", "NotebookPage", "PageHead"]
-}

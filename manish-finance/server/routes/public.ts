@@ -453,6 +453,40 @@ export function registerPublicRoutes(r: Router): void {
 
   r.add({
     method: "GET",
+    pattern: "/api/finance/lab/bank-peers",
+    access: "public",
+    handler: async (c) => {
+      const view = await getResearch(c.db);
+      const metrics = ["gnpa_ratio", "nnpa_ratio", "crar", "cet1_ratio", "casa_ratio", "total_deposits"] as const;
+      const evIds = new Set<string>();
+      const items = [...view.companyById.values()]
+        .filter((co) => co.sector === "fig" && /^Banks/i.test(co.subsector) && co.lifecycle.status === "active")
+        .map((co) => {
+          const latest: Record<string, { value: number | null; unit: string; currency: string | null; scale: string | null; periodEnd: string; periodLabel: string; basis: string; ev: string[] }> = {};
+          for (const m of metrics) {
+            const obs = co.observations.filter((o) => o.metric === m && o.value !== null).sort((a, b) => b.period.end.localeCompare(a.period.end))[0];
+            if (obs) {
+              latest[m] = { value: obs.value, unit: obs.unit, currency: obs.currency ?? null, scale: obs.scale ?? null, periodEnd: obs.period.end, periodLabel: obs.period.label, basis: obs.basis, ev: obs.ev };
+              obs.ev.forEach((e) => evIds.add(e));
+            }
+          }
+          return { companyId: co.id, name: co.displayName, country: co.country, subsector: co.subsector, metrics: latest };
+        })
+        .filter((x) => Object.keys(x.metrics).length > 0);
+      return publicJson(
+        c.request,
+        {
+          items,
+          note: "Asset-quality and capital ratios are regulatory measures as reported by each bank. P/B, P/E and ROE need dated market prices and are not held in the archive; enter them as assumptions if you want a P/B vs ROE comparison.",
+          evidence: evidenceMap(view, [...evIds]),
+        },
+        { etagSeed: view.version },
+      );
+    },
+  });
+
+  r.add({
+    method: "GET",
     pattern: "/api/finance/training-models",
     access: "public",
     handler: async (c) => publicJson(c.request, { items: archive.training, label: "Training examples: fictional, deliberately constructed data excluded from research statistics." }, { etagSeed: archive.version, maxAge: 300 }),
