@@ -183,6 +183,8 @@ CREATE TABLE IF NOT EXISTS finance_watches (
   user_id TEXT NOT NULL,
   kind TEXT NOT NULL,
   entity_id TEXT NOT NULL,
+  saved INTEGER NOT NULL DEFAULT 0,
+  following INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL,
   last_viewed_at TEXT,
   watermark TEXT

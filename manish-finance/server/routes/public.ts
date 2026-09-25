@@ -2,9 +2,11 @@ import type { CompanyDetail, DealDetail, DealSummary, Page, SearchHit } from "..
 import { collectEvidenceIds } from "../../shared/archive/derive";
 import { compareDeals } from "../../shared/compare";
 import { dealQueryToParams, filtersOnly, matchesFilters, normalizeSearchText, parseDealQuery, sortDeals } from "../../shared/dealQuery";
-import { SECTOR_NAMES, SECTOR_SLUGS, type SectorSlug } from "../../shared/schemas/research";
+import { APAC_COUNTRIES } from "../../shared/geo";
+import { SECTOR_NAMES, SECTOR_SLUGS, type SectorSlugValue as SectorSlug } from "../../shared/labels";
 import { toCsv } from "../../shared/text/csv";
 import { HttpError, publicJson, textResponse } from "../http";
+import { runtimeClaim } from "../feedStore";
 import { archive, evidenceMap, getResearch, type ResearchView } from "../research";
 import type { Router } from "../router";
 import type { RequestContext } from "../types";
@@ -147,6 +149,70 @@ export function registerPublicRoutes(r: Router): void {
         },
       };
       return publicJson(c.request, body, { etagSeed: view.version });
+    },
+  });
+
+  r.add({
+    method: "GET",
+    pattern: "/api/finance/deals/tape",
+    access: "public",
+    handler: async (c) => {
+      const view = await getResearch(c.db);
+      const limit = Math.min(50, Math.max(1, Number(c.url.searchParams.get("limit") ?? "10") || 10));
+      const rows = view.deals
+        .flatMap((d) =>
+          d.events
+            .filter((e) => e.type !== "subsequent")
+            .map((e) => ({ d, e })),
+        )
+        .sort((a, b) => b.e.date.date.localeCompare(a.e.date.date) || a.d.id.localeCompare(b.d.id))
+        .slice(0, limit)
+        .map(({ d, e }) => {
+          const s = view.summaryById.get(d.id);
+          return { dealId: d.id, title: d.title, status: s?.status ?? d.status.value, sector: d.sector, event: { type: e.type, date: e.date, title: e.title, ev: e.ev }, headline: s?.headline ?? null };
+        });
+      return publicJson(c.request, { items: rows, scope: "Covered transactions within this database, ordered by event date." }, { etagSeed: view.version });
+    },
+  });
+
+  r.add({
+    method: "GET",
+    pattern: "/api/finance/coverage",
+    access: "public",
+    handler: async (c) => {
+      const view = await getResearch(c.db);
+      const claims = { source_checked: 0, search_corroborated: 0, pending: 0, conflict: 0, human_reviewed: 0 };
+      for (const cl of Object.values(view.claims)) claims[cl.status] += 1;
+      const docs = Object.values(view.documents);
+      const cutoffDate = new Date(`${archive.cutoff}T00:00:00Z`);
+      const yearAgo = new Date(cutoffDate);
+      yearAgo.setUTCFullYear(yearAgo.getUTCFullYear() - 1);
+      const yearAgoIso = yearAgo.toISOString().slice(0, 10);
+      const region = (d: (typeof view.summaries)[number]) => (d.target.country === "IN" || d.acquirer.country === "IN" ? "india" : APAC_COUNTRIES.has(d.target.country) || APAC_COUNTRIES.has(d.acquirer.country) ? "apac" : "global");
+      const dealsByRegion: Record<string, number> = { india: 0, apac: 0, global: 0 };
+      for (const d of view.summaries) dealsByRegion[region(d)] = (dealsByRegion[region(d)] ?? 0) + 1;
+      const recentDeals = view.deals.filter((d) => d.events.some((e) => e.date.date > yearAgoIso && e.date.date <= archive.cutoff)).length;
+      return publicJson(
+        c.request,
+        {
+          archiveVersion: view.archiveVersion,
+          cutoff: archive.cutoff,
+          deals: view.summaries.length,
+          dealsByRegion,
+          recentDeals,
+          autopsies: view.deals.filter((d) => d.autopsy).length,
+          companies: view.companySummaries.length,
+          companiesIndia: view.companySummaries.filter((x) => x.country === "IN").length,
+          sectors: archive.sectors.length,
+          glossary: archive.glossary.length,
+          questions: archive.questions.length,
+          modules: archive.modules.length,
+          claims,
+          documents: { total: docs.length, primary: docs.filter((d) => d.isPrimary).length, retrieved: docs.filter((d) => d.retrievalStatus === "retrieved").length },
+          training: archive.training.length,
+        },
+        { etagSeed: view.version },
+      );
     },
   });
 
@@ -317,6 +383,11 @@ export function registerPublicRoutes(r: Router): void {
     handler: async (c) => {
       const id = c.params.id ?? "";
       if (!/^ev-[a-z0-9]{6,16}$/.test(id) && !/^ev-u-[A-Za-z0-9_-]{8,64}$/.test(id)) throw new HttpError(404, "NOT_FOUND", "Evidence not found.");
+      if (id.startsWith("ev-u-")) {
+        const rc = await runtimeClaim(c.db, id);
+        if (!rc) throw new HttpError(404, "NOT_FOUND", "Evidence not found.");
+        return publicJson(c.request, rc, { maxAge: 300 });
+      }
       const view = await getResearch(c.db);
       const m = evidenceMap(view, [id]);
       const claim = m[id];

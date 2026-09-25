@@ -1,40 +1,56 @@
 {
-  "measuredAt": "2026-09-25T12:44:23.431Z",
+  "measuredAt": "2026-09-25T13:06:01.901Z",
   "browser": {
     "files": [
       {
-        "file": "finance-app-LDCG6NBB.js",
-        "bytes": 222003,
-        "gzipBytes": 68867
+        "file": "finance-app-QCFZ2HXY.js",
+        "bytes": 413925,
+        "gzipBytes": 119440
+      },
+      {
+        "file": "finance-chunk-A7NCSWG6.js",
+        "bytes": 140,
+        "gzipBytes": 146
+      },
+      {
+        "file": "finance-chunk-DQXNZZY5.js",
+        "bytes": 145,
+        "gzipBytes": 151
+      },
+      {
+        "file": "finance-chunk-ZZ4E67KI.js",
+        "bytes": 12482,
+        "gzipBytes": 4667
       },
       {
         "file": "finance.css",
-        "bytes": 48,
-        "gzipBytes": 68
+        "bytes": 31585,
+        "gzipBytes": 6818
       },
       {
         "file": "finance.html",
         "bytes": 1089,
-        "gzipBytes": 563
+        "gzipBytes": 564
       }
     ],
     "initialJsFiles": [
-      "finance-app-LDCG6NBB.js"
+      "finance-app-QCFZ2HXY.js",
+      "finance-chunk-ZZ4E67KI.js"
     ],
-    "initialJsGzipBytes": 68867,
-    "cssGzipBytes": 68,
-    "totalGzipBytes": 69498,
+    "initialJsGzipBytes": 124107,
+    "cssGzipBytes": 6818,
+    "totalGzipBytes": 131786,
     "budgetInitialJsGzipBytes": 307200
   },
   "server": {
     "file": "release/server/finance.mjs",
-    "bytes": 287211,
-    "gzipBytes": 65922
+    "bytes": 287368,
+    "gzipBytes": 66024
   },
   "combinedHarnessWorker": {
     "file": ".local/harness/worker.mjs",
     "note": "Simulated host bundle: host sentinels + embedded finance assets + finance module. Compare with the real host's Worker size limit.",
-    "bytes": 515781,
-    "gzipBytes": 136505
+    "bytes": 752830,
+    "gzipBytes": 198528
   }
 }

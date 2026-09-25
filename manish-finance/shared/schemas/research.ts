@@ -1,4 +1,35 @@
 import * as z from "zod";
+import {
+  BUYER_TYPE_LABEL,
+  BUYER_TYPES,
+  DEAL_STATUS_LABEL,
+  DEAL_STATUSES,
+  DEAL_TYPE_LABEL,
+  DEAL_TYPES,
+  PAYMENT_TYPES,
+  SECTOR_NAMES,
+  SECTOR_SLUGS,
+  VALUE_BASES,
+  VALUE_BASIS_LABEL,
+  VERIFICATION_LABEL,
+  VERIFICATION_STATUSES,
+} from "../labels";
+
+export {
+  BUYER_TYPE_LABEL,
+  BUYER_TYPES,
+  DEAL_STATUS_LABEL,
+  DEAL_STATUSES,
+  DEAL_TYPE_LABEL,
+  DEAL_TYPES,
+  PAYMENT_TYPES,
+  SECTOR_NAMES,
+  SECTOR_SLUGS,
+  VALUE_BASES,
+  VALUE_BASIS_LABEL,
+  VERIFICATION_LABEL,
+  VERIFICATION_STATUSES,
+};
 
 /**
  * Research archive schemas. The archive is authored in data/archive, validated at build time
@@ -16,88 +47,25 @@ export const zHttpsUrl = z
   .url()
   .refine((u) => u.startsWith("https://") || u.startsWith("http://"), "http(s) URL");
 
-export const SECTOR_SLUGS = ["fig", "tmt", "healthcare", "consumer", "industrials", "energy-infrastructure", "business-services", "real-estate"] as const;
 export const zSectorSlug = z.enum(SECTOR_SLUGS);
 export type SectorSlug = z.infer<typeof zSectorSlug>;
 
-export const SECTOR_NAMES: Record<SectorSlug, string> = {
-  fig: "FIG",
-  tmt: "TMT",
-  healthcare: "Healthcare",
-  consumer: "Consumer",
-  industrials: "Industrials",
-  "energy-infrastructure": "Energy & Infrastructure",
-  "business-services": "Business Services",
-  "real-estate": "Real Estate",
-};
-
-export const DEAL_TYPES = ["merger", "control_acquisition", "minority_stake", "asset_purchase", "carve_out", "buyout", "joint_venture", "proposal"] as const;
 export const zDealType = z.enum(DEAL_TYPES);
 export type DealType = z.infer<typeof zDealType>;
-export const DEAL_TYPE_LABEL: Record<DealType, string> = {
-  merger: "Merger",
-  control_acquisition: "Control acquisition",
-  minority_stake: "Minority stake",
-  asset_purchase: "Asset/business purchase",
-  carve_out: "Carve-out",
-  buyout: "Buyout",
-  joint_venture: "Joint venture",
-  proposal: "Announced proposal",
-};
-
-export const DEAL_STATUSES = ["rumoured", "proposed", "announced", "pending_approvals", "approved", "completed", "withdrawn", "terminated"] as const;
 export const zDealStatus = z.enum(DEAL_STATUSES);
 export type DealStatus = z.infer<typeof zDealStatus>;
-export const DEAL_STATUS_LABEL: Record<DealStatus, string> = {
-  rumoured: "Rumoured",
-  proposed: "Proposed",
-  announced: "Announced",
-  pending_approvals: "Pending approvals",
-  approved: "Approved",
-  completed: "Completed",
-  withdrawn: "Withdrawn",
-  terminated: "Terminated",
-};
-
-export const BUYER_TYPES = ["strategic", "sponsor", "sovereign", "consortium", "financial_investor"] as const;
 export const zBuyerType = z.enum(BUYER_TYPES);
 export type BuyerType = z.infer<typeof zBuyerType>;
-export const BUYER_TYPE_LABEL: Record<BuyerType, string> = {
-  strategic: "Strategic",
-  sponsor: "Financial sponsor",
-  sovereign: "Sovereign/state investor",
-  consortium: "Consortium",
-  financial_investor: "Strategic financial institution",
-};
-
-export const PAYMENT_TYPES = ["cash", "stock", "debt_assumption", "mixed", "undisclosed", "other"] as const;
 export const zPaymentType = z.enum(PAYMENT_TYPES);
 export type PaymentType = z.infer<typeof zPaymentType>;
 
-export const VALUE_BASES = ["enterprise", "equity", "stake", "unclear"] as const;
 export const zValueBasis = z.enum(VALUE_BASES);
 export type ValueBasis = z.infer<typeof zValueBasis>;
-export const VALUE_BASIS_LABEL: Record<ValueBasis, string> = {
-  enterprise: "Enterprise value",
-  equity: "Equity value",
-  stake: "Stake consideration",
-  unclear: "Reported, basis unclear",
-};
-
 export const SCALE_UNITS = ["one", "thousand", "lakh", "million", "crore", "billion", "trillion"] as const;
 export const zScaleUnit = z.enum(SCALE_UNITS);
 
-export const VERIFICATION_STATUSES = ["source_checked", "search_corroborated", "pending", "conflict", "human_reviewed"] as const;
 export const zVerificationStatus = z.enum(VERIFICATION_STATUSES);
 export type VerificationStatus = z.infer<typeof zVerificationStatus>;
-export const VERIFICATION_LABEL: Record<VerificationStatus, string> = {
-  source_checked: "Source checked",
-  search_corroborated: "Search-corroborated",
-  pending: "Pending check",
-  conflict: "Conflicting sources",
-  human_reviewed: "Human reviewed",
-};
-
 export const CHECK_METHODS = ["document_retrieval", "web_search_index", "owner_entry", "calculation", "builder_background"] as const;
 export const zCheckMethod = z.enum(CHECK_METHODS);
 export type CheckMethod = z.infer<typeof zCheckMethod>;

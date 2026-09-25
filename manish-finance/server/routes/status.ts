@@ -2,7 +2,7 @@ import type { SourceHealth, SourceStatusView, StatusResponse } from "../../share
 import { CALC_VERSION } from "../../shared/calc/result";
 import { readAiConfig } from "../ai/config";
 import { signInUrl, signOutUrl } from "../auth";
-import { privateJson, publicJson } from "../http";
+import { privateJson, publicJson, sha256Hex } from "../http";
 import { archive, getResearch } from "../research";
 import type { Router } from "../router";
 import { loadSourceStates, SOURCES, sourceStatusView } from "../sources/registry";
@@ -53,7 +53,12 @@ export function registerStatusRoutes(r: Router): void {
       const returnTo = c.url.searchParams.get("return_to") ?? "/finance";
       const body: StatusResponse = {
         app: { name: "Finance Desk", version: APP_VERSION, archiveVersion: view.archiveVersion, archiveCutoff: archive.cutoff, calcVersion: CALC_VERSION },
-        viewer: { signedIn: c.viewer.role !== "anonymous", role: c.viewer.role, ownerConfigured: c.viewer.ownerConfigured },
+        viewer: {
+          signedIn: c.viewer.role !== "anonymous",
+          role: c.viewer.role,
+          ownerConfigured: c.viewer.ownerConfigured,
+          key: c.viewer.userId ? await sha256Hex(`finance-viewer|${c.viewer.userId}`, 16) : null,
+        },
         capabilities: {
           privateData: c.viewer.role === "owner" && Boolean(c.db),
           ai: c.viewer.role === "owner" ? { enabled: ai.enabled, reason: ai.reason } : { enabled: false, reason: ai.enabled ? "Available to the site owner." : "AI features are off." },

@@ -249,7 +249,8 @@ export interface SourceStatusView {
 
 export interface StatusResponse {
   app: { name: string; version: string; archiveVersion: string; archiveCutoff: string; calcVersion: string };
-  viewer: { signedIn: boolean; role: "anonymous" | "user" | "owner"; ownerConfigured: boolean };
+  /** `key` is an opaque hash of the account ID used only to detect account changes client-side. */
+  viewer: { signedIn: boolean; role: "anonymous" | "user" | "owner"; ownerConfigured: boolean; key: string | null };
   capabilities: {
     privateData: boolean;
     ai: { enabled: boolean; reason: string };

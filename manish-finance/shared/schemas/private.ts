@@ -1,5 +1,6 @@
 import * as z from "zod";
-import { SECTOR_SLUGS, zSectorSlug } from "./research";
+import { CARD_TYPES, SECTOR_SLUGS } from "../labels";
+import { zSectorSlug } from "./research";
 
 /** Schemas for owner-only records. Validated on every write; user IDs never come from request bodies. */
 
@@ -118,17 +119,7 @@ export interface SavedModel {
   updatedAt: string;
 }
 
-export const CARD_TYPES = ["who_bought_what", "consideration_structure", "rationale", "valuation_insight", "risk", "sixty_second", "concept"] as const;
 export const zCardType = z.enum(CARD_TYPES);
-export const CARD_TYPE_LABEL: Record<(typeof CARD_TYPES)[number], string> = {
-  who_bought_what: "Who bought what",
-  consideration_structure: "Consideration and structure",
-  rationale: "Rationale",
-  valuation_insight: "One valuation insight",
-  risk: "One risk",
-  sixty_second: "60-second explanation",
-  concept: "Concept",
-};
 
 export const zMemoryCardInput = z.object({
   cardType: zCardType,
@@ -188,7 +179,6 @@ export const zPreferences = z.object({
   sidebarCollapsed: z.boolean().default(false),
 });
 export type Preferences = z.infer<typeof zPreferences>;
-export const DEFAULT_PREFERENCES: Preferences = zPreferences.parse({});
 export const zPreferencesPatch = zPreferences.partial().extend({ revision: z.number().int().min(0).optional() });
 
 export const zProgressUpdate = z.object({

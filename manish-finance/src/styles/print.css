@@ -1,0 +1,99 @@
+/* A4 print layout for notes, briefs, deal pages and models: black on white, no navigation chrome,
+   visible source URLs, sensible page breaks, selectable text. */
+@page {
+  size: A4;
+  margin: 16mm 14mm 18mm;
+}
+
+@media print {
+  html[data-mf-theme],
+  .mf-body,
+  .finance-root {
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  .finance-root * {
+    color: #000 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  .mf-sidebar,
+  .mf-topbar,
+  .mf-no-print,
+  .mf-toasts,
+  .mf-scrim,
+  .mf-drawer,
+  .mf-tabs,
+  .mf-btn,
+  .mf-ev,
+  .mf-skip,
+  .mf-sticky-bar {
+    display: none !important;
+  }
+
+  .mf-shell,
+  .mf-shell[data-collapsed="true"] {
+    display: block !important;
+  }
+
+  .mf-main {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  .mf-panel,
+  .mf-figure,
+  .mf-callout {
+    border: 1px solid #999 !important;
+    break-inside: avoid;
+  }
+
+  .mf-print-only {
+    display: block !important;
+  }
+
+  h1,
+  h2,
+  h3 {
+    break-after: avoid;
+  }
+
+  table,
+  tr,
+  img,
+  .mf-formula {
+    break-inside: avoid;
+  }
+
+  .finance-root a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 9pt;
+    word-break: break-all;
+  }
+
+  .mf-prose {
+    font-size: 11pt;
+    line-height: 1.5;
+  }
+
+  .mf-table th {
+    position: static;
+  }
+
+  .mf-table th,
+  .mf-table td {
+    border-bottom: 1px solid #bbb !important;
+    height: auto;
+  }
+
+  .mf-table-wrap {
+    overflow: visible !important;
+  }
+}
+
+.mf-print-only {
+  display: none;
+}

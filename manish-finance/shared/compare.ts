@@ -2,7 +2,7 @@ import type { DealSummary } from "./api";
 import { formatDateValue } from "./dates";
 import { type MultipleValue, summarizeMultiples, type MultipleStats } from "./calc/multiples";
 import { formatAsReported, type ScaleUnit } from "./money/units";
-import { BUYER_TYPE_LABEL, DEAL_STATUS_LABEL, DEAL_TYPE_LABEL, SECTOR_NAMES, VALUE_BASIS_LABEL } from "./schemas/research";
+import { BUYER_TYPE_LABEL, DEAL_STATUS_LABEL, DEAL_TYPE_LABEL, SECTOR_NAMES, VALUE_BASIS_LABEL } from "./labels";
 import { countryName } from "./geo";
 
 /**

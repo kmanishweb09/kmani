@@ -1,8 +1,13 @@
+import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-
-function App() {
-  return <p>Finance Desk</p>;
-}
+import { App } from "./app/App";
 
 const el = document.getElementById("finance-root");
-if (el) createRoot(el).render(<App />);
+if (el) {
+  el.replaceChildren();
+  createRoot(el).render(
+    <StrictMode>
+      <App />
+    </StrictMode>,
+  );
+}

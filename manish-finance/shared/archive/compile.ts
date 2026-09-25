@@ -1,20 +1,19 @@
 import type { ClaimView, EventView, PartyView, TermView } from "../api";
 import { type DateValue, formatDateValue } from "../dates";
 import { formatAsReported, type ScaleUnit } from "../money/units";
-import {
-  type Brief,
-  type Cite,
-  type Company,
-  DEAL_STATUS_LABEL,
-  type Deal,
-  type GlossaryTerm,
-  type LearningModule,
-  type Question,
-  type Sector,
-  type SourceDocument,
-  type TrainingModel,
-  VALUE_BASIS_LABEL,
+import type {
+  Brief,
+  Cite,
+  Company,
+  Deal,
+  GlossaryTerm,
+  LearningModule,
+  Question,
+  Sector,
+  SourceDocument,
+  TrainingModel,
 } from "../schemas/research";
+import { DEAL_STATUS_LABEL, VALUE_BASIS_LABEL } from "../labels";
 import { shortHash, stableStringify } from "../text/hash";
 
 /**

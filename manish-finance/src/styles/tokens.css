@@ -1,0 +1,90 @@
+/* Finance Desk design tokens. Scoped to finance pages via .finance-root / [data-mf-theme]. */
+:root,
+[data-mf-theme="dark"] {
+  --mf-page: #080c12;
+  --mf-surface: #101721;
+  --mf-raised: #16202c;
+  --mf-border: #2b3948;
+  --mf-border-strong: #3d4f63;
+  --mf-text: #edf3f8;
+  --mf-muted: #a8b6c6;
+  --mf-accent: #59d7f1;
+  --mf-accent-ink: #062a33;
+  --mf-accent-soft: rgba(89, 215, 241, 0.12);
+  --mf-attention: #f4ba63;
+  --mf-attention-soft: rgba(244, 186, 99, 0.13);
+  --mf-positive: #55cea2;
+  --mf-positive-soft: rgba(85, 206, 162, 0.12);
+  --mf-negative: #ff7885;
+  --mf-negative-soft: rgba(255, 120, 133, 0.12);
+  --mf-neutral-soft: rgba(168, 182, 198, 0.12);
+  --mf-row-hover: rgba(237, 243, 248, 0.04);
+  --mf-row-selected: rgba(89, 215, 241, 0.1);
+  --mf-focus: #59d7f1;
+  --mf-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+  --mf-scrim: rgba(4, 7, 11, 0.62);
+  --mf-chart-1: #59d7f1;
+  --mf-chart-2: #f4ba63;
+  --mf-chart-3: #b79cff;
+  --mf-chart-4: #55cea2;
+  --mf-chart-5: #ff7885;
+  --mf-grid: rgba(168, 182, 198, 0.18);
+  color-scheme: dark;
+}
+
+[data-mf-theme="light"] {
+  --mf-page: #f3f6fa;
+  --mf-surface: #ffffff;
+  --mf-raised: #eaf0f6;
+  --mf-border: #cbd5e1;
+  --mf-border-strong: #a9b7c8;
+  --mf-text: #172334;
+  --mf-muted: #536477;
+  --mf-accent: #006d88;
+  --mf-accent-ink: #ffffff;
+  --mf-accent-soft: rgba(0, 109, 136, 0.09);
+  --mf-attention: #885200;
+  --mf-attention-soft: rgba(136, 82, 0, 0.09);
+  --mf-positive: #076a49;
+  --mf-positive-soft: rgba(7, 106, 73, 0.09);
+  --mf-negative: #b42336;
+  --mf-negative-soft: rgba(180, 35, 54, 0.08);
+  --mf-neutral-soft: rgba(83, 100, 119, 0.1);
+  --mf-row-hover: rgba(23, 35, 52, 0.035);
+  --mf-row-selected: rgba(0, 109, 136, 0.08);
+  --mf-focus: #006d88;
+  --mf-shadow: 0 8px 24px rgba(23, 35, 52, 0.14);
+  --mf-scrim: rgba(23, 35, 52, 0.42);
+  --mf-chart-1: #006d88;
+  --mf-chart-2: #885200;
+  --mf-chart-3: #5b3fb5;
+  --mf-chart-4: #076a49;
+  --mf-chart-5: #b42336;
+  --mf-grid: rgba(83, 100, 119, 0.2);
+  color-scheme: light;
+}
+
+:root {
+  --mf-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --mf-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --mf-s1: 4px;
+  --mf-s2: 8px;
+  --mf-s3: 12px;
+  --mf-s4: 16px;
+  --mf-s5: 24px;
+  --mf-s6: 32px;
+  --mf-radius: 10px;
+  --mf-radius-sm: 6px;
+  --mf-sidebar: 216px;
+  --mf-rail: 64px;
+  --mf-topbar: 60px;
+  --mf-drawer: 440px;
+  --mf-ease: cubic-bezier(0.2, 0, 0, 1);
+  --mf-fast: 140ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --mf-fast: 0ms;
+  }
+}
