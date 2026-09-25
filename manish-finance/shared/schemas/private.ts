@@ -14,17 +14,36 @@ export type EntityRef = z.infer<typeof zEntityRef>;
 export const NOTE_TEMPLATES = ["blank", "deal_note", "sector_thesis", "company_note", "weekly_reflection", "deal_view", "research_question"] as const;
 export const zNoteTemplate = z.enum(NOTE_TEMPLATES);
 
-export const zNoteCreate = z.object({
+const noteFields = {
   title: z.string().trim().min(1).max(200),
-  body: z.string().max(100_000).default(""),
-  template: zNoteTemplate.default("blank"),
-  tags: z.array(z.string().trim().min(1).max(40)).max(20).default([]),
-  links: z.array(zEntityRef).max(50).default([]),
-  evidenceIds: z.array(z.string().max(120)).max(100).default([]),
+  body: z.string().max(100_000),
+  template: zNoteTemplate,
+  tags: z.array(z.string().trim().min(1).max(40)).max(20),
+  links: z.array(zEntityRef).max(50),
+  evidenceIds: z.array(z.string().max(120)).max(100),
+};
+
+export const zNoteCreate = z.object({
+  title: noteFields.title,
+  body: noteFields.body.default(""),
+  template: noteFields.template.default("blank"),
+  tags: noteFields.tags.default([]),
+  links: noteFields.links.default([]),
+  evidenceIds: noteFields.evidenceIds.default([]),
 });
 export type NoteCreate = z.infer<typeof zNoteCreate>;
 
-export const zNotePatch = zNoteCreate.partial().extend({
+/**
+ * Patch schemas are written out without defaults: in zod 4 `.partial()` still applies field
+ * defaults, which would silently reset omitted fields (for example wiping a note body on archive).
+ */
+export const zNotePatch = z.object({
+  title: noteFields.title.optional(),
+  body: noteFields.body.optional(),
+  template: noteFields.template.optional(),
+  tags: noteFields.tags.optional(),
+  links: noteFields.links.optional(),
+  evidenceIds: noteFields.evidenceIds.optional(),
   revision: z.number().int().min(1),
   archived: z.boolean().optional(),
 });
@@ -104,7 +123,16 @@ export const zModelCreate = z.object({
   outputs: z.record(z.string(), z.unknown()),
   scenarios: z.array(z.object({ name: z.string().max(80), assumptions: z.record(z.string(), z.unknown()) })).max(8).default([]),
 });
-export const zModelPatch = zModelCreate.partial().extend({ revision: z.number().int().min(1) });
+export const zModelPatch = z.object({
+  modelType: z.enum(MODEL_TYPES).optional(),
+  title: z.string().trim().min(1).max(160).optional(),
+  calcVersion: z.string().max(40).optional(),
+  sourceSnapshot: zModelCreate.shape.sourceSnapshot.optional(),
+  assumptions: z.record(z.string(), z.unknown()).optional(),
+  outputs: z.record(z.string(), z.unknown()).optional(),
+  scenarios: z.array(z.object({ name: z.string().max(80), assumptions: z.record(z.string(), z.unknown()) })).max(8).optional(),
+  revision: z.number().int().min(1),
+});
 export interface SavedModel {
   id: string;
   modelType: (typeof MODEL_TYPES)[number];
@@ -164,22 +192,39 @@ export const zReviewSubmit = z.object({
   rating: z.enum(["again", "hard", "good", "easy"]),
 });
 
+const prefFields = {
+  theme: z.enum(["dark", "light"]),
+  geography: z.enum(["india", "apac", "global"]),
+  geoMode: z.enum(["target", "acquirer", "either"]),
+  followedSectors: z.array(zSectorSlug).max(8),
+  highlightSector: zSectorSlug,
+  sectorPickerDismissed: z.boolean(),
+  displayCurrency: z.enum(["original", "INR", "USD"]),
+  inrNumberSystem: z.enum(["indian", "international"]),
+  timezone: z.string().max(64),
+  newsWindowDays: z.number().int().min(1).max(31),
+  dealColumns: z.array(z.string().max(40)).max(20),
+  sidebarCollapsed: z.boolean(),
+};
+
 export const zPreferences = z.object({
-  theme: z.enum(["dark", "light"]).default("dark"),
-  geography: z.enum(["india", "apac", "global"]).default("india"),
-  geoMode: z.enum(["target", "acquirer", "either"]).default("either"),
-  followedSectors: z.array(zSectorSlug).max(8).default([]),
-  highlightSector: zSectorSlug.default("fig"),
-  sectorPickerDismissed: z.boolean().default(false),
-  displayCurrency: z.enum(["original", "INR", "USD"]).default("original"),
-  inrNumberSystem: z.enum(["indian", "international"]).default("indian"),
-  timezone: z.string().max(64).default("Asia/Kolkata"),
-  newsWindowDays: z.number().int().min(1).max(31).default(7),
-  dealColumns: z.array(z.string().max(40)).max(20).default([]),
-  sidebarCollapsed: z.boolean().default(false),
+  theme: prefFields.theme.default("dark"),
+  geography: prefFields.geography.default("india"),
+  geoMode: prefFields.geoMode.default("either"),
+  followedSectors: prefFields.followedSectors.default([]),
+  highlightSector: prefFields.highlightSector.default("fig"),
+  sectorPickerDismissed: prefFields.sectorPickerDismissed.default(false),
+  displayCurrency: prefFields.displayCurrency.default("original"),
+  inrNumberSystem: prefFields.inrNumberSystem.default("indian"),
+  timezone: prefFields.timezone.default("Asia/Kolkata"),
+  newsWindowDays: prefFields.newsWindowDays.default(7),
+  dealColumns: prefFields.dealColumns.default([]),
+  sidebarCollapsed: prefFields.sidebarCollapsed.default(false),
 });
 export type Preferences = z.infer<typeof zPreferences>;
-export const zPreferencesPatch = zPreferences.partial().extend({ revision: z.number().int().min(0).optional() });
+/** Only the supplied fields change (no defaults applied; see zNotePatch). */
+export const zPreferencesPartial = z.object(Object.fromEntries(Object.entries(prefFields).map(([k, v]) => [k, v.optional()])) as { [K in keyof typeof prefFields]: z.ZodOptional<(typeof prefFields)[K]> });
+export const zPreferencesPatch = zPreferencesPartial.extend({ revision: z.number().int().min(0).optional() });
 
 export const zProgressUpdate = z.object({
   itemType: z.enum(["module", "question"]),
@@ -255,7 +300,7 @@ export const zExportBundle = z.object({
         .default([]),
     })
     .default({ records: [], cards: [], reviewLog: [] }),
-  preferences: zPreferences.partial().nullable().default(null),
+  preferences: zPreferencesPartial.nullable().default(null),
   progress: z.array(zProgressUpdate.extend({ updatedAt: z.string() })).default([]),
   interviewAttempts: z.array(zInterviewAttempt.extend({ id: zPrivateId, createdAt: z.string() })).default([]),
 });

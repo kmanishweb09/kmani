@@ -8,7 +8,7 @@ import { setQuery, useRoute } from "../../app/router";
 import { signInHref, useSession } from "../../app/session";
 import { useToast } from "../../app/toast";
 import { Icon } from "../../components/Icon";
-import { Dialog } from "../../components/Overlay";
+import { Dialog, useConfirm } from "../../components/Overlay";
 import { PageHead } from "../../components/PageHead";
 import { type SaveStateKind, SaveState, TabPanel, Tabs } from "../../components/ui";
 import { type AccretionAssumptions, AccretionTab, accretionBase, computeAccretion } from "./AccretionTab";
@@ -132,6 +132,7 @@ function ScenarioBar({ tab, sc, outputsFor, modelId, dealId }: { tab: LabTab; sc
   const [saveState, setSaveState] = useState<SaveStateKind>("idle");
   const [loaded, setLoaded] = useState<SavedModel | null>(null);
   const [compareOpen, setCompareOpen] = useState(false);
+  const { confirm, element: confirmElement } = useConfirm();
   const [title, setTitle] = useState("");
   const modelType = TABS.find((t) => t.id === tab)?.modelType ?? "comparables";
   const saved = useQuery<{ items: SavedModel[] }>(session.isOwner ? "/api/finance/models" : null, { scope: "private" });
@@ -230,8 +231,8 @@ function ScenarioBar({ tab, sc, outputsFor, modelId, dealId }: { tab: LabTab; sc
         <button
           type="button"
           className="mf-btn small ghost"
-          onClick={() => {
-            if (window.confirm("Reset all scenarios on this tab to the training base case? Unsaved changes on this device will be lost.")) {
+          onClick={async () => {
+            if (await confirm({ title: "Reset scenarios?", message: "All scenarios on this tab return to the training base case. Unsaved changes on this device will be lost.", confirmLabel: "Reset", danger: true })) {
               sc.reset();
               setLoaded(null);
               setQuery({ model: null });
@@ -275,6 +276,7 @@ function ScenarioBar({ tab, sc, outputsFor, modelId, dealId }: { tab: LabTab; sc
           </span>
         )}
       </div>
+      {confirmElement}
       <Dialog open={compareOpen} onClose={() => setCompareOpen(false)} title="Compare scenarios">
         <CompareScenarios tab={tab} sc={sc} outputsFor={outputsFor} />
       </Dialog>

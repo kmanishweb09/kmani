@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useId, useRef } from "react";
+import { type ReactNode, useCallback, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Icon } from "./Icon";
 
@@ -139,6 +139,47 @@ export function PaletteShell({ open, onClose, label, children }: { open: boolean
   );
 }
 
-export function useConfirm() {
-  return (message: string) => window.confirm(message);
+interface ConfirmRequest {
+  title: string;
+  message: string;
+  confirmLabel: string;
+  danger: boolean;
+  resolve: (ok: boolean) => void;
+}
+
+/**
+ * Accessible confirmation dialog (focus-trapped, Escape cancels, focus restored). Returns a promise
+ * so callers can `if (await confirm(...))`. Render `element` once in the calling component.
+ */
+export function useConfirm(): { confirm: (opts: { title: string; message: string; confirmLabel?: string; danger?: boolean }) => Promise<boolean>; element: ReactNode } {
+  const [req, setReq] = useState<ConfirmRequest | null>(null);
+  const confirm = useCallback(
+    (opts: { title: string; message: string; confirmLabel?: string; danger?: boolean }) =>
+      new Promise<boolean>((resolve) => setReq({ title: opts.title, message: opts.message, confirmLabel: opts.confirmLabel ?? "Confirm", danger: opts.danger ?? false, resolve })),
+    [],
+  );
+  const close = (ok: boolean) => {
+    req?.resolve(ok);
+    setReq(null);
+  };
+  const element = (
+    <Dialog
+      open={Boolean(req)}
+      onClose={() => close(false)}
+      title={req?.title ?? ""}
+      footer={
+        <>
+          <button type="button" className="mf-btn" onClick={() => close(false)}>
+            Cancel
+          </button>
+          <button type="button" className={`mf-btn ${req?.danger ? "danger" : "primary"}`} onClick={() => close(true)}>
+            {req?.confirmLabel}
+          </button>
+        </>
+      }
+    >
+      <p>{req?.message}</p>
+    </Dialog>
+  );
+  return { confirm, element };
 }
