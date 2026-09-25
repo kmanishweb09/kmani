@@ -16,7 +16,9 @@
     "verify:content": "node scripts/verify-content.mjs",
     "build": "node scripts/build.mjs",
     "package:handoff": "node scripts/package-handoff.mjs",
-    "check:sources:live": "node scripts/check-sources-live.mjs"
+    "check:sources:live": "node scripts/check-sources-live.mjs",
+    "evidence:worklist": "node scripts/evidence.mjs worklist",
+    "evidence:retrieve": "node scripts/evidence.mjs retrieve"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "0.128.0",
