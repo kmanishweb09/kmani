@@ -14,6 +14,7 @@ import { EventSpine } from "../components/EventSpine";
 import { Ev, useRegisterEvidence } from "../components/Evidence";
 import { Icon } from "../components/Icon";
 import { Dialog } from "../components/Overlay";
+import { AiAssist } from "../components/AiAssist";
 import { PageHead } from "../components/PageHead";
 import { EmptyState, ErrorState, ProvTag, SaveState, Segmented, Skeleton, StatusPill, TabPanel, Tabs } from "../components/ui";
 import { useAutosave } from "../lib/autosave";
@@ -604,6 +605,7 @@ export function DealDetailPage({ id }: { id: string }) {
                   )}
                 </div>
               </section>
+              <AiAssist subject={{ type: "deal", id: deal.id }} subjectTitle={deal.title} ops={["summarize", "questions", "explain", "draft_note"]} />
             </aside>
           </div>
         ) : null}

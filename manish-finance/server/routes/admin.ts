@@ -127,14 +127,14 @@ function defaultDocType(eventType: string): SourceDocument["documentType"] {
 async function publishReviewItem(c: RequestContext, db: D1Database, row: ReviewRow, note: string | null): Promise<{ changeId: string }> {
   const proposal = parseJsonColumn<{ dealId?: string; event?: { type?: string; feedType?: string; date?: string; title?: string; statusAfter?: string | null } }>(row.proposal_json, {});
   const evidence = parseJsonColumn<{ documentId?: string }>(row.evidence_json, {});
-  if (row.kind !== "feed_lead" && row.kind !== "deal_event") throw new HttpError(422, "UNSUPPORTED_REVIEW_KIND", "This review item cannot be published automatically.");
+  if (row.kind !== "feed_lead" && row.kind !== "deal_event" && row.kind !== "ai_extraction") throw new HttpError(422, "UNSUPPORTED_REVIEW_KIND", "This review item cannot be published automatically.");
   const view = await getResearch(db);
   const deal = proposal.dealId ? view.dealById.get(proposal.dealId) : undefined;
   if (!deal) throw new HttpError(409, "DEAL_NOT_FOUND", "The proposed deal is no longer in the research view.");
   const doc = evidence.documentId ? await loadRuntimeDocument(db, evidence.documentId) : null;
   if (!doc) throw new HttpError(409, "EVIDENCE_MISSING", "The source document for this item is no longer stored.");
   const e = proposal.event ?? {};
-  const type = row.kind === "deal_event" ? (EVENT_TYPES as readonly string[]).includes(e.type ?? "") ? (e.type as EventView["type"]) : "subsequent" : dealEventTypeFor(e.feedType ?? "");
+  const type = row.kind === "feed_lead" ? dealEventTypeFor(e.feedType ?? "") : (EVENT_TYPES as readonly string[]).includes(e.type ?? "") ? (e.type as EventView["type"]) : "subsequent";
   const date = /^\d{4}-\d{2}-\d{2}$/.test(e.date ?? "") ? (e.date as string) : localDate(c.now, BRIEF_TZ);
   const statusAfter = row.kind === "deal_event" && e.statusAfter && (DEAL_STATUSES as readonly string[]).includes(e.statusAfter) ? (e.statusAfter as EventView["statusAfter"]) : null;
   const today = localDate(c.now, BRIEF_TZ);
@@ -159,7 +159,12 @@ async function publishReviewItem(c: RequestContext, db: D1Database, row: ReviewR
     date: { date, precision: "day" },
     publishedDate: doc.publishedDate?.date ?? null,
     title: (e.title ?? doc.title).slice(0, 200),
-    detail: row.kind === "feed_lead" ? `Source-linked item from ${doc.publisher}. Published after owner review; deal terms and status were not changed by this item.` : null,
+    detail:
+      row.kind === "feed_lead"
+        ? `Source-linked item from ${doc.publisher}. Published after owner review; deal terms and status were not changed by this item.`
+        : row.kind === "ai_extraction"
+          ? `Proposed by AI extraction from ${doc.publisher}; checked and published by the site owner.`
+          : null,
     jurisdiction: null,
     authority: null,
     statusAfter,

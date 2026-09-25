@@ -12,6 +12,7 @@ import { useToast } from "../app/toast";
 import { Ev, useRegisterEvidence } from "../components/Evidence";
 import { Icon } from "../components/Icon";
 import { Dialog } from "../components/Overlay";
+import { AiAssist } from "../components/AiAssist";
 import { PageHead } from "../components/PageHead";
 import { EmptyState, ErrorState, Monogram, ProvTag, Skeleton, StatusPill } from "../components/ui";
 import { dateLabel, headlineText } from "../lib/format";
@@ -487,6 +488,7 @@ export function CompanyDetailPage({ id }: { id: string }) {
               <CompanyNotes company={c} />
             </div>
           </section>
+          <AiAssist subject={{ type: "company", id: c.id }} subjectTitle={c.displayName} ops={["summarize", "questions", "draft_note"]} />
         </aside>
       </div>
       {isOwner ? <CorrectionDialog company={c} open={corrOpen} onClose={() => setCorrOpen(false)} /> : null}

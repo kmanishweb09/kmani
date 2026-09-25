@@ -16,6 +16,10 @@ export interface AiConfig {
   priceInputPerMTok: number | null;
   priceOutputPerMTok: number | null;
   priceDate: string | null;
+  /** Output-token ceiling per request (also the worst case reserved against the budget). */
+  maxOutputTokens: number;
+  /** Global cap on AI requests per day (Asia/Kolkata calendar). */
+  dailyRequestCap: number;
 }
 
 function num(v: unknown): number | null {
@@ -32,7 +36,9 @@ export function readAiConfig(env: FinanceEnv): AiConfig {
   const pin = num(env.FINANCE_AI_PRICE_INPUT_PER_MTOK);
   const pout = num(env.FINANCE_AI_PRICE_OUTPUT_PER_MTOK);
   const pdate = typeof env.FINANCE_AI_PRICE_DATE === "string" && /^\d{4}-\d{2}-\d{2}$/.test(env.FINANCE_AI_PRICE_DATE) ? env.FINANCE_AI_PRICE_DATE : null;
-  const base = { model, apiKey, dailyBudgetUsd: budget, priceInputPerMTok: pin, priceOutputPerMTok: pout, priceDate: pdate };
+  const maxOut = Math.min(32_000, Math.max(1_000, Math.round(num(env.FINANCE_AI_MAX_OUTPUT_TOKENS) ?? 8_000)));
+  const cap = Math.min(1_000, Math.max(1, Math.round(num(env.FINANCE_AI_DAILY_REQUESTS) ?? 60)));
+  const base = { model, apiKey, dailyBudgetUsd: budget, priceInputPerMTok: pin, priceOutputPerMTok: pout, priceDate: pdate, maxOutputTokens: maxOut, dailyRequestCap: cap };
   if (provider === "none") return { ...base, provider: "none", enabled: false, reason: "AI is off (FINANCE_AI_PROVIDER is not set). All research, models, notes, review and compiled briefs work without it." };
   if (provider !== "anthropic") return { ...base, provider: "none", enabled: false, reason: `Unsupported AI provider "${provider}". Only "anthropic" is implemented.` };
   if (!model) return { ...base, provider: "anthropic", enabled: false, reason: "Set FINANCE_AI_MODEL to an explicit model ID." };

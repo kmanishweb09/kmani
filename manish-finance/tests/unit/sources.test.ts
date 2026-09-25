@@ -253,3 +253,47 @@ describe("entity linking and classification", () => {
     expect(clusterKey("RBI approves HDFC merger", "2026-09-24")).not.toBe(clusterKey("RBI approves HDFC merger", "2026-09-25"));
   });
 });
+
+describe("AI grounding checks", async () => {
+  const { groundSections, normaliseNumber } = await import("../../server/ai/grounding");
+  const pack = new Map([
+    ["ev-a1", { id: "ev-a1", label: "Deal value", text: "Enterprise value: INR 40,000 crore. Effective 2023-07-01. Stake 100%." }],
+    ["ev-b2", { id: "ev-b2", label: "Status", text: "Completed on 2023-07-01." }],
+  ]);
+  it("normalises numbers", () => {
+    expect(normaliseNumber("40,000.50")).toBe("40000.5");
+    expect(normaliseNumber("12.0")).toBe("12");
+  });
+  it("accepts cited, supported statements and analysis with small counting numbers", () => {
+    const r = groundSections(
+      [
+        { kind: "fact", text: "Enterprise value was INR 40000 crore, effective 2023-07-01.", citations: ["ev-a1"] },
+        { kind: "fact", text: "The merger completed in 2023.", citations: ["ev-b2"] },
+        { kind: "analysis", text: "Three risks matter; the first is funding cost.", citations: [] },
+      ],
+      pack,
+    );
+    expect(r.held).toEqual([]);
+    expect(r.accepted).toHaveLength(3);
+  });
+  it("holds invented citations, uncited facts, unsupported numbers and invented dates", () => {
+    const r = groundSections(
+      [
+        { kind: "fact", text: "Advisers were X.", citations: ["ev-zz9"] },
+        { kind: "fact", text: "It closed quickly.", citations: [] },
+        { kind: "fact", text: "EV/EBITDA was 12.5x.", citations: ["ev-a1"] },
+        { kind: "fact", text: "It completed on 2023-10-01.", citations: ["ev-b2"] },
+        { kind: "analysis", text: "Worth 2012 crore more than peers.", citations: ["ev-a1"] },
+      ],
+      pack,
+    );
+    expect(r.accepted).toEqual([]);
+    expect(r.held.map((h) => h.reasons[0])).toEqual([
+      expect.stringMatching(/not in the input/),
+      expect.stringMatching(/without a citation/),
+      expect.stringMatching(/Numbers not found.*12\.5/),
+      expect.stringMatching(/Dates not found.*2023-10-01/),
+      expect.stringMatching(/Numbers not found.*2012/),
+    ]);
+  });
+});

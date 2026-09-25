@@ -334,6 +334,10 @@ CREATE TABLE IF NOT EXISTS finance_ai_usage (
   output_tokens INTEGER,
   est_cost_usd REAL,
   price_table_date TEXT,
+  subject TEXT,
+  evidence_version TEXT,
+  result_json TEXT,
+  error TEXT,
   created_at TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS finance_ai_usage_day_idx ON finance_ai_usage (day);

@@ -82,7 +82,11 @@ export function createFinance(options: FinanceOptions): FinanceModule {
       if (isWrite && !maintenance) assertSameOriginWrite(c);
       if (isWrite) {
         const declared = Number(request.headers.get("Content-Length") ?? "0");
-        if (declared > (route.bodyLimit ?? DEFAULT_BODY_LIMIT)) throw new HttpError(413, "PAYLOAD_TOO_LARGE", "Request body is too large.");
+        if (declared > (route.bodyLimit ?? DEFAULT_BODY_LIMIT)) {
+          // Tell the runtime the body will not be read, so the early 413 does not race the upload.
+          await request.body?.cancel().catch(() => undefined);
+          throw new HttpError(413, "PAYLOAD_TOO_LARGE", "Request body is too large.");
+        }
       }
       const res = await route.handler(c);
       return withHeadSupport(request, res);

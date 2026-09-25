@@ -11,6 +11,7 @@ import { signInHref, useSession } from "../app/session";
 import { useToast } from "../app/toast";
 import { Ev, useRegisterEvidence } from "../components/Evidence";
 import { Icon } from "../components/Icon";
+import { AiAssist } from "../components/AiAssist";
 import { Markdown } from "../components/Markdown";
 import { PageHead } from "../components/PageHead";
 import { QuestionCard } from "../components/Question";
@@ -145,6 +146,7 @@ export function SectorDetailPage({ slug }: { slug: string }) {
                     </li>
                   ))}
                 </ul>
+                <AiAssist subject={{ type: "sector", id: s.slug }} subjectTitle={s.name} ops={["summarize", "questions", "draft_note"]} compact />
               </div>
             </aside>
           </div>

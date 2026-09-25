@@ -95,8 +95,11 @@ describe("CSRF and CORS", () => {
     expect(r.headers.get("access-control-allow-origin")).toBeNull();
   });
   it("rejects oversize bodies and wrong content types", async () => {
-    const big = await api(h, "/api/finance/preferences", { method: "PATCH", as: "owner", body: { theme: "x".repeat(300_000) } });
+    // A route with a small body limit (4 KB) is used so the whole request fits in the socket buffer:
+    // with a multi-hundred-KB upload the server's (correct) early 413 can race the client's write (ECONNRESET).
+    const big = await api(h, "/api/finance/admin/jobs/run", { method: "POST", as: "owner", body: { jobs: ["cleanup"], pad: "x".repeat(6_000) } });
     expect(big.status).toBe(413);
+    expect(big.json).toMatchObject({ error: { code: "PAYLOAD_TOO_LARGE" } });
     const wrong = await api(h, "/api/finance/preferences", { method: "PATCH", as: "owner", body: { theme: "dark" }, headers: { "Content-Type": "text/plain" } });
     expect(wrong.status).toBe(415);
   });

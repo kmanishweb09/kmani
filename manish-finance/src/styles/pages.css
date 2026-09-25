@@ -461,3 +461,15 @@
   line-height: 1.35;
 }
 .mf-block { display: block; margin-top: 4px; }
+
+/* AI assist */
+.mf-ai.compact { margin-top: 8px; }
+.mf-ai-sections { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.mf-ai-section { line-height: 1.55; }
+.mf-ai-section .mf-tag { margin-right: 6px; vertical-align: 1px; }
+.mf-ai-held { border: 1px dashed var(--mf-border); border-radius: 6px; padding: 6px 10px; }
+.mf-ai-held summary { cursor: pointer; font-size: 13px; color: var(--mf-attention); }
+.mf-ai-held-reason { color: var(--mf-attention); margin-top: 2px; }
+.mf-ai-preview { max-height: 260px; overflow: auto; }
+.mf-fieldset { border: 1px solid var(--mf-border); border-radius: 6px; padding: 8px 10px; margin: 0; display: grid; gap: 4px; }
+.mf-fieldset legend { font-size: 12.5px; color: var(--mf-muted); padding: 0 4px; }

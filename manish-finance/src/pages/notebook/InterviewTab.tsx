@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { DealDetail, DealSummary, Page } from "../../../shared/api";
 import type { CompiledSector } from "../../../shared/archive/compile";
+import { INTERVIEW_PROMPTS as PROMPTS, INTERVIEW_RUBRIC as RUBRIC } from "../../../shared/interview";
 import { DEAL_STATUS_LABEL, SECTOR_NAMES, SECTOR_SLUGS } from "../../../shared/labels";
 import { apiSend, errorMessage, newIdempotencyKey } from "../../app/api";
 import { invalidate, useQuery } from "../../app/query";
 import { Link } from "../../app/router";
 import { useToast } from "../../app/toast";
+import { AiAssist, AiResultBody, type AiResultView } from "../../components/AiAssist";
 import { Ev, useRegisterEvidence } from "../../components/Evidence";
 import { Icon } from "../../components/Icon";
 import { useConfirm } from "../../components/Overlay";
@@ -13,23 +15,6 @@ import { EmptyState, Skeleton } from "../../components/ui";
 import { asReported, dateLabel, headlineText } from "../../lib/format";
 
 type SubjectKind = "deal" | "sector";
-
-const PROMPTS: Array<{ id: string; text: string; subject: SubjectKind; target: number }> = [
-  { id: "walk-deal", text: "Walk me through a deal you followed.", subject: "deal", target: 120 },
-  { id: "why-buyer", text: "Why this buyer and this target?", subject: "deal", target: 90 },
-  { id: "valued-financed", text: "How was it valued and financed?", subject: "deal", target: 90 },
-  { id: "argument-against", text: "What is the strongest argument against the transaction?", subject: "deal", target: 90 },
-  { id: "sector-update", text: "What is happening in a sector you follow?", subject: "sector", target: 120 },
-  { id: "metric-choice", text: "Which metric would you use here, and which would mislead you?", subject: "sector", target: 90 },
-];
-
-const RUBRIC = [
-  { id: "accuracy", label: "Factual accuracy", strong: "Names, dates, value and basis correct", weak: "Wrong or unsourced numbers" },
-  { id: "structure", label: "Structure", strong: "Clear order: situation → rationale → price → risk → view", weak: "Jumps around" },
-  { id: "evidence", label: "Evidence", strong: "Cites the filing/announcement and dates", weak: "Opinion without support" },
-  { id: "valuation", label: "Valuation understanding", strong: "Right basis (EV vs equity vs stake) and method for the sector", weak: "Mixes bases or uses the wrong multiple" },
-  { id: "risk", label: "Risk", strong: "Names a specific, testable risk and a falsifier", weak: "Generic 'integration risk'" },
-];
 
 interface AutopsyShape {
   asAnnounced?: { whatBuyerIsBuying?: string; risksAtAnnouncement?: string[]; falsifiers?: string[]; priceAndStructure?: string };
@@ -105,7 +90,7 @@ export function InterviewTab() {
   const sectorQ = useQuery<{ sector: CompiledSector; evidence: Record<string, never> }>(prompt.subject === "sector" ? `/api/finance/sectors/${sectorSlug}` : null);
   useRegisterEvidence(dealQ.data?.evidence);
   useRegisterEvidence(sectorQ.data?.evidence);
-  const history = useQuery<{ items: Array<{ id: string; promptId: string; subject: { type: string; id: string } | null; response: string; durationSec: number; selfRubric: Record<string, number>; reflection: string; createdAt: string }> }>("/api/finance/interview", { scope: "private" });
+  const history = useQuery<{ items: Array<{ id: string; promptId: string; subject: { type: string; id: string } | null; response: string; durationSec: number; selfRubric: Record<string, number>; reflection: string; aiFeedback: AiResultView | null; createdAt: string }> }>("/api/finance/interview", { scope: "private" });
 
   const timer = useTimer();
   const [response, setResponse] = useState("");
@@ -327,6 +312,14 @@ export function InterviewTab() {
                     </p>
                     {h.reflection ? <p className="mf-xsmall mf-muted">Reflection: {h.reflection}</p> : null}
                   </details>
+                  {h.aiFeedback ? (
+                    <details>
+                      <summary className="mf-xsmall">AI feedback (saved)</summary>
+                      <AiResultBody r={h.aiFeedback} />
+                    </details>
+                  ) : (
+                    <AiAssist subjectTitle="Interview attempt" attemptId={h.id} ops={["interview_feedback"]} compact />
+                  )}
                 </li>
               ))}
             </ul>

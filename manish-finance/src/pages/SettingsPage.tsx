@@ -2,12 +2,14 @@ import { useState } from "react";
 import { SECTOR_NAMES, SECTOR_SLUGS } from "../../shared/labels";
 import { apiSend, errorMessage, newIdempotencyKey } from "../app/api";
 import { usePrefs } from "../app/prefs";
-import { invalidate } from "../app/query";
+import { invalidate, useQuery } from "../app/query";
 import { signInHref, signOutHref, useSession } from "../app/session";
 import { useToast } from "../app/toast";
+import { useAiStatus } from "../components/AiAssist";
 import { Icon } from "../components/Icon";
 import { PageHead } from "../components/PageHead";
 import { SaveState, Segmented, SignInPrompt } from "../components/ui";
+import { formatTimestamp } from "../lib/format";
 
 interface PreviewRecord {
   key: string;
@@ -159,6 +161,54 @@ function ImportPanel() {
   );
 }
 
+function AiUsage() {
+  const ai = useAiStatus();
+  const hist = useQuery<{ items: Array<{ id: string; operation: string; status: string; inputTokens: number | null; outputTokens: number | null; estCostUsd: number | null; createdAt: string; error: string | null }> }>(ai?.enabled || ai?.requestsToday ? "/api/finance/ai/history" : null, { scope: "private" });
+  if (!ai) return null;
+  return (
+    <div className="mf-stack tight" style={{ marginTop: 6 }}>
+      {ai.enabled ? (
+        <span className="mf-small">
+          Model {ai.model} · today est. US${ai.spentTodayUsd.toFixed(4)} of US${ai.dailyBudgetUsd.toFixed(2)} · {ai.requestsToday}/{ai.dailyRequestCap} requests · {ai.costLabel} Prices dated {ai.priceDate}.
+        </span>
+      ) : null}
+      {hist.data?.items.length ? (
+        <details>
+          <summary className="mf-xsmall">Recent AI requests ({hist.data.items.length})</summary>
+          <table className="mf-table compact">
+            <thead>
+              <tr>
+                <th scope="col">When</th>
+                <th scope="col">Task</th>
+                <th scope="col">Outcome</th>
+                <th scope="col" className="num">
+                  Tokens in/out
+                </th>
+                <th scope="col" className="num">
+                  Est. US$
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {hist.data.items.slice(0, 20).map((x) => (
+                <tr key={x.id}>
+                  <td className="nowrap mf-xsmall">{formatTimestamp(x.createdAt)}</td>
+                  <td>{x.operation}</td>
+                  <td className="wrap mf-xsmall">{x.error ?? x.status}</td>
+                  <td className="num">
+                    {x.inputTokens ?? "—"}/{x.outputTokens ?? "—"}
+                  </td>
+                  <td className="num">{x.estCostUsd !== null ? x.estCostUsd.toFixed(4) : "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </details>
+      ) : null}
+    </div>
+  );
+}
+
 export function SettingsPage() {
   const { prefs, update, saveState, source } = usePrefs();
   const { status, isOwner, signedIn } = useSession();
@@ -283,7 +333,10 @@ export function SettingsPage() {
             <dt>Owner configured</dt>
             <dd>{status ? (status.viewer.ownerConfigured ? "Yes" : "No — private features fail closed until FINANCE_OWNER_USER_ID is set") : "…"}</dd>
             <dt>AI assistance</dt>
-            <dd>{status ? status.capabilities.ai.reason : "…"}</dd>
+            <dd>
+              {status ? status.capabilities.ai.reason : "…"}
+              {isOwner ? <AiUsage /> : null}
+            </dd>
             <dt>Background refresh</dt>
             <dd>{status ? (status.capabilities.maintenance.scheduler === "observed" ? "Scheduler observed" : status.capabilities.maintenance.scheduler === "stale" ? "Scheduler stale" : "Background schedule not configured") : "…"}</dd>
             <dt>Versions</dt>
