@@ -240,7 +240,7 @@ export function DeskPage() {
                 <EmptyState title="No recorded deal events" />
               ) : (
                 <div className="mf-table-wrap">
-                  <table className="mf-table">
+                  <table className="mf-table compact">
                     <caption className="mf-sr-only">Latest recorded announcements and status changes in the covered database</caption>
                     <thead>
                       <tr>

@@ -72,8 +72,9 @@ export const DEAL_COLUMNS: Column[] = [
           {d.target.name}
         </Link>
         <span className="mf-xsmall mf-muted" style={{ display: "block" }}>
-          {DEAL_TYPE_LABEL[d.dealType]}
-          {d.hasAutopsy ? " · Autopsy" : ""}
+          {DEAL_TYPE_LABEL[d.dealType]} · {countryName(d.target.country)}
+          {d.crossBorder ? " · cross-border" : ""}
+          {d.hasAutopsy ? " · autopsy" : ""}
         </span>
       </span>
     ),
@@ -158,7 +159,7 @@ export const DEAL_COLUMNS: Column[] = [
   { id: "updated", label: "Record updated", sort: "updated", optional: true, render: (d) => <span className="mf-mono nowrap">{d.lastChangedAt.slice(0, 10)}</span> },
 ];
 
-const DEFAULT_COLUMNS: ColumnId[] = ["announced", "acquirer", "target", "sector", "geography", "value", "stake", "status", "verification"];
+const DEFAULT_COLUMNS: ColumnId[] = ["announced", "target", "acquirer", "sector", "value", "stake", "status", "verification"];
 
 function useColumns(): [ColumnId[], (c: ColumnId[]) => void] {
   const [cols, setCols] = useState<ColumnId[]>(() => {
@@ -399,13 +400,13 @@ export function DealsPage() {
               <option value="no">Domestic only</option>
             </select>
             <label className="mf-small mf-muted" htmlFor="f-from">
-              From
+              Announced from
             </label>
-            <input id="f-from" type="date" className="mf-input" style={{ width: "auto", minHeight: 30, fontSize: 13 }} value={query.from ?? ""} onChange={(e) => update({ from: e.target.value || null })} />
+            <input id="f-from" type="date" className="mf-input" style={{ width: 150, minHeight: 30, fontSize: 13, padding: "4px 8px" }} value={query.from ?? ""} onChange={(e) => update({ from: e.target.value || null })} />
             <label className="mf-small mf-muted" htmlFor="f-to">
               to
             </label>
-            <input id="f-to" type="date" className="mf-input" style={{ width: "auto", minHeight: 30, fontSize: 13 }} value={query.to ?? ""} onChange={(e) => update({ to: e.target.value || null })} />
+            <input id="f-to" type="date" className="mf-input" style={{ width: 150, minHeight: 30, fontSize: 13, padding: "4px 8px" }} value={query.to ?? ""} onChange={(e) => update({ to: e.target.value || null })} />
             {activeFilterCount ? (
               <button type="button" className="mf-btn ghost small" onClick={() => navigate("/finance/deals", { replace: true, keepScroll: true })}>
                 <Icon name="close" size={14} /> Clear filters ({activeFilterCount})

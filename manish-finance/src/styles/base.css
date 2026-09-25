@@ -52,10 +52,7 @@ html[data-mf-theme] {
   border-radius: 4px;
 }
 
-.finance-root button,
-.finance-root input,
-.finance-root select,
-.finance-root textarea {
+.finance-root :where(button, input, select, textarea) {
   font: inherit;
   color: inherit;
 }
