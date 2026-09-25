@@ -237,6 +237,8 @@ export interface CompanyDetail extends CompanySummary {
   evidence: Record<string, ClaimView>;
   recordUpdated: string;
   history: RecordHistoryEntry[];
+  /** Numerical peer sets this company belongs to. */
+  peerSets: Array<{ id: string; name: string }>;
 }
 
 export interface FeedItemView {
@@ -313,4 +315,60 @@ export interface SearchHit {
   subtitle: string;
   href: string;
   score: number;
+}
+
+/** One sourced value in a peer set (company × metric × period end), with a unit-normalised copy. */
+export interface PeerCell {
+  companyId: string;
+  metric: string;
+  periodEnd: string;
+  value: number;
+  display: string;
+  unit: string;
+  currency: string | null;
+  scale: string | null;
+  scope: string;
+  basis: string;
+  /** Same-currency exact rescaling (e.g. ₹ billion → ₹ crore); never a currency conversion. */
+  normalized: { value: number; unitLabel: string } | null;
+  ev: string[];
+  observationId: string;
+  definition: string | null;
+}
+
+/** Calculated from two sourced cells with matching units and scope; null with a reason otherwise. */
+export interface PeerDerived {
+  companyId: string;
+  metric: "revenue_growth" | "net_income_growth" | "net_margin";
+  periodEnd: string;
+  value: number | null;
+  reason: string | null;
+  inputs: string[];
+}
+
+export interface PeerStat {
+  metric: string;
+  periodEnd: string;
+  n: number;
+  median: number | null;
+  unitLabel: string | null;
+  excluded: Array<{ companyId: string; reason: string }>;
+  note: string | null;
+}
+
+export interface PeerSetView {
+  id: string;
+  name: string;
+  description: string;
+  sector: string;
+  note: string | null;
+  preferredScope: string;
+  companies: Array<{ id: string; displayName: string; subsector: string; country: string }>;
+  metrics: Array<{ id: string; label: string }>;
+  periods: Array<{ end: string; label: string }>;
+  cells: PeerCell[];
+  derived: PeerDerived[];
+  stats: PeerStat[];
+  coverage: { filled: number; expected: number; missing: string[] };
+  evidence: Record<string, ClaimView>;
 }

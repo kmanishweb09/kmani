@@ -8,6 +8,7 @@ import { PEER_GROUP_LABEL, VALUE_BASIS_SHORT } from "../../../shared/labels";
 import { useQuery } from "../../app/query";
 import { Link } from "../../app/router";
 import { Ev, useRegisterEvidence } from "../../components/Evidence";
+import { PeerSetTable } from "../../components/PeerSetTable";
 import { ProvTag } from "../../components/ui";
 import { asReported, dateLabel, headlineText } from "../../lib/format";
 import { Formula, fmtNum, fmtPct, fmtX, IssueList, LabSection, NumField, ResultFigure } from "./fields";
@@ -130,6 +131,12 @@ export function ComparablesTab({ sc, dealId }: { sc: ScenarioApi<CompsAssumption
   return (
     <div className="mf-stack">
       {dealId ? <DealContext dealId={dealId} /> : null}
+      <LabSection title="Sourced peer set: Indian IT services" id="comps-peerset">
+        <p className="mf-hint">
+          Real companies with sourced revenue, operating margin, profit and headcount. The trading-comparables table below uses fictional training peers because trading multiples need dated market prices, which are not held; use this table to check that your training assumptions (growth, margins) are realistic.
+        </p>
+        <PeerSetTable setId="india-it-services" />
+      </LabSection>
       <LabSection
         title="Trading comparables"
         id="comps-peers"
@@ -461,7 +468,7 @@ function PrecedentTable({ deal, items }: { deal: DealDetail; items: DealSummary[
                         <span className="mf-num">{detail.value.toFixed(1)}×</span>
                         <Ev ids={detail.ev} label={`${p.title} ${MULT_LABEL[key]}`} />
                         <div className="mf-xsmall mf-muted">
-                          {detail.status === "reported" ? "Disclosed" : "Calculated from sourced inputs"}
+                          {detail.status === "reported" ? "Disclosed" : detail.status === "derived" ? "Third-party calculation" : "Calculated from sourced inputs"}
                           {detail.basis ? ` · ${detail.basis.periodType} ${detail.basis.periodLabel} · ${detail.basis.accountingBasis === "not_stated" ? "basis not stated" : detail.basis.accountingBasis}` : ""}
                         </div>
                       </>

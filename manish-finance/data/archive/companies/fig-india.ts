@@ -6,6 +6,33 @@ const FY26 = { type: "FY" as const, end: "2026-03-31", months: 12, label: "FY26 
 const Q4FY26 = { type: "Q" as const, end: "2026-03-31", months: 3, label: "Q4 FY26" };
 const BASIS = "Analysis written for Finance Desk from public disclosures listed in the evidence; not a statement by the company.";
 const pct = (metric: "gnpa_ratio" | "nnpa_ratio" | "crar" | "cet1_ratio" | "casa_ratio", value: number, cites: ReturnType<typeof ws>[], definition?: string) => ({ metric, value, unit: "percent" as const, period: MAR26, scope: "standalone" as const, basis: "regulatory" as const, definition: definition ?? null, cites });
+// Peer-set history (September 2026 follow-up): year-end ratios and annual profit for FY24 and FY25.
+const MAR24 = { type: "point" as const, end: "2024-03-31", months: 0, label: "31 Mar 2024" };
+const MAR25 = { type: "point" as const, end: "2025-03-31", months: 0, label: "31 Mar 2025" };
+const FY24 = { type: "FY" as const, end: "2024-03-31", months: 12, label: "FY24 (year to 31 Mar 2024)" };
+const FY25 = { type: "FY" as const, end: "2025-03-31", months: 12, label: "FY25 (year to 31 Mar 2025)" };
+type Ratio = "gnpa_ratio" | "nnpa_ratio" | "crar" | "cet1_ratio";
+const RATIO_DEF: Record<Ratio, string> = {
+  gnpa_ratio: "Gross NPAs as a percentage of gross advances.",
+  nnpa_ratio: "Net NPAs as a percentage of net advances.",
+  crar: "Total capital adequacy ratio (Basel III), as reported by the bank.",
+  cet1_ratio: "Common equity tier 1 ratio (Basel III), as reported by the bank.",
+};
+const ratioAt = (metric: Ratio, value: number, period: typeof MAR24, cites: ReturnType<typeof ws>[], note?: string) => ({ metric, value, unit: "percent" as const, period, scope: "standalone" as const, basis: "regulatory" as const, definition: note ? `${RATIO_DEF[metric]} ${note}` : RATIO_DEF[metric], cites });
+/** Annual profit after tax as reported; `scale` follows the source (crore or billion). */
+const profit = (value: number, period: typeof FY24, cites: ReturnType<typeof ws>[], opts: { scale?: "crore" | "billion"; scope?: "standalone" | "consolidated" | "not_stated"; definition?: string } = {}) => ({
+  metric: "net_income" as const,
+  label: "Net profit (profit after tax), full year",
+  value,
+  unit: "currency" as const,
+  currency: "INR",
+  scale: opts.scale ?? "crore",
+  period,
+  scope: opts.scope ?? "standalone",
+  basis: "reported" as const,
+  definition: opts.definition ?? null,
+  cites,
+});
 
 export const documents = [
   doc("hdfcbank-20f-fy2024", "HDFC Bank Limited (SEC Form 20-F)", "https://www.sec.gov/Archives/edgar/data/1144967/000119312524187406/d759422d20f.htm", "HDFC Bank Ltd annual report on Form 20-F for fiscal 2024", "regulatory_filing", true, "2024-07", "month"),
@@ -24,6 +51,29 @@ export const documents = [
   doc("bs-shriram-q4fy26-2026-05-01", "Business Standard", "https://www.business-standard.com/companies/quarterly-results/growth-profitability-gains-seen-ahead-for-shriram-finance-in-fy27-126050100852_1.html", "Growth, profitability gains seen ahead for Shriram Finance in FY27", "news_report", false, "2026-05-01"),
   doc("univest-shriram-q4fy26", "Univest", "https://univest.in/blogs/shriram-finance-q4-fy26-results-pat-3021-crore", "Shriram Finance Q4 FY26 results: PAT ₹3,021 crore, AUM ₹3.02 lakh crore", "news_report", false, "2026-04", "month"),
   doc("bs-bajajfinserv-q4fy26-2026-04-30", "Business Standard (Capital Market)", "https://www.business-standard.com/amp/markets/capital-market-news/bajaj-finserv-consolidated-net-profit-rises-5-05-in-the-march-2026-quarter-126043000826_1.html", "Bajaj Finserv consolidated net profit rises 5.05% in the March 2026 quarter", "news_report", false, "2026-04-30"),
+  // Peer-set history documents (identified from web-search results on 25 Sep 2026; not retrieved).
+  doc("hdfcbank-q4fy24-presentation", "HDFC Bank Limited", "https://www.hdfcbank.com/content/bbp/repositories/723fb80a-2dde-42a3-9793-7ae1be57c87f/?path=/Footer/About+Us/Investor+Relation/Detail+PAges/financial+results/PDFs/2024/20April/Q4FY24-Earnings-Presentation.pdf", "Q4FY24 Earnings Presentation", "investor_presentation", true, "2024-04-20"),
+  doc("hdfcbank-pr-fy26", "HDFC Bank Limited", "https://www.hdfc.bank.in/content/dam/hdfcbankpws/in/en/pdf/about-us/financial-results/2025-2026/quarter-4/press-release-march-2026.pdf", "News release: financial results for the quarter and year ended 31 March 2026", "press_release", true, "2026-04-18"),
+  doc("axis-q4fy24-pr", "Axis Bank Limited", "https://www.axisbank.com/docs/default-source/quarterly-results/press-release-q4fy24.pdf", "Axis Bank press release: results for the quarter and year ended 31 March 2024", "press_release", true, "2024-04-24"),
+  doc("axis-q4fy25-pr", "Axis Bank Limited", "https://www.axisbank.com/docs/default-source/quarterly-results/press-release-q4fy25.pdf", "Axis Bank announces financial results for the quarter and year ended 31 March 2025", "press_release", true, "2025-04-24"),
+  doc("bs-axis-q4fy25-2025-04-24", "Business Standard", "https://www.business-standard.com/amp/companies/quarterly-results/axis-bank-q4-results-net-profit-flat-at-rs-7-118-crore-nii-up-5-5-125042401287_1.html", "Axis Bank Q4 results: Net profit flat at Rs 7,118 crore, NII up 5.5%", "news_report", false, "2025-04-24"),
+  doc("whalesbook-axis-fy26", "Whalesbook", "https://www.whalesbook.com/corporate-news/English/bankingfinance/Axis-Bank-reports-FY26-net-profit-of-indian-rupee24457-crore-proposes-dividend/6a3cd9a87465030c38b820fc", "Axis Bank reports FY26 net profit of ₹24,457 crore; proposes dividend", "news_report", false, "2026-04", "month"),
+  doc("icici-q4fy24-review", "ICICI Bank Limited", "https://www.icicibank.com/about-us/news-room/2024/performance-review-quarter-ended-march-31-2024", "Performance Review: Quarter ended March 31, 2024", "press_release", true, "2024-04-27"),
+  doc("icici-q4fy25-review", "ICICI Bank Limited", "https://www.icici.bank.in/about-us/news-room/2025/performance-review-quarter-ended-march-31-2025", "Performance Review: Quarter ended March 31, 2025", "press_release", true, "2025-04-19"),
+  doc("bt-icici-q4fy25-2025-04-19", "Business Today", "https://www.businesstoday.in/amp/markets/company-stock/story/icici-bank-q4-profit-jumps-18-yoy-to-rs-12630-cr-fy25-pat-at-rs-47227-cr-472712-2025-04-19", "ICICI Bank Q4 profit jumps 18% YoY to Rs 12,630 cr; FY25 PAT at Rs 47,227 cr", "news_report", false, "2025-04-19"),
+  doc("yahoo-icici-q4fy26", "Yahoo Finance", "https://finance.yahoo.com/markets/stocks/articles/icici-bank-ltd-ibn-q4-070021563.html", "ICICI Bank Ltd (IBN) Q4 2026 Earnings Call Highlights", "news_report", false, "2026-04", "month"),
+  doc("kotak-q4fy25-pr", "Kotak Mahindra Bank Limited", "https://www.kotak.bank.in/content/dam/Kotak/investor-relation/Financial-Result/QuarterlyReport/FY-2025/q4/PressRelease/Q4FY25-Press-Release.pdf", "Kotak Mahindra Bank announces results (Q4FY25 media release)", "press_release", true, "2025-05-03"),
+  doc("bt-kotak-q4fy25-2025-05-03", "Business Today", "https://www.businesstoday.in/amp/latest/corporate/story/kotak-mahindra-bank-q4-results-standalone-profit-falls-14-yoy-to-rs-3552-crore-474611-2025-05-03", "Kotak Mahindra Bank Q4 Results: Standalone profit falls 14% YoY to Rs 3,552 crore", "news_report", false, "2025-05-03"),
+  doc("bs-sbi-q4fy24-2024-05-09", "Business Standard", "https://www.business-standard.com/markets/news/sbi-q4-results-profit-jumps-24-yoy-to-rs-20-698-crore-beats-estimates-124050900559_1.html", "SBI Q4 results: Profit up 24% YoY to Rs 20,698 cr; stock hits record high", "news_report", false, "2024-05-09"),
+  doc("sbi-q4fy25-pr", "State Bank of India", "https://sbi.bank.in/documents/17836/0/SBI+Press+Release+Q4FY25.pdf/bcdbd1ac-78a7-811a-ed03-7a41bd911e4d?t=1746264227407", "Press release: Q4FY25 results highlights", "press_release", true, "2025-05-03"),
+  doc("sbi-q4fy26-pr", "State Bank of India", "https://sbi.bank.in/documents/17836/53469043/SBI+Press+Release+Q4FY26.pdf/fd1600b0-e4d6-bbf6-3c42-f572a278ca8f?t=1778230012819", "Press release: Q4FY26 results", "press_release", true, "2026-05", "month"),
+  doc("federal-q4fy24-pr", "The Federal Bank Limited", "https://www.federal.bank.in/documents/10180/835736513/Press+Release+-+Q4+FY24+Results.pdf/39e1e3ad-5c14-056f-d868-1e8e117cc4ac?t=1714634623005", "Press release: Q4 FY24 results", "press_release", true, "2024-05", "month"),
+  doc("bt-federal-q4fy24-2024-05-02", "Business Today", "https://www.businesstoday.in/markets/company-stock/story/federal-bank-q4-results-profit-flat-at-rs-906-crore-dividend-announced-stock-up-2-427960-2024-05-02", "Federal Bank Q4 results: Profit flat at Rs 906 crore; dividend announced", "news_report", false, "2024-05-02"),
+  doc("federal-q4fy25-pr", "The Federal Bank Limited", "https://www.federal.bank.in/documents/10180/1124414626/Press+Release+-+Q4+FY25+Results+Federal+Bank.pdf/f6b24db1-6798-9872-094d-a4c232d70ca8?t=1746011668187", "Press release: Q4 FY25 results (₹5.18 lakh crore total business; annual net profit rises)", "press_release", true, "2025-04-30"),
+  doc("scanx-federal-fy26", "ScanX", "https://scanx.trade/stock-market-news/companies/federal-bank-reports-strong-q4-performance-with-revenue-growth-to-74-billion/38998032", "Federal Bank FY26 Results: Net Profit ₹4,117 Cr, Board Recommends 60% Dividend", "news_report", false, "2026-04", "month"),
+  doc("rbl-q4fy24-presentation", "RBL Bank Limited", "https://webassets.rbl.bank.in/ir_admin/pdfs/financial_highlights/Investor_Presentation_Q4_FY24.pdf", "Investor Presentation Q4 FY24", "investor_presentation", true, "2024-04-27"),
+  doc("bt-rbl-q4fy24-2024-04-27", "Business Today", "https://www.businesstoday.in/markets/company-stock/story/rbl-banks-net-profit-grows-at-30-in-q4-fy24-rs-150-dividend-declared-427198-2024-04-27", "RBL Bank's net profit grows at 30% in Q4 FY24, Rs 1.50 dividend declared", "news_report", false, "2024-04-27"),
+  doc("bs-rbl-q4fy25-2025-04-25", "Business Standard", "https://www.business-standard.com/amp/companies/quarterly-results/rbl-bank-s-q4-fy25-results-net-profit-declines-81-to-rs-69-crore-125042501294_1.html", "RBL Bank's Q4 FY25 results: Net profit declines 81% to Rs 69 crore", "news_report", false, "2025-04-25"),
   doc("scanx-bajajfinserv-fy26", "ScanX", "https://scanx.trade/stock-market-news/companies/bajaj-finserv-achieves-record-fy26-performance-with-1-50-530-crore-total-income/39091548", "Bajaj Finserv achieves record FY26 performance with ₹1,50,530 crore total income", "news_report", false, "2026-04", "month"),
 ];
 
@@ -70,6 +120,11 @@ export const companies: CompanyInput[] = [
       { metric: "crar", value: 19.7, unit: "percent", period: { type: "point", end: "2026-03-31", months: 0, label: "31 Mar 2026" }, scope: "standalone", basis: "regulatory", cites: [ws("hdfcbank-q4fy26-presentation")] },
       { metric: "cet1_ratio", value: 17.3, unit: "percent", period: { type: "point", end: "2026-03-31", months: 0, label: "31 Mar 2026" }, scope: "standalone", basis: "regulatory", cites: [ws("hdfcbank-q4fy26-presentation")] },
       { metric: "total_deposits", value: 31.05, unit: "currency", currency: "INR", scale: "trillion", period: { type: "point", end: "2026-03-31", months: 0, label: "31 Mar 2026" }, scope: "standalone", basis: "reported", definition: "End-of-period deposits; reported as ₹31.05 trillion (+14.4% year on year).", cites: [ws("hdfcbank-q4fy26-presentation"), ws("bs-hdfcbank-q4fy26-2026-04-18")] },
+      ratioAt("gnpa_ratio", 1.24, MAR24, [ws("hdfcbank-q4fy24-presentation")]),
+      ratioAt("nnpa_ratio", 0.33, MAR24, [ws("hdfcbank-q4fy24-presentation")]),
+      ratioAt("crar", 18.8, MAR24, [ws("hdfcbank-q4fy24-presentation")]),
+      profit(67347, FY25, [ws("hdfcbank-pr-fy26", "Prior-year comparison in the FY26 release")]),
+      profit(74671, FY26, [ws("hdfcbank-pr-fy26"), ws("bs-hdfcbank-q4fy26-2026-04-18")]),
     ],
     peers: [
       { companyId: "axis-bank", reason: "Large private bank competing for the same retail and corporate customers." },
@@ -136,6 +191,16 @@ export const companies: CompanyInput[] = [
       pct("crar", 16.42, [ws("axis-q4fy26-pr")], "Total capital adequacy ratio (Basel III)."),
       pct("cet1_ratio", 14.38, [ws("axis-q4fy26-pr")]),
       pct("casa_ratio", 40, [ws("axis-q4fy26-pr")], "Current and savings deposits as a share of total deposits (as described by the bank)."),
+      ratioAt("gnpa_ratio", 1.43, MAR24, [ws("axis-q4fy24-pr")]),
+      ratioAt("nnpa_ratio", 0.31, MAR24, [ws("axis-q4fy24-pr")]),
+      ratioAt("crar", 16.63, MAR24, [ws("axis-q4fy24-pr")]),
+      ratioAt("cet1_ratio", 13.74, MAR24, [ws("axis-q4fy24-pr")]),
+      ratioAt("gnpa_ratio", 1.28, MAR25, [ws("axis-q4fy25-pr")]),
+      ratioAt("nnpa_ratio", 0.33, MAR25, [ws("axis-q4fy25-pr")]),
+      ratioAt("crar", 17.07, MAR25, [ws("axis-q4fy25-pr")]),
+      ratioAt("cet1_ratio", 14.67, MAR25, [ws("axis-q4fy25-pr")]),
+      profit(26373.48, FY25, [ws("bs-axis-q4fy25-2025-04-24"), ws("whalesbook-axis-fy26", "Prior-year comparison")]),
+      profit(24456.66, FY26, [ws("whalesbook-axis-fy26"), ws("axis-q4fy26-pr")]),
     ],
     peers: [
       { companyId: "hdfc-bank", reason: "Larger private-sector peer." },
@@ -172,6 +237,17 @@ export const companies: CompanyInput[] = [
       pct("nnpa_ratio", 0.33, [ws("liquide-icici-q4fy26"), ws("icici-qfr")]),
       pct("crar", 17.18, [ws("liquide-icici-q4fy26")]),
       pct("cet1_ratio", 16.35, [ws("liquide-icici-q4fy26")]),
+      ratioAt("gnpa_ratio", 2.16, MAR24, [ws("icici-q4fy25-review", "Year-earlier comparison")]),
+      ratioAt("nnpa_ratio", 0.42, MAR24, [ws("icici-q4fy25-review", "Year-earlier comparison")]),
+      ratioAt("crar", 16.33, MAR24, [ws("icici-q4fy24-review")], "Standalone, after reckoning the proposed dividend."),
+      ratioAt("cet1_ratio", 15.6, MAR24, [ws("icici-q4fy24-review")], "Standalone, after reckoning the proposed dividend."),
+      ratioAt("gnpa_ratio", 1.67, MAR25, [ws("icici-q4fy25-review")]),
+      ratioAt("nnpa_ratio", 0.39, MAR25, [ws("icici-q4fy25-review")]),
+      ratioAt("crar", 16.55, MAR25, [ws("icici-q4fy25-review")], "Standalone, after reckoning the proposed dividend."),
+      ratioAt("cet1_ratio", 15.94, MAR25, [ws("icici-q4fy25-review")], "Standalone, after reckoning the proposed dividend."),
+      profit(40888, FY24, [ws("icici-q4fy24-review")]),
+      profit(47227, FY25, [ws("bt-icici-q4fy25-2025-04-19")]),
+      profit(501.47, FY26, [ws("yahoo-icici-q4fy26")], { scale: "billion", scope: "not_stated", definition: "Reported as ₹501.47 billion in the search-result text; scope not stated there." }),
     ],
     peers: [
       { companyId: "hdfc-bank", reason: "Largest private-sector peer." },
@@ -210,6 +286,14 @@ export const companies: CompanyInput[] = [
       pct("cet1_ratio", 21.3, [ws("kotak-q4fy26-pr")]),
       pct("casa_ratio", 43.3, [ws("kotak-q4fy26-pr")]),
       { metric: "total_deposits", value: 572456, unit: "currency", currency: "INR", scale: "crore", period: MAR26, scope: "standalone", basis: "reported", definition: "Period-end deposits.", cites: [ws("kotak-q4fy26-pr")] },
+      ratioAt("gnpa_ratio", 1.39, MAR24, [ws("bt-kotak-q4fy25-2025-05-03", "Year-earlier comparison")]),
+      ratioAt("nnpa_ratio", 0.34, MAR24, [ws("bt-kotak-q4fy25-2025-05-03", "Year-earlier comparison")]),
+      ratioAt("gnpa_ratio", 1.42, MAR25, [ws("kotak-q4fy25-pr"), ws("bt-kotak-q4fy25-2025-05-03")]),
+      ratioAt("nnpa_ratio", 0.31, MAR25, [ws("kotak-q4fy25-pr"), ws("bt-kotak-q4fy25-2025-05-03")]),
+      ratioAt("crar", 22.2, MAR25, [ws("bt-kotak-q4fy25-2025-05-03")]),
+      profit(13782, FY24, [ws("bt-kotak-q4fy25-2025-05-03", "Prior-year comparison")]),
+      profit(16450, FY25, [ws("bt-kotak-q4fy25-2025-05-03")], { definition: "Reported standalone profit. Kotak's FY26 release compares FY26 with ₹13,720 crore for FY25; the difference reflects a one-time item in FY25 (confirm in the FY25 release before comparing growth)." }),
+      profit(14008, FY26, [ws("kotak-q4fy26-pr")]),
     ],
     peers: [
       { companyId: "axis-bank", reason: "Private-sector peer." },
@@ -245,6 +329,17 @@ export const companies: CompanyInput[] = [
       pct("nnpa_ratio", 0.39, [ws("groww-sbi-q4fy26")]),
       pct("casa_ratio", 39.46, [ws("groww-sbi-q4fy26")]),
       { metric: "net_income", label: "Net profit", value: 19683.75, unit: "currency", currency: "INR", scale: "crore", period: Q4FY26, scope: "standalone", basis: "reported", cites: [ws("groww-sbi-q4fy26")] },
+      ratioAt("gnpa_ratio", 2.24, MAR24, [ws("bs-sbi-q4fy24-2024-05-09")]),
+      ratioAt("nnpa_ratio", 0.57, MAR24, [ws("bs-sbi-q4fy24-2024-05-09")]),
+      ratioAt("crar", 14.28, MAR24, [ws("bs-sbi-q4fy24-2024-05-09")]),
+      ratioAt("gnpa_ratio", 1.82, MAR25, [ws("sbi-q4fy25-pr")]),
+      ratioAt("nnpa_ratio", 0.47, MAR25, [ws("sbi-q4fy25-pr")]),
+      ratioAt("crar", 14.25, MAR25, [ws("sbi-q4fy25-pr")]),
+      ratioAt("crar", 15.4, { type: "point" as const, end: "2026-03-31", months: 0, label: "31 Mar 2026" }, [ws("sbi-q4fy26-pr")]),
+      ratioAt("cet1_ratio", 12.29, { type: "point" as const, end: "2026-03-31", months: 0, label: "31 Mar 2026" }, [ws("sbi-q4fy26-pr")]),
+      profit(61077, FY24, [ws("bs-sbi-q4fy24-2024-05-09")]),
+      profit(70901, FY25, [ws("sbi-q4fy25-pr")]),
+      profit(800.32, FY26, [ws("fintechbiznews-sbi-fy26")], { scale: "billion", definition: "Reported as Rs800.32 bn." }),
     ],
     peers: [
       { companyId: "icici-bank", reason: "Largest private-sector competitor." },
@@ -280,6 +375,14 @@ export const companies: CompanyInput[] = [
       pct("nnpa_ratio", 0.2, [ws("bs-federal-q4fy26-2026-04-29")]),
       pct("crar", 17.25, [ws("bs-federal-q4fy26-2026-04-29")]),
       { metric: "total_deposits", value: 313909, unit: "currency", currency: "INR", scale: "crore", period: MAR26, scope: "standalone", basis: "reported", cites: [ws("bs-federal-q4fy26-2026-04-29")] },
+      ratioAt("gnpa_ratio", 2.13, MAR24, [ws("federal-q4fy24-pr")]),
+      ratioAt("nnpa_ratio", 0.6, MAR24, [ws("federal-q4fy24-pr")]),
+      ratioAt("crar", 16.13, MAR24, [ws("federal-q4fy24-pr")]),
+      ratioAt("gnpa_ratio", 1.84, MAR25, [ws("federal-q4fy25-pr")]),
+      ratioAt("nnpa_ratio", 0.44, MAR25, [ws("federal-q4fy25-pr")]),
+      profit(3721, FY24, [ws("bt-federal-q4fy24-2024-05-02")]),
+      profit(4051.89, FY25, [ws("federal-q4fy25-pr")], { scope: "not_stated" }),
+      profit(4117.32, FY26, [ws("scanx-federal-fy26")], { scope: "not_stated" }),
     ],
     peers: [
       { companyId: "rbl-bank", reason: "Mid-sized private bank that also brought in a large foreign investor." },
@@ -318,6 +421,16 @@ export const companies: CompanyInput[] = [
       pct("casa_ratio", 33.6, [ws("rbl-q4fy26-pr")]),
       { metric: "total_deposits", value: 139018, unit: "currency", currency: "INR", scale: "crore", period: MAR26, scope: "standalone", basis: "reported", cites: [ws("rbl-q4fy26-pr")] },
       { metric: "net_advances", value: 114232, unit: "currency", currency: "INR", scale: "crore", period: MAR26, scope: "standalone", basis: "reported", cites: [ws("rbl-q4fy26-pr")] },
+      ratioAt("gnpa_ratio", 2.65, MAR24, [ws("bt-rbl-q4fy24-2024-04-27"), ws("rbl-q4fy24-presentation")]),
+      ratioAt("nnpa_ratio", 0.74, MAR24, [ws("bt-rbl-q4fy24-2024-04-27"), ws("rbl-q4fy24-presentation")]),
+      ratioAt("crar", 16.18, MAR24, [ws("rbl-q4fy24-presentation")]),
+      ratioAt("cet1_ratio", 14.38, MAR24, [ws("rbl-q4fy24-presentation")]),
+      ratioAt("gnpa_ratio", 2.6, MAR25, [ws("bs-rbl-q4fy25-2025-04-25")]),
+      ratioAt("nnpa_ratio", 0.29, MAR25, [ws("bs-rbl-q4fy25-2025-04-25")]),
+      ratioAt("crar", 17.38, MAR25, [ws("bs-rbl-q4fy25-2025-04-25")]),
+      profit(1168, FY24, [ws("bs-rbl-q4fy25-2025-04-25", "Prior-year comparison")]),
+      profit(695, FY25, [ws("bs-rbl-q4fy25-2025-04-25")]),
+      profit(822, FY26, [ws("rbl-q4fy26-pr")]),
     ],
     peers: [
       { companyId: "federal-bank", reason: "Mid-sized private bank with a foreign strategic investor." },

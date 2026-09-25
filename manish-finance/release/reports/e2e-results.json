@@ -88,12 +88,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2945,
+                  "duration": 2956,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-25T15:55:35.881Z",
+                  "startTime": "2026-09-25T18:30:50.758Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -104,6 +104,40 @@
           "id": "aa09586c1d16412a1f00-6a00ccce861c7d57b0c8",
           "file": "journeys.spec.ts",
           "line": 30,
+          "column": 1
+        },
+        {
+          "title": "As announced mode shows only what was known at the cutoff, including the drafted note (Disney–Fox regression)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2356,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-25T18:30:53.787Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "aa09586c1d16412a1f00-8ad4812c266c624fafbf",
+          "file": "journeys.spec.ts",
+          "line": 52,
           "column": 1
         },
         {
@@ -122,12 +156,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 4410,
+                  "duration": 4850,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-25T15:55:38.901Z",
+                  "startTime": "2026-09-25T18:30:56.155Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -137,7 +171,7 @@
           ],
           "id": "aa09586c1d16412a1f00-31086cc51e0618b4d5b6",
           "file": "journeys.spec.ts",
-          "line": 52,
+          "line": 81,
           "column": 1
         },
         {
@@ -156,12 +190,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 891,
+                  "duration": 994,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-25T15:55:43.322Z",
+                  "startTime": "2026-09-25T18:31:01.017Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -171,79 +205,11 @@
           ],
           "id": "aa09586c1d16412a1f00-ebcb981cd94814e88057",
           "file": "journeys.spec.ts",
-          "line": 73,
+          "line": 102,
           "column": 1
         },
         {
-          "title": "owner: follow a company, open its sector and save a research question",
-          "ok": true,
-          "tags": [],
-          "tests": [
-            {
-              "timeout": 60000,
-              "annotations": [],
-              "expectedStatus": "passed",
-              "projectId": "",
-              "projectName": "",
-              "results": [
-                {
-                  "workerIndex": 0,
-                  "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 2223,
-                  "errors": [],
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 0,
-                  "startTime": "2026-09-25T15:55:44.223Z",
-                  "annotations": [],
-                  "attachments": []
-                }
-              ],
-              "status": "expected"
-            }
-          ],
-          "id": "aa09586c1d16412a1f00-f6e6eb227406d1094a91",
-          "file": "journeys.spec.ts",
-          "line": 80,
-          "column": 1
-        },
-        {
-          "title": "Lab: load the training DCF, change WACC, see the sensitivity grid, save and reopen",
-          "ok": true,
-          "tags": [],
-          "tests": [
-            {
-              "timeout": 60000,
-              "annotations": [],
-              "expectedStatus": "passed",
-              "projectId": "",
-              "projectName": "",
-              "results": [
-                {
-                  "workerIndex": 0,
-                  "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 2849,
-                  "errors": [],
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 0,
-                  "startTime": "2026-09-25T15:55:46.455Z",
-                  "annotations": [],
-                  "attachments": []
-                }
-              ],
-              "status": "expected"
-            }
-          ],
-          "id": "aa09586c1d16412a1f00-d7ba8fd96e7ccffdd2c9",
-          "file": "journeys.spec.ts",
-          "line": 95,
-          "column": 1
-        },
-        {
-          "title": "Deal Memory: add cards, review one and see the next due date persist",
+          "title": "company peer comparison: sourced values by period, empty cells stay empty, evidence behind a value",
           "ok": true,
           "tags": [],
           "tests": [
@@ -263,7 +229,143 @@
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-25T15:55:49.312Z",
+                  "startTime": "2026-09-25T18:31:02.021Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "aa09586c1d16412a1f00-fda465a190b52c4acd3e",
+          "file": "journeys.spec.ts",
+          "line": 110,
+          "column": 1
+        },
+        {
+          "title": "owner: follow a company, open its sector and save a research question",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2322,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-25T18:31:03.976Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "aa09586c1d16412a1f00-f6e6eb227406d1094a91",
+          "file": "journeys.spec.ts",
+          "line": 130,
+          "column": 1
+        },
+        {
+          "title": "Lab rejects impossible inputs on the rendered path: 150% stake, negative consideration, zero-book residual income",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 846,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-25T18:31:06.308Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "aa09586c1d16412a1f00-b9e36b9462a0a2a66c14",
+          "file": "journeys.spec.ts",
+          "line": 145,
+          "column": 1
+        },
+        {
+          "title": "Lab: load the training DCF, change WACC, see the sensitivity grid, save and reopen",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2947,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-25T18:31:07.161Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "aa09586c1d16412a1f00-d7ba8fd96e7ccffdd2c9",
+          "file": "journeys.spec.ts",
+          "line": 170,
+          "column": 1
+        },
+        {
+          "title": "Deal Memory: add cards, review one and see the next due date persist",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2228,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-25T18:31:10.121Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -273,7 +375,75 @@
           ],
           "id": "aa09586c1d16412a1f00-e6772278616b7d83f18d",
           "file": "journeys.spec.ts",
-          "line": 115,
+          "line": 190,
+          "column": 1
+        },
+        {
+          "title": "owner research maintenance: draft an observation, preview, publish, see it sourced on the company page, then roll it back",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2826,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-25T18:31:12.357Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "aa09586c1d16412a1f00-6c617c5405883477a852",
+          "file": "journeys.spec.ts",
+          "line": 206,
+          "column": 1
+        },
+        {
+          "title": "owner: the evidence drawer offers a source check that opens a claim-verification draft",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1445,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-25T18:31:15.191Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "aa09586c1d16412a1f00-8137218ffd77e72100fc",
+          "file": "journeys.spec.ts",
+          "line": 243,
           "column": 1
         },
         {
@@ -292,12 +462,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 784,
+                  "duration": 771,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-25T15:55:51.263Z",
+                  "startTime": "2026-09-25T18:31:16.643Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -307,7 +477,7 @@
           ],
           "id": "aa09586c1d16412a1f00-6920ed2394dad689760e",
           "file": "journeys.spec.ts",
-          "line": 131,
+          "line": 253,
           "column": 1
         },
         {
@@ -326,12 +496,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1676,
+                  "duration": 1618,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-25T15:55:52.055Z",
+                  "startTime": "2026-09-25T18:31:17.423Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -341,7 +511,7 @@
           ],
           "id": "aa09586c1d16412a1f00-042436a97a88fd607870",
           "file": "journeys.spec.ts",
-          "line": 145,
+          "line": 267,
           "column": 1
         },
         {
@@ -360,12 +530,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1906,
+                  "duration": 1923,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-25T15:55:53.738Z",
+                  "startTime": "2026-09-25T18:31:19.049Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -375,7 +545,7 @@
           ],
           "id": "aa09586c1d16412a1f00-dffc9f37387c750b7850",
           "file": "journeys.spec.ts",
-          "line": 158,
+          "line": 280,
           "column": 1
         },
         {
@@ -394,12 +564,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 3095,
+                  "duration": 3096,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-25T15:55:55.653Z",
+                  "startTime": "2026-09-25T18:31:20.980Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -409,7 +579,7 @@
           ],
           "id": "aa09586c1d16412a1f00-806cebba3f0fa20a1d21",
           "file": "journeys.spec.ts",
-          "line": 173,
+          "line": 295,
           "column": 1
         }
       ]
@@ -436,12 +606,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1230,
+                  "duration": 1282,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-25T15:55:58.768Z",
+                  "startTime": "2026-09-25T18:31:24.092Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -451,7 +621,7 @@
           ],
           "id": "8324bb52c49185e48ff4-6cc2a7dcf859ff55c0f6",
           "file": "visual.spec.ts",
-          "line": 72,
+          "line": 91,
           "column": 28
         },
         {
@@ -470,12 +640,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1189,
+                  "duration": 1145,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-25T15:56:00.006Z",
+                  "startTime": "2026-09-25T18:31:25.383Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -485,7 +655,7 @@
           ],
           "id": "8324bb52c49185e48ff4-1601e858df9bff69436a",
           "file": "visual.spec.ts",
-          "line": 72,
+          "line": 91,
           "column": 28
         },
         {
@@ -504,12 +674,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1090,
+                  "duration": 1107,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-25T15:56:01.204Z",
+                  "startTime": "2026-09-25T18:31:26.538Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -519,7 +689,7 @@
           ],
           "id": "8324bb52c49185e48ff4-292d33f85756efb29e77",
           "file": "visual.spec.ts",
-          "line": 72,
+          "line": 91,
           "column": 28
         },
         {
@@ -538,12 +708,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1171,
+                  "duration": 1174,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-25T15:56:02.307Z",
+                  "startTime": "2026-09-25T18:31:27.653Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -553,7 +723,7 @@
           ],
           "id": "8324bb52c49185e48ff4-50fab6f193b24cecbb41",
           "file": "visual.spec.ts",
-          "line": 72,
+          "line": 91,
           "column": 28
         },
         {
@@ -572,12 +742,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1056,
+                  "duration": 1091,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-25T15:56:03.485Z",
+                  "startTime": "2026-09-25T18:31:28.834Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -587,7 +757,7 @@
           ],
           "id": "8324bb52c49185e48ff4-3d91866edee7d3265860",
           "file": "visual.spec.ts",
-          "line": 72,
+          "line": 91,
           "column": 28
         },
         {
@@ -606,12 +776,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1106,
+                  "duration": 1129,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-25T15:56:04.548Z",
+                  "startTime": "2026-09-25T18:31:29.937Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -621,7 +791,7 @@
           ],
           "id": "8324bb52c49185e48ff4-5ad00d40be4b2500bd1c",
           "file": "visual.spec.ts",
-          "line": 72,
+          "line": 91,
           "column": 28
         },
         {
@@ -640,12 +810,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1158,
+                  "duration": 1265,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-25T15:56:05.663Z",
+                  "startTime": "2026-09-25T18:31:31.076Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -655,7 +825,7 @@
           ],
           "id": "8324bb52c49185e48ff4-a2a43f89ea23786a7ab1",
           "file": "visual.spec.ts",
-          "line": 72,
+          "line": 91,
           "column": 28
         },
         {
@@ -674,12 +844,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1205,
+                  "duration": 1238,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-25T15:56:06.830Z",
+                  "startTime": "2026-09-25T18:31:32.349Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -689,7 +859,7 @@
           ],
           "id": "8324bb52c49185e48ff4-3ab54589265d3d4ce5e2",
           "file": "visual.spec.ts",
-          "line": 72,
+          "line": 91,
           "column": 28
         },
         {
@@ -708,12 +878,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1101,
+                  "duration": 1073,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-25T15:56:08.043Z",
+                  "startTime": "2026-09-25T18:31:33.595Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -723,7 +893,7 @@
           ],
           "id": "8324bb52c49185e48ff4-72e3102b1dfe6d31f2d7",
           "file": "visual.spec.ts",
-          "line": 72,
+          "line": 91,
           "column": 28
         },
         {
@@ -742,12 +912,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1071,
+                  "duration": 1075,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-25T15:56:09.152Z",
+                  "startTime": "2026-09-25T18:31:34.675Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -757,7 +927,7 @@
           ],
           "id": "8324bb52c49185e48ff4-57fbbf707a21989a8f41",
           "file": "visual.spec.ts",
-          "line": 72,
+          "line": 91,
           "column": 28
         },
         {
@@ -776,12 +946,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1123,
+                  "duration": 1075,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-25T15:56:10.233Z",
+                  "startTime": "2026-09-25T18:31:35.763Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -791,385 +961,79 @@
           ],
           "id": "8324bb52c49185e48ff4-17f8445f7a95e60559ed",
           "file": "visual.spec.ts",
-          "line": 72,
+          "line": 91,
+          "column": 28
+        },
+        {
+          "title": "desktop 1440 dark: research-maintenance",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1210,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-25T18:31:36.848Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8324bb52c49185e48ff4-f2333d28aa13758255ff",
+          "file": "visual.spec.ts",
+          "line": 91,
+          "column": 28
+        },
+        {
+          "title": "desktop 1440 dark: company-peer-set",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1197,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-25T18:31:38.069Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8324bb52c49185e48ff4-9ab8a5e9d0e7f56598a8",
+          "file": "visual.spec.ts",
+          "line": 91,
           "column": 28
         },
         {
           "title": "mobile 390 dark: desk",
-          "ok": true,
-          "tags": [],
-          "tests": [
-            {
-              "timeout": 60000,
-              "annotations": [],
-              "expectedStatus": "passed",
-              "projectId": "",
-              "projectName": "",
-              "results": [
-                {
-                  "workerIndex": 0,
-                  "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 1202,
-                  "errors": [],
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 0,
-                  "startTime": "2026-09-25T15:56:11.368Z",
-                  "annotations": [],
-                  "attachments": []
-                }
-              ],
-              "status": "expected"
-            }
-          ],
-          "id": "8324bb52c49185e48ff4-6a6442c0795faa373d51",
-          "file": "visual.spec.ts",
-          "line": 73,
-          "column": 27
-        },
-        {
-          "title": "mobile 390 dark: deals",
-          "ok": true,
-          "tags": [],
-          "tests": [
-            {
-              "timeout": 60000,
-              "annotations": [],
-              "expectedStatus": "passed",
-              "projectId": "",
-              "projectName": "",
-              "results": [
-                {
-                  "workerIndex": 0,
-                  "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 1191,
-                  "errors": [],
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 0,
-                  "startTime": "2026-09-25T15:56:12.579Z",
-                  "annotations": [],
-                  "attachments": []
-                }
-              ],
-              "status": "expected"
-            }
-          ],
-          "id": "8324bb52c49185e48ff4-a9e802bbf23daa1b31a7",
-          "file": "visual.spec.ts",
-          "line": 73,
-          "column": 27
-        },
-        {
-          "title": "mobile 390 dark: deal-detail",
-          "ok": true,
-          "tags": [],
-          "tests": [
-            {
-              "timeout": 60000,
-              "annotations": [],
-              "expectedStatus": "passed",
-              "projectId": "",
-              "projectName": "",
-              "results": [
-                {
-                  "workerIndex": 0,
-                  "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 1120,
-                  "errors": [],
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 0,
-                  "startTime": "2026-09-25T15:56:13.780Z",
-                  "annotations": [],
-                  "attachments": []
-                }
-              ],
-              "status": "expected"
-            }
-          ],
-          "id": "8324bb52c49185e48ff4-bfe54445e5a477e09b98",
-          "file": "visual.spec.ts",
-          "line": 73,
-          "column": 27
-        },
-        {
-          "title": "mobile 390 dark: lab-dcf",
-          "ok": true,
-          "tags": [],
-          "tests": [
-            {
-              "timeout": 60000,
-              "annotations": [],
-              "expectedStatus": "passed",
-              "projectId": "",
-              "projectName": "",
-              "results": [
-                {
-                  "workerIndex": 0,
-                  "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 1165,
-                  "errors": [],
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 0,
-                  "startTime": "2026-09-25T15:56:14.909Z",
-                  "annotations": [],
-                  "attachments": []
-                }
-              ],
-              "status": "expected"
-            }
-          ],
-          "id": "8324bb52c49185e48ff4-6efe71bbc8b0d05c23c8",
-          "file": "visual.spec.ts",
-          "line": 73,
-          "column": 27
-        },
-        {
-          "title": "desktop 1440 light: desk",
-          "ok": true,
-          "tags": [],
-          "tests": [
-            {
-              "timeout": 60000,
-              "annotations": [],
-              "expectedStatus": "passed",
-              "projectId": "",
-              "projectName": "",
-              "results": [
-                {
-                  "workerIndex": 0,
-                  "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 1266,
-                  "errors": [],
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 0,
-                  "startTime": "2026-09-25T15:56:16.085Z",
-                  "annotations": [],
-                  "attachments": []
-                }
-              ],
-              "status": "expected"
-            }
-          ],
-          "id": "8324bb52c49185e48ff4-5c61992710244c49da23",
-          "file": "visual.spec.ts",
-          "line": 72,
-          "column": 28
-        },
-        {
-          "title": "desktop 1440 light: deals",
-          "ok": true,
-          "tags": [],
-          "tests": [
-            {
-              "timeout": 60000,
-              "annotations": [],
-              "expectedStatus": "passed",
-              "projectId": "",
-              "projectName": "",
-              "results": [
-                {
-                  "workerIndex": 0,
-                  "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 1147,
-                  "errors": [],
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 0,
-                  "startTime": "2026-09-25T15:56:17.362Z",
-                  "annotations": [],
-                  "attachments": []
-                }
-              ],
-              "status": "expected"
-            }
-          ],
-          "id": "8324bb52c49185e48ff4-e3fef15e914c6c157e3c",
-          "file": "visual.spec.ts",
-          "line": 72,
-          "column": 28
-        },
-        {
-          "title": "desktop 1440 light: deal-detail",
-          "ok": true,
-          "tags": [],
-          "tests": [
-            {
-              "timeout": 60000,
-              "annotations": [],
-              "expectedStatus": "passed",
-              "projectId": "",
-              "projectName": "",
-              "results": [
-                {
-                  "workerIndex": 0,
-                  "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 1058,
-                  "errors": [],
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 0,
-                  "startTime": "2026-09-25T15:56:18.520Z",
-                  "annotations": [],
-                  "attachments": []
-                }
-              ],
-              "status": "expected"
-            }
-          ],
-          "id": "8324bb52c49185e48ff4-ab440f35b6fa0a4914cf",
-          "file": "visual.spec.ts",
-          "line": 72,
-          "column": 28
-        },
-        {
-          "title": "desktop 1440 light: deal-evidence-drawer",
-          "ok": true,
-          "tags": [],
-          "tests": [
-            {
-              "timeout": 60000,
-              "annotations": [],
-              "expectedStatus": "passed",
-              "projectId": "",
-              "projectName": "",
-              "results": [
-                {
-                  "workerIndex": 0,
-                  "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 1192,
-                  "errors": [],
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 0,
-                  "startTime": "2026-09-25T15:56:19.586Z",
-                  "annotations": [],
-                  "attachments": []
-                }
-              ],
-              "status": "expected"
-            }
-          ],
-          "id": "8324bb52c49185e48ff4-eebd03f2a1e32e3f1806",
-          "file": "visual.spec.ts",
-          "line": 72,
-          "column": 28
-        },
-        {
-          "title": "desktop 1440 light: sector-fig",
-          "ok": true,
-          "tags": [],
-          "tests": [
-            {
-              "timeout": 60000,
-              "annotations": [],
-              "expectedStatus": "passed",
-              "projectId": "",
-              "projectName": "",
-              "results": [
-                {
-                  "workerIndex": 0,
-                  "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 1074,
-                  "errors": [],
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 0,
-                  "startTime": "2026-09-25T15:56:20.789Z",
-                  "annotations": [],
-                  "attachments": []
-                }
-              ],
-              "status": "expected"
-            }
-          ],
-          "id": "8324bb52c49185e48ff4-5ebe624840426e5d07b9",
-          "file": "visual.spec.ts",
-          "line": 72,
-          "column": 28
-        },
-        {
-          "title": "desktop 1440 light: lab-dcf",
-          "ok": true,
-          "tags": [],
-          "tests": [
-            {
-              "timeout": 60000,
-              "annotations": [],
-              "expectedStatus": "passed",
-              "projectId": "",
-              "projectName": "",
-              "results": [
-                {
-                  "workerIndex": 0,
-                  "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 1099,
-                  "errors": [],
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 0,
-                  "startTime": "2026-09-25T15:56:21.871Z",
-                  "annotations": [],
-                  "attachments": []
-                }
-              ],
-              "status": "expected"
-            }
-          ],
-          "id": "8324bb52c49185e48ff4-5c229d7b958e91c48c7d",
-          "file": "visual.spec.ts",
-          "line": 72,
-          "column": 28
-        },
-        {
-          "title": "desktop 1440 light: lab-fig",
-          "ok": true,
-          "tags": [],
-          "tests": [
-            {
-              "timeout": 60000,
-              "annotations": [],
-              "expectedStatus": "passed",
-              "projectId": "",
-              "projectName": "",
-              "results": [
-                {
-                  "workerIndex": 0,
-                  "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 1216,
-                  "errors": [],
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 0,
-                  "startTime": "2026-09-25T15:56:22.979Z",
-                  "annotations": [],
-                  "attachments": []
-                }
-              ],
-              "status": "expected"
-            }
-          ],
-          "id": "8324bb52c49185e48ff4-e19c4e300ad290631ad5",
-          "file": "visual.spec.ts",
-          "line": 72,
-          "column": 28
-        },
-        {
-          "title": "desktop 1440 light: notebook-review",
           "ok": true,
           "tags": [],
           "tests": [
@@ -1189,7 +1053,7 @@
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-25T15:56:24.205Z",
+                  "startTime": "2026-09-25T18:31:39.275Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -1197,149 +1061,183 @@
               "status": "expected"
             }
           ],
-          "id": "8324bb52c49185e48ff4-f51c09b63aca37d3914e",
+          "id": "8324bb52c49185e48ff4-6a6442c0795faa373d51",
           "file": "visual.spec.ts",
-          "line": 72,
-          "column": 28
-        },
-        {
-          "title": "desktop 1440 light: notebook-learn",
-          "ok": true,
-          "tags": [],
-          "tests": [
-            {
-              "timeout": 60000,
-              "annotations": [],
-              "expectedStatus": "passed",
-              "projectId": "",
-              "projectName": "",
-              "results": [
-                {
-                  "workerIndex": 0,
-                  "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 1085,
-                  "errors": [],
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 0,
-                  "startTime": "2026-09-25T15:56:25.441Z",
-                  "annotations": [],
-                  "attachments": []
-                }
-              ],
-              "status": "expected"
-            }
-          ],
-          "id": "8324bb52c49185e48ff4-bcecf987c4c60a0e059a",
-          "file": "visual.spec.ts",
-          "line": 72,
-          "column": 28
-        },
-        {
-          "title": "desktop 1440 light: briefs",
-          "ok": true,
-          "tags": [],
-          "tests": [
-            {
-              "timeout": 60000,
-              "annotations": [],
-              "expectedStatus": "passed",
-              "projectId": "",
-              "projectName": "",
-              "results": [
-                {
-                  "workerIndex": 0,
-                  "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 1094,
-                  "errors": [],
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 0,
-                  "startTime": "2026-09-25T15:56:26.535Z",
-                  "annotations": [],
-                  "attachments": []
-                }
-              ],
-              "status": "expected"
-            }
-          ],
-          "id": "8324bb52c49185e48ff4-29ad9c57cb3354769d2a",
-          "file": "visual.spec.ts",
-          "line": 72,
-          "column": 28
-        },
-        {
-          "title": "desktop 1440 light: sources",
-          "ok": true,
-          "tags": [],
-          "tests": [
-            {
-              "timeout": 60000,
-              "annotations": [],
-              "expectedStatus": "passed",
-              "projectId": "",
-              "projectName": "",
-              "results": [
-                {
-                  "workerIndex": 0,
-                  "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 1112,
-                  "errors": [],
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 0,
-                  "startTime": "2026-09-25T15:56:27.638Z",
-                  "annotations": [],
-                  "attachments": []
-                }
-              ],
-              "status": "expected"
-            }
-          ],
-          "id": "8324bb52c49185e48ff4-c6375ff3facea03a0619",
-          "file": "visual.spec.ts",
-          "line": 72,
-          "column": 28
-        },
-        {
-          "title": "mobile 390 light: desk",
-          "ok": true,
-          "tags": [],
-          "tests": [
-            {
-              "timeout": 60000,
-              "annotations": [],
-              "expectedStatus": "passed",
-              "projectId": "",
-              "projectName": "",
-              "results": [
-                {
-                  "workerIndex": 0,
-                  "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 1241,
-                  "errors": [],
-                  "stdout": [],
-                  "stderr": [],
-                  "retry": 0,
-                  "startTime": "2026-09-25T15:56:28.757Z",
-                  "annotations": [],
-                  "attachments": []
-                }
-              ],
-              "status": "expected"
-            }
-          ],
-          "id": "8324bb52c49185e48ff4-d01f52bcc72ace4fc1d6",
-          "file": "visual.spec.ts",
-          "line": 73,
+          "line": 92,
           "column": 27
         },
         {
-          "title": "mobile 390 light: deals",
+          "title": "mobile 390 dark: deals",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1093,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-25T18:31:40.501Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8324bb52c49185e48ff4-a9e802bbf23daa1b31a7",
+          "file": "visual.spec.ts",
+          "line": 92,
+          "column": 27
+        },
+        {
+          "title": "mobile 390 dark: deal-detail",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1044,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-25T18:31:41.601Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8324bb52c49185e48ff4-bfe54445e5a477e09b98",
+          "file": "visual.spec.ts",
+          "line": 92,
+          "column": 27
+        },
+        {
+          "title": "mobile 390 dark: lab-dcf",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1090,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-25T18:31:42.654Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8324bb52c49185e48ff4-6efe71bbc8b0d05c23c8",
+          "file": "visual.spec.ts",
+          "line": 92,
+          "column": 27
+        },
+        {
+          "title": "mobile 390 dark: company-peer-set",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1119,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-25T18:31:43.752Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8324bb52c49185e48ff4-e16ce9de2d394598f745",
+          "file": "visual.spec.ts",
+          "line": 92,
+          "column": 27
+        },
+        {
+          "title": "desktop 1440 light: desk",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1261,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-25T18:31:44.879Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8324bb52c49185e48ff4-5c61992710244c49da23",
+          "file": "visual.spec.ts",
+          "line": 91,
+          "column": 28
+        },
+        {
+          "title": "desktop 1440 light: deals",
           "ok": true,
           "tags": [],
           "tests": [
@@ -1359,7 +1257,449 @@
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-25T15:56:30.008Z",
+                  "startTime": "2026-09-25T18:31:46.147Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8324bb52c49185e48ff4-e3fef15e914c6c157e3c",
+          "file": "visual.spec.ts",
+          "line": 91,
+          "column": 28
+        },
+        {
+          "title": "desktop 1440 light: deal-detail",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1094,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-25T18:31:47.282Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8324bb52c49185e48ff4-ab440f35b6fa0a4914cf",
+          "file": "visual.spec.ts",
+          "line": 91,
+          "column": 28
+        },
+        {
+          "title": "desktop 1440 light: deal-evidence-drawer",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1161,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-25T18:31:48.391Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8324bb52c49185e48ff4-eebd03f2a1e32e3f1806",
+          "file": "visual.spec.ts",
+          "line": 91,
+          "column": 28
+        },
+        {
+          "title": "desktop 1440 light: sector-fig",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1053,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-25T18:31:49.560Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8324bb52c49185e48ff4-5ebe624840426e5d07b9",
+          "file": "visual.spec.ts",
+          "line": 91,
+          "column": 28
+        },
+        {
+          "title": "desktop 1440 light: lab-dcf",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1114,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-25T18:31:50.621Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8324bb52c49185e48ff4-5c229d7b958e91c48c7d",
+          "file": "visual.spec.ts",
+          "line": 91,
+          "column": 28
+        },
+        {
+          "title": "desktop 1440 light: lab-fig",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1172,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-25T18:31:51.743Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8324bb52c49185e48ff4-e19c4e300ad290631ad5",
+          "file": "visual.spec.ts",
+          "line": 91,
+          "column": 28
+        },
+        {
+          "title": "desktop 1440 light: notebook-review",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1176,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-25T18:31:52.923Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8324bb52c49185e48ff4-f51c09b63aca37d3914e",
+          "file": "visual.spec.ts",
+          "line": 91,
+          "column": 28
+        },
+        {
+          "title": "desktop 1440 light: notebook-learn",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1056,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-25T18:31:54.107Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8324bb52c49185e48ff4-bcecf987c4c60a0e059a",
+          "file": "visual.spec.ts",
+          "line": 91,
+          "column": 28
+        },
+        {
+          "title": "desktop 1440 light: briefs",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1078,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-25T18:31:55.171Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8324bb52c49185e48ff4-29ad9c57cb3354769d2a",
+          "file": "visual.spec.ts",
+          "line": 91,
+          "column": 28
+        },
+        {
+          "title": "desktop 1440 light: sources",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1097,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-25T18:31:56.258Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8324bb52c49185e48ff4-c6375ff3facea03a0619",
+          "file": "visual.spec.ts",
+          "line": 91,
+          "column": 28
+        },
+        {
+          "title": "desktop 1440 light: research-maintenance",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1232,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-25T18:31:57.367Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8324bb52c49185e48ff4-f45395a128fcfac8dd1a",
+          "file": "visual.spec.ts",
+          "line": 91,
+          "column": 28
+        },
+        {
+          "title": "desktop 1440 light: company-peer-set",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1181,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-25T18:31:58.606Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8324bb52c49185e48ff4-737c41420cf5b5878cb3",
+          "file": "visual.spec.ts",
+          "line": 91,
+          "column": 28
+        },
+        {
+          "title": "mobile 390 light: desk",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1177,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-25T18:31:59.794Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8324bb52c49185e48ff4-d01f52bcc72ace4fc1d6",
+          "file": "visual.spec.ts",
+          "line": 92,
+          "column": 27
+        },
+        {
+          "title": "mobile 390 light: deals",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1105,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-25T18:32:00.979Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -1369,7 +1709,7 @@
           ],
           "id": "8324bb52c49185e48ff4-65758da036e5ecd74a50",
           "file": "visual.spec.ts",
-          "line": 73,
+          "line": 92,
           "column": 27
         },
         {
@@ -1388,12 +1728,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1065,
+                  "duration": 1070,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-25T15:56:31.143Z",
+                  "startTime": "2026-09-25T18:32:02.091Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -1403,7 +1743,7 @@
           ],
           "id": "8324bb52c49185e48ff4-51dd4f6b0bdbc2b866f5",
           "file": "visual.spec.ts",
-          "line": 73,
+          "line": 92,
           "column": 27
         },
         {
@@ -1422,12 +1762,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1061,
+                  "duration": 1078,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-25T15:56:32.217Z",
+                  "startTime": "2026-09-25T18:32:03.170Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -1437,7 +1777,41 @@
           ],
           "id": "8324bb52c49185e48ff4-bfd0ba857a2100491aaa",
           "file": "visual.spec.ts",
-          "line": 73,
+          "line": 92,
+          "column": 27
+        },
+        {
+          "title": "mobile 390 light: company-peer-set",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1164,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-25T18:32:04.256Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8324bb52c49185e48ff4-331952a546f60775b837",
+          "file": "visual.spec.ts",
+          "line": 92,
           "column": 27
         },
         {
@@ -1456,12 +1830,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1148,
+                  "duration": 1103,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-25T15:56:33.285Z",
+                  "startTime": "2026-09-25T18:32:05.427Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -1471,7 +1845,7 @@
           ],
           "id": "8324bb52c49185e48ff4-11ce81bc65a2be819784",
           "file": "visual.spec.ts",
-          "line": 75,
+          "line": 94,
           "column": 53
         },
         {
@@ -1490,12 +1864,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1110,
+                  "duration": 1077,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-25T15:56:34.442Z",
+                  "startTime": "2026-09-25T18:32:06.537Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -1505,7 +1879,7 @@
           ],
           "id": "8324bb52c49185e48ff4-f1205216dabb93725e26",
           "file": "visual.spec.ts",
-          "line": 75,
+          "line": 94,
           "column": 53
         },
         {
@@ -1524,12 +1898,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1290,
+                  "duration": 1298,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-25T15:56:35.559Z",
+                  "startTime": "2026-09-25T18:32:07.623Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -1539,7 +1913,7 @@
           ],
           "id": "8324bb52c49185e48ff4-9e47d8a93c1864ea6bd8",
           "file": "visual.spec.ts",
-          "line": 76,
+          "line": 95,
           "column": 53
         },
         {
@@ -1558,12 +1932,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 1191,
+                  "duration": 1197,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-25T15:56:36.864Z",
+                  "startTime": "2026-09-25T18:32:08.938Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -1573,7 +1947,7 @@
           ],
           "id": "8324bb52c49185e48ff4-6d633af7d72b6ca792ba",
           "file": "visual.spec.ts",
-          "line": 76,
+          "line": 95,
           "column": 53
         }
       ]
@@ -1581,9 +1955,9 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-09-25T15:55:33.138Z",
-    "duration": 65034.100000000006,
-    "expected": 44,
+    "startTime": "2026-09-25T18:30:47.915Z",
+    "duration": 82328.83099999999,
+    "expected": 55,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0

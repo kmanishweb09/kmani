@@ -1,4 +1,5 @@
-import type { CompanyDetail, DealSummary, Page, SearchHit } from "../../shared/api";
+import type { CompanyDetail, DealSummary, Page, PeerSetView, SearchHit } from "../../shared/api";
+import { buildPeerMatrix } from "../../shared/peers";
 import { compareDeals } from "../../shared/compare";
 import { dealQueryToParams, filtersOnly, matchesFilters, normalizeSearchText, parseDealQuery, sortDeals } from "../../shared/dealQuery";
 import { APAC_COUNTRIES } from "../../shared/geo";
@@ -309,6 +310,7 @@ export function registerPublicRoutes(r: Router): void {
         evidence: evidenceMap(view, evIds),
         recordUpdated: co.recordUpdated,
         history: publicHistory(view, `company:${id}`),
+        peerSets: archive.peerSets.filter((ps) => ps.companyIds.includes(id)).map((ps) => ({ id: ps.id, name: ps.name })),
       };
       return publicJson(c.request, detail, { etagSeed: view.version });
     },
@@ -457,6 +459,32 @@ export function registerPublicRoutes(r: Router): void {
         },
         { etagSeed: view.version },
       );
+    },
+  });
+
+  r.add({
+    method: "GET",
+    pattern: "/api/finance/peer-sets",
+    access: "public",
+    handler: async (c) => {
+      const view = await getResearch(c.db);
+      return publicJson(c.request, { items: archive.peerSets.map((ps) => ({ id: ps.id, name: ps.name, sector: ps.sector, companyIds: ps.companyIds, metrics: ps.metrics, periods: ps.periods })) }, { etagSeed: view.version });
+    },
+  });
+
+  r.add({
+    method: "GET",
+    pattern: "/api/finance/peer-sets/:id",
+    access: "public",
+    handler: async (c) => {
+      const id = checkId(c.params.id, "Peer set");
+      const set = archive.peerSets.find((ps) => ps.id === id);
+      if (!set) throw new HttpError(404, "NOT_FOUND", "Peer set not found.");
+      const view = await getResearch(c.db);
+      // Built from the current research view, so owner-published observations appear once published.
+      const matrix = buildPeerMatrix(set, view.companyById);
+      const body: PeerSetView = { ...matrix, evidence: evidenceMap(view, matrix.cells.flatMap((x) => x.ev)) };
+      return publicJson(c.request, body, { etagSeed: view.version });
     },
   });
 

@@ -31,12 +31,31 @@ const DESKTOP: Shot[] = [
   { name: "notebook-learn", path: "/finance/notebook?tab=learn" },
   { name: "briefs", path: "/finance/briefs" },
   { name: "sources", path: "/finance/sources" },
+  { name: "research-maintenance", path: "/finance/research", owner: true },
+  {
+    name: "company-peer-set",
+    path: "/finance/companies/infosys",
+    action: async (page) => {
+      const table = page.getByRole("region", { name: /Peer comparison/ }).getByRole("table");
+      await table.scrollIntoViewIfNeeded();
+      await expect(table).toBeVisible();
+    },
+  },
 ];
 const MOBILE: Shot[] = [
   { name: "desk", path: "/finance", owner: true },
   { name: "deals", path: "/finance/deals" },
   { name: "deal-detail", path: "/finance/deals/hdfc-hdfc-bank-merger" },
   { name: "lab-dcf", path: "/finance/lab?tab=dcf" },
+  {
+    name: "company-peer-set",
+    path: "/finance/companies/infosys",
+    action: async (page) => {
+      const table = page.getByRole("region", { name: /Peer comparison/ }).getByRole("table");
+      await table.scrollIntoViewIfNeeded();
+      await expect(table).toBeVisible();
+    },
+  },
 ];
 
 async function capture(page: Page, s: Shot, width: number, height: number, theme: "dark" | "light") {

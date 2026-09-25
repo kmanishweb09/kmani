@@ -7,6 +7,7 @@ import { Link } from "../../app/router";
 import { Ev, useRegisterEvidence } from "../../components/Evidence";
 import { ErrorState, ProvTag, Segmented, TableSkeleton } from "../../components/ui";
 import { ScatterChart } from "./charts";
+import { PeerSetTable } from "../../components/PeerSetTable";
 import { Formula, fmtNum, fmtPct, fmtX, IssueList, LabSection, NumField, ResultFigure } from "./fields";
 import type { ScenarioApi } from "./useScenarios";
 
@@ -232,6 +233,11 @@ export function FigTab({ sc }: { sc: ScenarioApi<FigAssumptions> }) {
           </LabSection>
         </div>
       </div>
+
+      <LabSection title="Indian bank peer set: FY24–FY26 history (sourced)" id="fig-peerset">
+        <p className="mf-hint">Seven real banks compared at each fiscal year end. Use it to anchor the fictional training bank above: its ROE, asset quality and capital should be read against these ranges.</p>
+        <PeerSetTable setId="india-banks" />
+      </LabSection>
 
       <LabSection title="Indian bank peers: reported asset quality and capital" id="fig-peers">
         {peers.loading && !peers.data ? (

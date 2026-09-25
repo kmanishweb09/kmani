@@ -107,6 +107,26 @@ test("compare two deals: incompatible metrics are excluded with reasons", async 
   await checkA11y(page, "compare");
 });
 
+test("company peer comparison: sourced values by period, empty cells stay empty, evidence behind a value", async ({ page }) => {
+  await page.goto("/finance/companies/axis-bank");
+  const section = page.getByRole("region", { name: "Peer comparison: Indian banks" });
+  await expect(section).toBeVisible();
+  const own = section.locator("tbody tr[aria-current='true']");
+  await expect(own).toContainText("Axis Bank");
+  await expect(section.getByRole("radio", { name: "FY26" })).toHaveAttribute("aria-checked", "true");
+  await section.getByRole("radio", { name: "FY25" }).click();
+  await expect(own).toContainText("1.28%");
+  await expect(section.getByText(/values sourced for FY25/)).toBeVisible();
+  // A bank with no sourced FY25 capital ratio shows a dash, not a zero.
+  await expect(section.locator("td[title='No sourced value for this period']").first()).toHaveText("—");
+  await checkA11y(page, "company-peer-set");
+  await section.getByRole("button", { name: /Show evidence for Axis Bank Gross NPA ratio FY25/ }).click();
+  const drawer = page.getByRole("dialog", { name: /Evidence: Axis Bank Gross NPA ratio FY25/ });
+  await expect(drawer).toBeVisible();
+  await expect(drawer.getByRole("link").first()).toHaveAttribute("href", /^https:\/\//);
+  await page.keyboard.press("Escape");
+});
+
 test("owner: follow a company, open its sector and save a research question", async ({ page }) => {
   await signIn(page, "owner", "/finance/companies/hdfc-bank");
   const follow = page.getByRole("button", { name: /Follow/ }).first();

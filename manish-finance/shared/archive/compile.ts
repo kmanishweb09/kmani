@@ -11,6 +11,7 @@ import type {
   Observation,
   GlossaryTerm,
   LearningModule,
+  PeerSet,
   Question,
   Sector,
   SourceDocument,
@@ -104,6 +105,7 @@ export interface CompiledArchive {
   questions: Question[];
   briefs: CompiledBrief[];
   training: TrainingModel[];
+  peerSets: PeerSet[];
 }
 
 export interface ArchiveSource {
@@ -117,6 +119,7 @@ export interface ArchiveSource {
   questions: Question[];
   briefs: Brief[];
   training: TrainingModel[];
+  peerSets: PeerSet[];
 }
 
 const METRIC_LABEL: Record<string, string> = {
@@ -355,6 +358,7 @@ const OBS_LABEL: Record<string, string> = {
   total_income: "Total income",
   ebitda: "EBITDA",
   ebit: "EBIT",
+  ebit_margin: "EBIT margin",
   net_income: "Net income",
   pat_attributable: "PAT attributable to owners",
   total_assets: "Total assets",
@@ -467,7 +471,9 @@ export function compileArchive(src: ArchiveSource): CompiledArchive {
   const sectors = src.sectors.map((s) => compileSector(s, col));
   const briefs = src.briefs.map((b) => compileBrief(b, col));
   resolveReferences(deals, companies, sectors);
-  const body = { documents, claims: col.claims, deals, companies, sectors, glossary: src.glossary, modules: src.modules, questions: src.questions, briefs, training: src.training };
+  const companyIds = new Set(companies.map((c) => c.id));
+  const peerSets = src.peerSets.map((p) => ({ ...p, companyIds: p.companyIds.filter((id) => companyIds.has(id)) }));
+  const body = { documents, claims: col.claims, deals, companies, sectors, glossary: src.glossary, modules: src.modules, questions: src.questions, briefs, training: src.training, peerSets };
   const version = `archive-${src.cutoff}-${shortHash(stableStringify(body), 10)}`;
   return { format: "manish-finance-archive", version, cutoff: src.cutoff, ...body };
 }
@@ -519,6 +525,7 @@ export function findUnresolvedReferences(src: ArchiveSource): UnresolvedReferenc
     d.otherParties.forEach((p, i) => party(`deal:${d.id}`, `otherParties.${i}`, p.companyId));
     for (const c of d.comparables) if (!dealIds.has(c.dealId)) out.push({ from: `deal:${d.id}`, field: "comparables", ref: c.dealId });
   }
+  for (const ps of src.peerSets ?? []) for (const id of ps.companyIds) if (!companyIds.has(id)) out.push({ from: `peerSet:${ps.id}`, field: "companyIds", ref: id });
   for (const c of src.companies) {
     for (const p of c.peers) if (!companyIds.has(p.companyId)) out.push({ from: `company:${c.id}`, field: "peers", ref: p.companyId });
     party(`company:${c.id}`, "lifecycle.successorId", c.lifecycle.successorId);

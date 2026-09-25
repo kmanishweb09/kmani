@@ -5,7 +5,7 @@
  */
 import { loadArchiveSource } from "../../data/archive/index";
 import { type ArchiveSource, compileArchive } from "../../shared/archive/compile";
-import { zBrief, zCompany, zDeal, zGlossaryTerm, zModule, zQuestion, zSector, zSourceDocument, zTrainingModel } from "../../shared/schemas/research";
+import { zBrief, zCompany, zDeal, zGlossaryTerm, zModule, zPeerSet, zQuestion, zSector, zSourceDocument, zTrainingModel } from "../../shared/schemas/research";
 import type { ZodType } from "zod";
 
 export interface ValidationIssue {
@@ -44,6 +44,7 @@ export function buildArchive() {
     questions: validateAll("questions", src.questions, zQuestion, idOf, issues),
     briefs: validateAll("briefs", src.briefs, zBrief, idOf, issues),
     training: validateAll("training", src.training, zTrainingModel, idOf, issues),
+    peerSets: validateAll("peerSets", src.peerSets, zPeerSet, idOf, issues),
   };
   let compiled = null;
   let compileError: string | null = null;

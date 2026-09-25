@@ -1,5 +1,5 @@
 import type { ArchiveSource } from "../../shared/archive/compile";
-import type { Brief, Company, Deal, GlossaryTerm, LearningModule, Question, Sector, SourceDocument, TrainingModel } from "../../shared/schemas/research";
+import type { Brief, Company, Deal, GlossaryTerm, LearningModule, PeerSet, Question, Sector, SourceDocument, TrainingModel } from "../../shared/schemas/research";
 import * as figIndia from "./companies/fig-india";
 import * as globalCompanies from "./companies/global";
 import * as indiaCompanies from "./companies/india";
@@ -14,6 +14,7 @@ import * as indiaFig from "./deals/india-fig";
 import { glossary } from "./learning/glossary";
 import { modules } from "./learning/modules";
 import { questions } from "./learning/questions";
+import { peerSets } from "./peerSets";
 import * as sectorDocs from "./sectors/docs";
 import { fig } from "./sectors/fig";
 import { PRIMERS } from "./sectors/primers";
@@ -57,5 +58,6 @@ export function loadArchiveSource(): ArchiveSource {
     questions: questions as Question[],
     briefs: briefModule.briefs as Brief[],
     training: trainingModels as TrainingModel[],
+    peerSets: peerSets as PeerSet[],
   };
 }

@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-09-25T15:55:18.415Z",
+  "checkedAt": "2026-09-25T18:32:21.749Z",
   "buildDate": "2026-09-25",
   "checks": [
     {
@@ -87,7 +87,7 @@
       "id": "companies",
       "label": "Company dossiers (≥ 24 India-based, all eight sectors represented)",
       "target": "48 / 24 / 8",
-      "actual": "55 / 28 / 8",
+      "actual": "80 / 36 / 8",
       "ok": true,
       "severity": "error"
     },
@@ -189,26 +189,10 @@
       "id": "references",
       "label": "Cross-references resolve (unresolved ones are dropped at compile time, not shown as links)",
       "target": "0 unresolved",
-      "actual": "15 unresolved",
+      "actual": "0 unresolved",
       "ok": true,
       "severity": "warning",
-      "detail": [
-        "deal:lti-mindtree-merger target → mindtree",
-        "deal:adani-ambuja-acc acquirer → adani-group",
-        "deal:adani-ambuja-acc otherParties.0 → holcim",
-        "deal:adani-ambuja-acc otherParties.1 → acc",
-        "deal:zomato-blinkit target → blinkit",
-        "deal:zee-sony-merger acquirer → sony-group",
-        "deal:temasek-manipal-health acquirer → temasek",
-        "deal:sun-pharma-taro target → taro",
-        "deal:tata-motors-iveco target → iveco",
-        "deal:torrent-jb-chemicals otherParties.0 → kkr",
-        "deal:jsw-energy-o2-power otherParties.1 → temasek",
-        "deal:microsoft-activision target → activision-blizzard",
-        "deal:broadcom-vmware target → vmware",
-        "deal:pfizer-seagen target → seagen",
-        "deal:exxonmobil-pioneer target → pioneer-natural-resources"
-      ]
+      "detail": []
     },
     {
       "id": "unavailable-sources",
@@ -221,7 +205,7 @@
     }
   ],
   "counts": {
-    "archiveVersion": "archive-2026-09-25-3eutdy2dff",
+    "archiveVersion": "archive-2026-09-25-qpoy220olc",
     "cutoff": "2026-09-25",
     "deals": 42,
     "dealsByRegion": {
@@ -231,19 +215,19 @@
     },
     "recentDeals": 14,
     "autopsies": 10,
-    "companies": 55,
-    "companiesIndia": 28,
+    "companies": 80,
+    "companiesIndia": 36,
     "sectors": 8,
     "modules": 12,
     "glossary": 98,
     "questions": 92,
     "training": 4,
     "briefs": 2,
-    "documents": 267,
-    "claims": 997,
+    "documents": 306,
+    "claims": 1171,
     "claimStatus": {
-      "search_corroborated": 967,
-      "pending": 30
+      "search_corroborated": 1137,
+      "pending": 34
     }
   }
 }

@@ -13,6 +13,7 @@ import { Ev, useRegisterEvidence } from "../components/Evidence";
 import { Icon } from "../components/Icon";
 import { Dialog } from "../components/Overlay";
 import { AiAssist } from "../components/AiAssist";
+import { PeerSetTable } from "../components/PeerSetTable";
 import { RecordHistory } from "../components/RecordHistory";
 import { PageHead } from "../components/PageHead";
 import { EmptyState, ErrorState, Monogram, ProvTag, Skeleton, StatusPill } from "../components/ui";
@@ -372,6 +373,17 @@ export function CompanyDetailPage({ id }: { id: string }) {
             </div>
           </section>
 
+          {(c.peerSets ?? []).map((ps) => (
+            <section className="mf-panel" key={ps.id} aria-labelledby={`peerset-${ps.id}`}>
+              <div className="mf-panel-head">
+                <h2 id={`peerset-${ps.id}`}>Peer comparison: {ps.name}</h2>
+                <Link to={`/finance/lab?tab=${c.sector === "fig" ? "fig" : "comparables"}`}>Open in Lab</Link>
+              </div>
+              <div className="mf-panel-body">
+                <PeerSetTable setId={ps.id} highlightCompanyId={c.id} compact />
+              </div>
+            </section>
+          ))}
           <section className="mf-panel">
             <div className="mf-panel-head">
               <h2>Acquisitions and divestments in this database</h2>

@@ -299,6 +299,8 @@ export const OBS_METRICS = [
   "total_income",
   "ebitda",
   "ebit",
+  /** EBIT (operating profit) as a percentage of revenue, as reported by the company. */
+  "ebit_margin",
   "net_income",
   "pat_attributable",
   "total_assets",
@@ -354,6 +356,25 @@ export const zObservation = z.object({
   cites: z.array(zCite).min(1),
 });
 export type Observation = z.infer<typeof zObservation>;
+
+/**
+ * A named numerical peer set: companies compared on the same metrics at the same period ends.
+ * Values come only from the companies' sourced observations; missing cells stay empty.
+ */
+export const zPeerSet = z.object({
+  id: zId,
+  name: z.string().min(3).max(80),
+  description: z.string().min(20).max(600),
+  sector: zSectorSlug,
+  companyIds: z.array(zId).min(4).max(12),
+  metrics: z.array(z.enum(OBS_METRICS)).min(2).max(8),
+  /** Fiscal period ends compared (flows use 12-month periods ending here; ratios and counts use point values). */
+  periods: z.array(z.object({ end: zIsoDate, label: z.string().min(2).max(40) })).min(1).max(5),
+  /** Scope compared when a company reports several (banks: standalone; IT services: consolidated). */
+  preferredScope: z.enum(["consolidated", "standalone"]),
+  note: z.string().max(500).nullish(),
+});
+export type PeerSet = z.infer<typeof zPeerSet>;
 
 export const zCompany = z.object({
   id: zId,

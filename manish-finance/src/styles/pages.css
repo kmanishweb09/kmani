@@ -123,6 +123,10 @@
   color: var(--mf-muted);
   opacity: 0.8;
 }
+.mf-row-highlight td,
+.mf-row-highlight th {
+  background: var(--mf-accent-soft);
+}
 .mf-negative-text {
   color: var(--mf-negative);
 }
