@@ -68,7 +68,7 @@ export const DEAL_COLUMNS: Column[] = [
     sort: "target",
     render: (d) => (
       <span className="wrap" style={{ display: "block" }}>
-        <Link className="row-link" to={`/finance/deals/${d.id}`}>
+        <Link className="row-link" to={`/finance/deals/${d.id}`} aria-label={`${d.target.name} — open deal: ${d.title}`}>
           {d.target.name}
         </Link>
         <span className="mf-xsmall mf-muted" style={{ display: "block" }}>

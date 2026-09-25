@@ -3,8 +3,6 @@ import { modules } from "./modules";
 
 type Q = Omit<Question, "difficulty"> & { difficulty?: Question["difficulty"] };
 
-const OPEN_RUBRIC = ["Facts are accurate and dated", "Clear structure (situation → mechanism → implication)", "Uses evidence or numbers, with their basis", "Addresses valuation or economics", "Names the key risk and what would change the view"];
-
 const mod = (n: number) => ({ type: "module" as const, id: modules[n - 1]?.id ?? `m${n}` });
 const sector = (id: string) => ({ type: "sector" as const, id });
 const deal = (id: string) => ({ type: "deal" as const, id });

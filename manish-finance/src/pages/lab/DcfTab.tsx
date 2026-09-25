@@ -253,7 +253,7 @@ export function DcfTab({ sc }: { sc: ScenarioApi<DcfAssumptions> }) {
           <div className="mf-lab-results">
             <ResultFigure label="Enterprise value" value={`${fmtNum(r.dcf.enterpriseValue)} ${unit}`} />
             <ResultFigure label="Equity value" value={r.equity ? `${fmtNum(r.equity.bridge.equityValue)} ${unit}` : "—"} />
-            <ResultFigure label="Value per share" value={r.equity?.perShare != null ? `${fmtNum(r.equity.perShare, 2)} ${a.currency}` : "—"} sub="Unit assumption: money in crore, shares in crore." />
+            <ResultFigure label="Value per share" value={typeof r.equity?.perShare === "number" ? `${fmtNum(r.equity.perShare, 2)} ${a.currency}` : "—"} sub="Unit assumption: money in crore, shares in crore." />
             <ResultFigure label="Terminal value share of EV" value={fmtPct(r.dcf.terminalShare, 0)} sub={`WACC ${fmtPct(r.wacc, 2)} · g ${fmtPct(a.terminalGrowth, 1)}`} />
           </div>
         ) : (

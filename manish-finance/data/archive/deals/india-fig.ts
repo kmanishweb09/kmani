@@ -21,6 +21,8 @@ export const documents = [
   doc("rbl-pr-completion-2026-06-18", "RBL Bank Limited", "https://webassets.rbl.bank.in/document/press-release/rbl-bank-emirates-nbd-successful-completion-landmark-strategic-investment.pdf", "Emirates NBD and RBL Bank announce the successful completion of the landmark strategic investment", "press_release", true, "2026-06-18"),
   doc("bs-enbd-rbl-complete-2026-06-18", "Business Standard", "https://www.business-standard.com/companies/news/emirates-nbd-completes-majority-stake-acquisition-in-rbl-bank-126061800500_1.html", "Emirates NBD completes acquisition of 60% majority stake in RBL Bank", "news_report", false, "2026-06-18"),
   // MUFG – Shriram Finance
+  doc("mufg-pr-2025-12-19", "Mitsubishi UFJ Financial Group, Inc.", "https://www.mufg.jp/dam/pressrelease/2025/pdf/news-20251219-001_en.pdf", "Investment in Shriram Finance Limited, a Leading Non-Banking Financial Company in India", "press_release", true, "2025-12-19"),
+  doc("mufgbank-pr-2026-04-08", "MUFG Bank, Ltd.", "https://www.bk.mufg.jp/global/newsroom/news2026/pdf/newse0408.pdf", "MUFG Bank subscribes to 471,121,055 Equity Shares of Shriram Finance", "press_release", true, "2026-04-08"),
   doc("bs-shriram-mufg-2025-12-19", "Business Standard", "https://www.business-standard.com/companies/news/shriram-finance-mufg-invest-39618-crore-20-percent-stake-preferential-issue-125121900473_1.html", "Shriram Finance: MUFG to invest ₹39,618 crore for 20% stake via preferential issue", "news_report", false, "2025-12-19"),
   doc("bs-shriram-mufg-price-2025-12-19", "Business Standard (Capital Market)", "https://www.business-standard.com/markets/capital-market-news/shriram-finance-hits-record-high-on-20-stake-sale-to-mufg-bank-125121900684_1.html", "Shriram Finance hits record high on 20% stake sale to MUFG Bank", "news_report", false, "2025-12-19"),
   doc("bs-shriram-cci-2026-03-25", "Business Standard", "https://www.business-standard.com/companies/news/shriram-finance-mufg-deal-gets-cci-nod-126032501327_1.html", "MUFG's $4.4 billion investment in Shriram Finance wins CCI approval", "news_report", false, "2026-03-25"),
@@ -249,9 +251,9 @@ export const deals: DealInput[] = [
     otherParties: [],
     perimeter: "47,11,21,055 new equity shares of Shriram Finance issued to MUFG Bank by preferential allotment.",
     stake: { acquiredPct: 20, resultingPct: 20, note: "20% on a fully diluted basis; management control stays with the Shriram Group. MUFG may nominate up to two non-executive directors.", cites: [ws("bs-shriram-mufg-2025-12-19"), ws("bs-shriram-allot-2026-04-08")] },
-    announced: { ...day("2025-12-19"), cites: [ws("bs-shriram-mufg-2025-12-19")] },
-    effective: { ...day("2026-04-08"), cites: [ws("bs-shriram-allot-2026-04-08"), ws("angelone-shriram-allot-2026")] },
-    status: { value: "completed", asOf: "2026-04-08", cites: [ws("bs-shriram-allot-2026-04-08")] },
+    announced: { ...day("2025-12-19"), cites: [ws("mufg-pr-2025-12-19"), ws("bs-shriram-mufg-2025-12-19")] },
+    effective: { ...day("2026-04-08"), cites: [ws("mufgbank-pr-2026-04-08"), ws("bs-shriram-allot-2026-04-08"), ws("angelone-shriram-allot-2026")] },
+    status: { value: "completed", asOf: "2026-04-08", cites: [ws("mufgbank-pr-2026-04-08"), ws("bs-shriram-allot-2026-04-08")] },
     terms: [
       { metric: "stake_consideration", label: "Preferential issue proceeds", amount: 39617.98, currency: "INR", unit: "crore", valueBasis: "stake", ownershipPct: 20, kind: "final", asOf: "2026-04-08", status: "reported", headline: true, note: "Some secondary reports print ₹3,961 crore, a units error: 47,11,21,055 shares × ₹840.93 = ₹39,617.98 crore.", cites: [ws("bs-shriram-mufg-2025-12-19"), ws("bs-shriram-allot-2026-04-08")] },
       { metric: "offer_price_per_share", label: "Issue price per share", amount: 840.93, currency: "INR", unit: "one", kind: "announced", asOf: "2025-12-19", status: "reported", reference: "3.25% discount to the previous close of ₹869.20 on 18 Dec 2025 (reported)", cites: [ws("bs-shriram-mufg-price-2025-12-19")] },
@@ -259,9 +261,9 @@ export const deals: DealInput[] = [
     payment: { mix: ["cash"], text: "Cash subscription for new shares (primary capital into Shriram Finance).", cites: [ws("bs-shriram-mufg-2025-12-19")] },
     financing: null,
     events: [
-      { type: "announcement", date: day("2025-12-19"), publishedDate: "2025-12-19", title: "Shriram Finance board approves preferential issue of a 20% stake to MUFG Bank", jurisdiction: "IN", statusAfter: "pending_approvals", cites: [ws("bs-shriram-mufg-2025-12-19")] },
+      { type: "announcement", date: day("2025-12-19"), publishedDate: "2025-12-19", title: "Shriram Finance board approves preferential issue of a 20% stake to MUFG Bank", jurisdiction: "IN", statusAfter: "pending_approvals", cites: [ws("mufg-pr-2025-12-19"), ws("bs-shriram-mufg-2025-12-19")] },
       { type: "regulatory_approval", date: day("2026-03-25"), publishedDate: "2026-03-25", title: "CCI approves MUFG's investment", jurisdiction: "IN", authority: "Competition Commission of India", cites: [ws("bs-shriram-cci-2026-03-25")] },
-      { type: "completion", date: day("2026-04-08"), publishedDate: "2026-04-08", title: "Shares allotted to MUFG Bank; paid-up capital rises accordingly", jurisdiction: "IN", statusAfter: "completed", cites: [ws("bs-shriram-allot-2026-04-08"), ws("angelone-shriram-allot-2026")] },
+      { type: "completion", date: day("2026-04-08"), publishedDate: "2026-04-08", title: "Shares allotted to MUFG Bank; paid-up capital rises accordingly", jurisdiction: "IN", statusAfter: "completed", cites: [ws("mufgbank-pr-2026-04-08"), ws("bs-shriram-allot-2026-04-08"), ws("angelone-shriram-allot-2026")] },
     ],
     advisers: { disclosure: "not_researched", list: [] },
     rationale: [{ text: "Bring in a global strategic banking investor and primary capital while control stays with the Shriram Group.", cites: [ws("bs-shriram-allot-2026-04-08")] }],

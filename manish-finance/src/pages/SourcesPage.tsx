@@ -478,7 +478,7 @@ export function SourcesPage() {
     <div className="mf-stack">
       <PageHead title="Sources" sub="Coverage, freshness, citations and source health. A source is only marked working after a real refresh succeeds." />
       <Tabs tabs={tabs} active={tab} onChange={setTab} label="Source views" />
-      <TabPanel>
+      <TabPanel tabsLabel="Source views" active={tab}>
         {tab === "health" ? (
           q.error ? (
             <ErrorState error={q.error} onRetry={() => void q.refetch()} what="source status" />

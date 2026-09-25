@@ -112,7 +112,7 @@ export function safeReturnTo(value: string | null | undefined): string {
   } catch {
     return "/finance";
   }
-  if (v.length > 512 || v.includes("\\") || v.startsWith("//") || /[\u0000-\u001f\u007f]/.test(v)) return "/finance";
+  if (v.length > 512 || v.includes("\\") || v.startsWith("//") || /[\u0000-\u001f\u007f]/.test(v)) return "/finance"; // eslint-disable-line no-control-regex -- reject control characters in return_to
   if (!RETURN_TO_RE.test(v)) return "/finance";
   if (v.includes("/../") || v.endsWith("/..")) return "/finance";
   return v;

@@ -170,7 +170,7 @@ export function FigTab({ sc }: { sc: ScenarioApi<FigAssumptions> }) {
                 <ResultFigure label="Σ PV of residual income" value={fmtNum(r.ri.value.sumPvResidualIncome, 1)} />
               </div>
               <div className="mf-table-wrap">
-                <table className="mf-table compact">
+                <table className="mf-table compact dense">
                   <caption className="mf-sr-only">Residual income by year ({unit})</caption>
                   <thead>
                     <tr>

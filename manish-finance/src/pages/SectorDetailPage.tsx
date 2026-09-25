@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { ClaimView, CompanySummary, DealSummary } from "../../shared/api";
 import type { CompiledSector } from "../../shared/archive/compile";
 import { countryName } from "../../shared/geo";
@@ -43,6 +44,7 @@ export function SectorDetailPage({ slug }: { slug: string }) {
   const { prefs, update } = usePrefs();
   const { isOwner } = useSession();
   const { notify } = useToast();
+  const [question, setQuestion] = useState("");
   useRegisterEvidence(q.data?.evidence);
   const s = q.data?.sector;
   const tabs = [
@@ -56,7 +58,7 @@ export function SectorDetailPage({ slug }: { slug: string }) {
     { id: "deals", label: "Deals" },
     { id: "changes", label: "What changed" },
     { id: "practice", label: "Practice" },
-    { id: "view", label: "Build a sector view" },
+    { id: "view", label: "My view" },
   ];
   const tab = tabs.some((t) => t.id === route.query.get("tab")) ? (route.query.get("tab") as string) : "overview";
 
@@ -79,6 +81,20 @@ export function SectorDetailPage({ slug }: { slug: string }) {
       navigate(`/finance/notebook/${r.note.id}`);
     } catch (e) {
       notify(`Failed to create note: ${errorMessage(e)}`, "error");
+    }
+  };
+  const saveQuestion = async () => {
+    if (!isOwner) return location.assign(signInHref());
+    const text = question.trim();
+    if (text.length < 8) return notify("Write the question in a sentence first.", "error");
+    const body = `## Question\n\n${text}\n\n## Why it matters\n\n## What evidence would answer it\n\n## Sources to check\n\n## Answer so far\n\n_Sector: ${s.name}._\n`;
+    try {
+      const r = await apiSend<{ note: Note }>("POST", "/api/finance/notes", { title: `Research question: ${text.slice(0, 160)}`, body, template: "research_question", tags: [s.name, "question"], links: [{ type: "sector", id: s.slug }] }, { idempotencyKey: newIdempotencyKey() });
+      invalidate("/api/finance/notes");
+      setQuestion("");
+      navigate(`/finance/notebook/${r.note.id}`);
+    } catch (e) {
+      notify(`Failed to save the question: ${errorMessage(e)}`, "error");
     }
   };
   const groups = new Map<string, Array<{ c: CompanySummary; note: string | null }>>();
@@ -105,7 +121,7 @@ export function SectorDetailPage({ slug }: { slug: string }) {
         }
       />
       <Tabs tabs={tabs} active={tab} onChange={(t) => setQuery({ tab: t === "overview" ? null : t })} label="Sector playbook sections" />
-      <TabPanel>
+      <TabPanel tabsLabel="Sector playbook sections" active={tab}>
         {tab === "overview" ? (
           <div className="mf-detail-layout">
             <div className="mf-stack">
@@ -432,6 +448,26 @@ export function SectorDetailPage({ slug }: { slug: string }) {
                 <Icon name="edit" size={15} /> Start a sector view note
               </button>
             </div>
+            <form
+              className="mf-stack tight"
+              onSubmit={(e) => {
+                e.preventDefault();
+                void saveQuestion();
+              }}
+            >
+              <div className="mf-field">
+                <label htmlFor="sector-question">Research question</label>
+                <input id="sector-question" className="mf-input" value={question} maxLength={300} placeholder={s.diligenceQuestions[0] ?? "What would change your view of this sector?"} onChange={(e) => setQuestion(e.target.value)} />
+              </div>
+              <div>
+                <button type="submit" className="mf-btn small">
+                  Save research question
+                </button>
+                <span className="mf-hint" style={{ marginLeft: 8 }}>
+                  Saved as a private note linked to this sector.
+                </span>
+              </div>
+            </form>
             <p className="mf-hint">
               <ProvTag kind="analysis" /> Playbook content is authored explanation; dated facts carry evidence links.
             </p>

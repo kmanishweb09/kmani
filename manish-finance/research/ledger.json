@@ -1,5 +1,5 @@
 {
- "archiveVersion": "archive-2026-09-25-wiubgvxtv4",
+ "archiveVersion": "archive-2026-09-25-3eutdy2dff",
  "cutoff": "2026-09-25",
  "claims": [
   {
@@ -1977,7 +1977,28 @@
    "note": null
   },
   {
-   "claimId": "ev-dctlaf4npa",
+   "claimId": "ev-morr7ppqri",
+   "subject": "deal:mufg-shriram-finance",
+   "field": "events.0",
+   "claim": "Shriram Finance board approves preferential issue of a 20% stake to MUFG Bank",
+   "value": "19 Dec 2025: Shriram Finance board approves preferential issue of a 20% stake to MUFG Bank",
+   "sourceUrl": "https://www.mufg.jp/dam/pressrelease/2025/pdf/news-20251219-001_en.pdf",
+   "publisher": "Mitsubishi UFJ Financial Group, Inc.",
+   "documentTitle": "Investment in Shriram Finance Limited, a Leading Non-Banking Financial Company in India",
+   "documentType": "press_release",
+   "primarySource": true,
+   "publicationDate": "2025-12-19",
+   "retrievedAt": null,
+   "retrievalStatus": "not_retrieved",
+   "locator": null,
+   "excerpt": null,
+   "verificationStatus": "search_corroborated",
+   "checkMethod": "web_search_index",
+   "checkedAt": "2026-09-25",
+   "note": null
+  },
+  {
+   "claimId": "ev-qni5co5rsu",
    "subject": "deal:mufg-shriram-finance",
    "field": "events.0",
    "claim": "Shriram Finance board approves preferential issue of a 20% stake to MUFG Bank",
@@ -2019,7 +2040,28 @@
    "note": null
   },
   {
-   "claimId": "ev-c43ayb9tg9",
+   "claimId": "ev-1vu3c57hg0",
+   "subject": "deal:mufg-shriram-finance",
+   "field": "events.2",
+   "claim": "Shares allotted to MUFG Bank; paid-up capital rises accordingly",
+   "value": "8 Apr 2026: Shares allotted to MUFG Bank; paid-up capital rises accordingly",
+   "sourceUrl": "https://www.bk.mufg.jp/global/newsroom/news2026/pdf/newse0408.pdf",
+   "publisher": "MUFG Bank, Ltd.",
+   "documentTitle": "MUFG Bank subscribes to 471,121,055 Equity Shares of Shriram Finance",
+   "documentType": "press_release",
+   "primarySource": true,
+   "publicationDate": "2026-04-08",
+   "retrievedAt": null,
+   "retrievalStatus": "not_retrieved",
+   "locator": null,
+   "excerpt": null,
+   "verificationStatus": "search_corroborated",
+   "checkMethod": "web_search_index",
+   "checkedAt": "2026-09-25",
+   "note": null
+  },
+  {
+   "claimId": "ev-4g7jtr9f84",
    "subject": "deal:mufg-shriram-finance",
    "field": "events.2",
    "claim": "Shares allotted to MUFG Bank; paid-up capital rises accordingly",
@@ -2040,7 +2082,7 @@
    "note": null
   },
   {
-   "claimId": "ev-mawvwc9uyc",
+   "claimId": "ev-ij04tbobou",
    "subject": "deal:mufg-shriram-finance",
    "field": "events.2",
    "claim": "Shares allotted to MUFG Bank; paid-up capital rises accordingly",
@@ -2145,7 +2187,28 @@
    "note": null
   },
   {
-   "claimId": "ev-xaf858srpj",
+   "claimId": "ev-csjpz5lle6",
+   "subject": "deal:mufg-shriram-finance",
+   "field": "announced",
+   "claim": "Announcement date",
+   "value": "19 Dec 2025",
+   "sourceUrl": "https://www.mufg.jp/dam/pressrelease/2025/pdf/news-20251219-001_en.pdf",
+   "publisher": "Mitsubishi UFJ Financial Group, Inc.",
+   "documentTitle": "Investment in Shriram Finance Limited, a Leading Non-Banking Financial Company in India",
+   "documentType": "press_release",
+   "primarySource": true,
+   "publicationDate": "2025-12-19",
+   "retrievedAt": null,
+   "retrievalStatus": "not_retrieved",
+   "locator": null,
+   "excerpt": null,
+   "verificationStatus": "search_corroborated",
+   "checkMethod": "web_search_index",
+   "checkedAt": "2026-09-25",
+   "note": null
+  },
+  {
+   "claimId": "ev-boro88vkp1",
    "subject": "deal:mufg-shriram-finance",
    "field": "announced",
    "claim": "Announcement date",
@@ -2166,7 +2229,28 @@
    "note": null
   },
   {
-   "claimId": "ev-v3x4a5ec5m",
+   "claimId": "ev-0semgdvxae",
+   "subject": "deal:mufg-shriram-finance",
+   "field": "effective",
+   "claim": "Effective/completion date",
+   "value": "8 Apr 2026",
+   "sourceUrl": "https://www.bk.mufg.jp/global/newsroom/news2026/pdf/newse0408.pdf",
+   "publisher": "MUFG Bank, Ltd.",
+   "documentTitle": "MUFG Bank subscribes to 471,121,055 Equity Shares of Shriram Finance",
+   "documentType": "press_release",
+   "primarySource": true,
+   "publicationDate": "2026-04-08",
+   "retrievedAt": null,
+   "retrievalStatus": "not_retrieved",
+   "locator": null,
+   "excerpt": null,
+   "verificationStatus": "search_corroborated",
+   "checkMethod": "web_search_index",
+   "checkedAt": "2026-09-25",
+   "note": null
+  },
+  {
+   "claimId": "ev-yofrchpy2q",
    "subject": "deal:mufg-shriram-finance",
    "field": "effective",
    "claim": "Effective/completion date",
@@ -2187,7 +2271,7 @@
    "note": null
   },
   {
-   "claimId": "ev-8heq6rwrit",
+   "claimId": "ev-6c7rqt9jgr",
    "subject": "deal:mufg-shriram-finance",
    "field": "effective",
    "claim": "Effective/completion date",
@@ -2208,7 +2292,28 @@
    "note": null
   },
   {
-   "claimId": "ev-c0lu6hadlb",
+   "claimId": "ev-i4c25sjc43",
+   "subject": "deal:mufg-shriram-finance",
+   "field": "status",
+   "claim": "Status",
+   "value": "Completed (as of 8 Apr 2026)",
+   "sourceUrl": "https://www.bk.mufg.jp/global/newsroom/news2026/pdf/newse0408.pdf",
+   "publisher": "MUFG Bank, Ltd.",
+   "documentTitle": "MUFG Bank subscribes to 471,121,055 Equity Shares of Shriram Finance",
+   "documentType": "press_release",
+   "primarySource": true,
+   "publicationDate": "2026-04-08",
+   "retrievedAt": null,
+   "retrievalStatus": "not_retrieved",
+   "locator": null,
+   "excerpt": null,
+   "verificationStatus": "search_corroborated",
+   "checkMethod": "web_search_index",
+   "checkedAt": "2026-09-25",
+   "note": null
+  },
+  {
+   "claimId": "ev-d068ylmmx2",
    "subject": "deal:mufg-shriram-finance",
    "field": "status",
    "claim": "Status",

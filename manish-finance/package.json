@@ -15,7 +15,8 @@
     "test:e2e": "node scripts/build.mjs && playwright test",
     "verify:content": "node scripts/verify-content.mjs",
     "build": "node scripts/build.mjs",
-    "package:handoff": "node scripts/package-handoff.mjs"
+    "package:handoff": "node scripts/package-handoff.mjs",
+    "check:sources:live": "node scripts/check-sources-live.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "0.128.0",

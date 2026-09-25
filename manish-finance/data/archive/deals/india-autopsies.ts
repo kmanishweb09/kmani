@@ -1,5 +1,5 @@
 import type { DealInput } from "../../../shared/schemas/research";
-import { day, doc, lead, ws } from "../lib";
+import { day, doc, ws } from "../lib";
 
 export const documents = [
   // LTI + Mindtree

@@ -12,7 +12,7 @@ import { archive, evidenceMap, type ResearchView } from "../research";
 import type { D1Database } from "../types";
 import type { AiConfig } from "./config";
 import { groundSections, type HeldSection, type PackItem, sanitiseForPrompt, type Section } from "./grounding";
-import { AiProviderError, type AiProvider } from "./provider";
+import { AiProviderError } from "./provider";
 
 /**
  * Optional AI operations. Each one builds an evidence pack from stored research (and, only when the

@@ -1,4 +1,4 @@
-import { type KeyboardEvent, type ReactNode, useId, useRef } from "react";
+import { type KeyboardEvent, type ReactNode, useRef } from "react";
 import type { DealStatusValue } from "../../shared/labels";
 import { DEAL_STATUS_LABEL } from "../../shared/labels";
 import { ApiError } from "../app/api";
@@ -141,8 +141,13 @@ export interface TabDef {
 }
 
 /** Accessible tabs with roving focus (arrow keys, Home/End). */
+/** Tab and panel ids are derived from the tablist label so a sibling <TabPanel> can reference them. */
+function tabBase(label: string): string {
+  return `mf-tabs-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
+}
+
 export function Tabs({ tabs, active, onChange, label }: { tabs: TabDef[]; active: string; onChange: (id: string) => void; label: string }) {
-  const id = useId();
+  const id = tabBase(label);
   const refs = useRef<Array<HTMLButtonElement | null>>([]);
   const onKey = (e: KeyboardEvent<HTMLButtonElement>, i: number) => {
     let next = -1;
@@ -184,9 +189,10 @@ export function Tabs({ tabs, active, onChange, label }: { tabs: TabDef[]; active
   );
 }
 
-export function TabPanel({ children, labelledBy }: { children: ReactNode; labelledBy?: string }) {
+export function TabPanel({ children, tabsLabel, active }: { children: ReactNode; tabsLabel: string; active: string }) {
+  const base = tabBase(tabsLabel);
   return (
-    <div role="tabpanel" className="mf-tabpanel" tabIndex={-1} aria-labelledby={labelledBy}>
+    <div role="tabpanel" id={`${base}-panel`} className="mf-tabpanel" tabIndex={-1} aria-labelledby={`${base}-tab-${active}`}>
       {children}
     </div>
   );

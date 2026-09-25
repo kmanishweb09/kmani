@@ -3,7 +3,7 @@ import { DEFAULT_PREFERENCES } from "../../shared/defaults";
 import type { Preferences } from "../../shared/schemas/private";
 import { ApiError, apiGet, apiSend } from "./api";
 import { useSession } from "./session";
-import { readLocal, writeLocal, writeTheme } from "./storage";
+import { readLocal, readTheme, writeLocal, writeTheme } from "./storage";
 
 /**
  * Preferences. Visitors keep display preferences on this device; the owner's preferences are stored
@@ -23,7 +23,7 @@ const PrefsContext = createContext<PrefsValue | null>(null);
 
 function initialPrefs(): Preferences {
   const local = readLocal<Partial<Preferences>>("prefs", {});
-  const theme = readLocal<string | null>("theme", null);
+  const theme = readTheme();
   const merged = { ...DEFAULT_PREFERENCES, ...local };
   if (theme === "light" || theme === "dark") merged.theme = theme;
   return merged;

@@ -112,7 +112,7 @@ export default function LabPage() {
         }
       />
       <Tabs tabs={TABS.map((t) => ({ id: t.id, label: t.label }))} active={tab} onChange={(t) => setQuery({ tab: t === "comparables" ? null : t, model: null })} label="Lab models" />
-      <TabPanel>
+      <TabPanel tabsLabel="Lab models" active={tab}>
         <ScenarioBar tab={tab} sc={active} outputsFor={outputsFor} modelId={modelId} dealId={dealId} />
         <p className="mf-callout attention mf-small" role="note">
           <Icon name="flask" size={16} /> {TRAINING_NOTICE} Inputs marked “Training example” are fictional; your edits are “Assumed”. Calculation version {CALC_VERSION}.

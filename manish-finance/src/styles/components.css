@@ -1498,3 +1498,10 @@
   background: var(--mf-raised);
   box-shadow: var(--mf-shadow);
 }
+
+/* Dense numeric tables (many columns in a half-width panel); still scrolls horizontally if needed. */
+.mf-table.dense th,
+.mf-table.dense td {
+  padding: 5px 7px;
+  font-size: 12.5px;
+}

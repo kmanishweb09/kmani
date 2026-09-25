@@ -14,7 +14,6 @@ import { useConfirm } from "../../components/Overlay";
 import { EmptyState, Skeleton } from "../../components/ui";
 import { asReported, dateLabel, headlineText } from "../../lib/format";
 
-type SubjectKind = "deal" | "sector";
 
 interface AutopsyShape {
   asAnnounced?: { whatBuyerIsBuying?: string; risksAtAnnouncement?: string[]; falsifiers?: string[]; priceAndStructure?: string };

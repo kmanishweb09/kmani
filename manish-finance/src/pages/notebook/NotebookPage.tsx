@@ -46,7 +46,7 @@ export default function NotebookPage() {
     <div className="mf-page">
       <PageHead title="Notebook" sub="Save analysis, build Deal Memory, review with spaced repetition, study the learning library and practise interviews." />
       <Tabs tabs={TABS.map((x) => ({ id: x.id, label: x.label }))} active={tab} onChange={(id) => setQuery({ tab: id, new: null, q: null, tag: null, template: null, archived: null, module: null, term: null, view: null })} label="Notebook sections" />
-      <TabPanel>
+      <TabPanel tabsLabel="Notebook sections" active={tab}>
         {tab === "learn" ? (
           <LearnTab />
         ) : session.loading && !session.status ? null : !session.isOwner ? (

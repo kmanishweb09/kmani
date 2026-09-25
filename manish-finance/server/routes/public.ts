@@ -9,7 +9,6 @@ import { HttpError, publicJson, textResponse } from "../http";
 import { runtimeClaim } from "../feedStore";
 import { archive, evidenceMap, getResearch, type ResearchView } from "../research";
 import type { Router } from "../router";
-import type { RequestContext } from "../types";
 
 const ID_PARAM = /^[a-z0-9][a-z0-9-]{0,95}$/;
 

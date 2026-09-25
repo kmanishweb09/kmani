@@ -1,0 +1,46 @@
+{
+  "ranAt": "2026-09-25T15:23:38.178Z",
+  "environment": "Claude Code cloud build container (egress policy blocks publisher hosts)",
+  "results": [
+    {
+      "sourceId": "sec-edgar-submissions",
+      "url": "https://data.sec.gov/submissions/CIK0000789019.json",
+      "checkedAt": "2026-09-25T15:23:37.815Z",
+      "outcome": "http_error",
+      "httpStatus": 403,
+      "items": null,
+      "sample": null,
+      "note": "Host not in allowlist: data.sec.gov. Add this host to your network egress settings to allow access."
+    },
+    {
+      "sourceId": "rbi-press-releases",
+      "url": "https://rbi.org.in/pressreleases_rss.xml",
+      "checkedAt": "2026-09-25T15:23:37.919Z",
+      "outcome": "http_error",
+      "httpStatus": 403,
+      "items": null,
+      "sample": null,
+      "note": "Host not in allowlist: rbi.org.in. Add this host to your network egress settings to allow access."
+    },
+    {
+      "sourceId": "rbi-notifications",
+      "url": "https://rbi.org.in/notifications_rss.xml",
+      "checkedAt": "2026-09-25T15:23:38.094Z",
+      "outcome": "http_error",
+      "httpStatus": 403,
+      "items": null,
+      "sample": null,
+      "note": "Host not in allowlist: rbi.org.in. Add this host to your network egress settings to allow access."
+    },
+    {
+      "sourceId": "sebi-rss",
+      "url": "https://www.sebi.gov.in/sebirss.xml",
+      "checkedAt": "2026-09-25T15:23:38.103Z",
+      "outcome": "http_error",
+      "httpStatus": 403,
+      "items": null,
+      "sample": null,
+      "note": "Host not in allowlist: www.sebi.gov.in. Add this host to your network egress settings to allow access."
+    }
+  ]
+}

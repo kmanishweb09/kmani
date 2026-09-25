@@ -477,7 +477,7 @@ export function DealDetailPage({ id }: { id: string }) {
       </div>
 
       <Tabs tabs={TABS} active={tab} onChange={(t) => setQuery({ tab: t === "snapshot" ? null : t })} label="Deal sections" />
-      <TabPanel>
+      <TabPanel tabsLabel="Deal sections" active={tab}>
         {tab === "snapshot" ? (
           <div className="mf-detail-layout">
             <section className="mf-panel">

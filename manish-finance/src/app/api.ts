@@ -41,7 +41,9 @@ function networkError(err: unknown): ApiError {
 
 export async function apiGet<T>(path: string, signal?: AbortSignal): Promise<T> {
   try {
-    const res = await fetch(path, { credentials: "same-origin", headers: { Accept: "application/json" }, ...(signal ? { signal } : {}) });
+    // "no-cache" revalidates with the server's ETag (a cheap 304 when unchanged) so an in-app refetch after an
+    // owner action never shows a stale copy from the browser's HTTP cache. Shared/CDN caching is unaffected.
+    const res = await fetch(path, { credentials: "same-origin", cache: "no-cache", headers: { Accept: "application/json" }, ...(signal ? { signal } : {}) });
     return await parse<T>(res);
   } catch (err) {
     throw networkError(err);

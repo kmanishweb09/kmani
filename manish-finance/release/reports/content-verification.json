@@ -1,0 +1,249 @@
+{
+  "checkedAt": "2026-09-25T15:23:07.867Z",
+  "buildDate": "2026-09-25",
+  "checks": [
+    {
+      "id": "schema",
+      "label": "All records pass schema validation",
+      "target": "0 issues",
+      "actual": "0 issues",
+      "ok": true,
+      "severity": "error",
+      "detail": []
+    },
+    {
+      "id": "compile",
+      "label": "Archive compiles (citations resolve to documents)",
+      "target": "no error",
+      "actual": "ok",
+      "ok": true,
+      "severity": "error"
+    },
+    {
+      "id": "deals",
+      "label": "Real transaction records",
+      "target": "≥ 36",
+      "actual": "42",
+      "ok": true,
+      "severity": "error"
+    },
+    {
+      "id": "deals-india",
+      "label": "India-related deals",
+      "target": "≈ 18",
+      "actual": "20",
+      "ok": true,
+      "severity": "warning"
+    },
+    {
+      "id": "deals-apac",
+      "label": "APAC (ex-India) deals",
+      "target": "≈ 8",
+      "actual": "9",
+      "ok": true,
+      "severity": "warning"
+    },
+    {
+      "id": "deals-global",
+      "label": "Other global deals",
+      "target": "≈ 10",
+      "actual": "13",
+      "ok": true,
+      "severity": "warning"
+    },
+    {
+      "id": "recent",
+      "label": "Deals with an announcement or material status change in the 12 months before the build date (by event date)",
+      "target": "≥ 8",
+      "actual": "14",
+      "ok": true,
+      "severity": "error",
+      "detail": [
+        "emirates-nbd-rbl-bank",
+        "mufg-shriram-finance",
+        "blackstone-federal-bank",
+        "adani-ambuja-acc",
+        "tata-motors-iveco",
+        "torrent-jb-chemicals",
+        "wipro-harman-dts",
+        "bajaj-allianz-insurance-stakes",
+        "softbank-abb-robotics",
+        "toyota-industries-take-private",
+        "ubs-credit-suisse",
+        "ea-take-private",
+        "kimberly-clark-kenvue",
+        "fifth-third-comerica"
+      ]
+    },
+    {
+      "id": "autopsies",
+      "label": "Deep deal autopsies (≥ 5 India-related, ≥ 2 FIG)",
+      "target": "10 / 5 / 2",
+      "actual": "10 / 7 / 4",
+      "ok": true,
+      "severity": "error"
+    },
+    {
+      "id": "companies",
+      "label": "Company dossiers (≥ 24 India-based, all eight sectors represented)",
+      "target": "48 / 24 / 8",
+      "actual": "55 / 28 / 8",
+      "ok": true,
+      "severity": "error"
+    },
+    {
+      "id": "sectors",
+      "label": "Sector playbooks (eight, each ≥ 5 practice questions and a metric dictionary)",
+      "target": "8",
+      "actual": "8",
+      "ok": true,
+      "severity": "error",
+      "detail": [
+        "fig: 1525 words, 16 metrics, 5 questions",
+        "tmt: 929 words, 8 metrics, 5 questions",
+        "healthcare: 764 words, 6 metrics, 5 questions",
+        "consumer: 763 words, 7 metrics, 5 questions",
+        "industrials: 701 words, 7 metrics, 5 questions",
+        "energy-infrastructure: 631 words, 6 metrics, 5 questions",
+        "business-services: 604 words, 6 metrics, 5 questions",
+        "real-estate: 661 words, 7 metrics, 5 questions"
+      ]
+    },
+    {
+      "id": "sector-words",
+      "label": "Sector playbook length (roughly 600–1,000 useful words)",
+      "target": "≥ 600 each",
+      "actual": "604–1525",
+      "ok": true,
+      "severity": "warning"
+    },
+    {
+      "id": "modules",
+      "label": "Learning modules (all twelve, each ≥ 3 resolvable questions)",
+      "target": "12",
+      "actual": "12",
+      "ok": true,
+      "severity": "error"
+    },
+    {
+      "id": "glossary",
+      "label": "Glossary terms (distinct)",
+      "target": "≥ 80",
+      "actual": "98",
+      "ok": true,
+      "severity": "error"
+    },
+    {
+      "id": "questions",
+      "label": "Practice questions (no duplicates; answers or rubrics present)",
+      "target": "≥ 80",
+      "actual": "92 (0 duplicates, 0 missing answer/rubric)",
+      "ok": true,
+      "severity": "error",
+      "detail": []
+    },
+    {
+      "id": "training",
+      "label": "Training models (fictional, separate from research records)",
+      "target": "≥ 3",
+      "actual": "4",
+      "ok": true,
+      "severity": "error"
+    },
+    {
+      "id": "briefs",
+      "label": "Historical brief examples",
+      "target": "1 daily + 1 weekly",
+      "actual": "1 daily + 1 weekly",
+      "ok": true,
+      "severity": "error"
+    },
+    {
+      "id": "primary",
+      "label": "Every deal cites at least one primary source",
+      "target": "0 without",
+      "actual": "0 without",
+      "ok": true,
+      "severity": "error",
+      "detail": []
+    },
+    {
+      "id": "amount-evidence",
+      "label": "Every material amount has claim-level evidence",
+      "target": "0 missing",
+      "actual": "0 missing",
+      "ok": true,
+      "severity": "error",
+      "detail": []
+    },
+    {
+      "id": "duplicates",
+      "label": "No duplicate transactions (same parties and announcement date)",
+      "target": "0",
+      "actual": "0",
+      "ok": true,
+      "severity": "error",
+      "detail": []
+    },
+    {
+      "id": "references",
+      "label": "Cross-references resolve (unresolved ones are dropped at compile time, not shown as links)",
+      "target": "0 unresolved",
+      "actual": "15 unresolved",
+      "ok": true,
+      "severity": "warning",
+      "detail": [
+        "deal:lti-mindtree-merger target → mindtree",
+        "deal:adani-ambuja-acc acquirer → adani-group",
+        "deal:adani-ambuja-acc otherParties.0 → holcim",
+        "deal:adani-ambuja-acc otherParties.1 → acc",
+        "deal:zomato-blinkit target → blinkit",
+        "deal:zee-sony-merger acquirer → sony-group",
+        "deal:temasek-manipal-health acquirer → temasek",
+        "deal:sun-pharma-taro target → taro",
+        "deal:tata-motors-iveco target → iveco",
+        "deal:torrent-jb-chemicals otherParties.0 → kkr",
+        "deal:jsw-energy-o2-power otherParties.1 → temasek",
+        "deal:microsoft-activision target → activision-blizzard",
+        "deal:broadcom-vmware target → vmware",
+        "deal:pfizer-seagen target → seagen",
+        "deal:exxonmobil-pioneer target → pioneer-natural-resources"
+      ]
+    },
+    {
+      "id": "unavailable-sources",
+      "label": "Source documents marked unavailable (kept with provenance, flagged)",
+      "target": "reported",
+      "actual": "0",
+      "ok": true,
+      "severity": "warning",
+      "detail": []
+    }
+  ],
+  "counts": {
+    "archiveVersion": "archive-2026-09-25-3eutdy2dff",
+    "cutoff": "2026-09-25",
+    "deals": 42,
+    "dealsByRegion": {
+      "india": 20,
+      "apac": 9,
+      "global": 13
+    },
+    "recentDeals": 14,
+    "autopsies": 10,
+    "companies": 55,
+    "companiesIndia": 28,
+    "sectors": 8,
+    "modules": 12,
+    "glossary": 98,
+    "questions": 92,
+    "training": 4,
+    "briefs": 2,
+    "documents": 267,
+    "claims": 997,
+    "claimStatus": {
+      "search_corroborated": 967,
+      "pending": 30
+    }
+  }
+}

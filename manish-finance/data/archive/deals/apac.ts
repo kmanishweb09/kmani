@@ -1,5 +1,5 @@
 import type { DealInput } from "../../../shared/schemas/research";
-import { day, doc, month, ws } from "../lib";
+import { day, doc, ws } from "../lib";
 
 export const documents = [
   // DBS – Citi Taiwan

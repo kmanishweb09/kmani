@@ -58,6 +58,17 @@ export function clearPrivateLocal(): void {
 }
 
 /** The theme key is also read by the inline pre-paint script in finance.html. */
+/** The theme is stored as a raw string (read by the pre-paint script in finance.html), not JSON. */
+export function readTheme(): "dark" | "light" | null {
+  const s = safeStorage();
+  try {
+    const v = s?.getItem(`${PREFIX}theme`) ?? null;
+    return v === "light" || v === "dark" ? v : null;
+  } catch {
+    return null;
+  }
+}
+
 export function writeTheme(theme: "dark" | "light"): void {
   const s = safeStorage();
   try {

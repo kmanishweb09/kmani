@@ -180,6 +180,7 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
                 id={`${id}-${it.id}`}
                 data-index={i}
                 role="option"
+                tabIndex={-1}
                 aria-selected={i === active}
                 className="mf-cmd-item"
                 onMouseEnter={() => setActive(i)}
