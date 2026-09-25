@@ -1,6 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { expect, type Page, test } from "@playwright/test";
+import { unzipStored } from "../../shared/xlsx/zip";
 
 /**
  * Required end-to-end journeys (SPEC §19) against the built release in the simulated host
@@ -175,6 +176,19 @@ test("Lab rejects impossible inputs on the rendered path: 150% stake, negative c
   await page.getByRole("textbox", { name: /^Distributions Y2/ }).blur();
   await expect(page.getByRole("alert").filter({ hasText: /Opening book equity for year 2 is zero/ })).toBeVisible();
   await expect(page.locator("main")).not.toContainText("Infinity");
+});
+
+test("Lab: download all scenarios as an Excel workbook whose outputs are live formulas", async ({ page }) => {
+  await page.goto("/finance/lab?tab=accretion");
+  const [download] = await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: /Download Excel workbook/ }).click()]);
+  expect(download.suggestedFilename()).toMatch(/^finance-lab-accretion-\d{4}-\d{2}-\d{2}\.xlsx$/);
+  const parts = unzipStored(new Uint8Array(readFileSync(await download.path())));
+  const names = parts.map((p) => p.name);
+  expect(names).toEqual(expect.arrayContaining(["xl/workbook.xml", "xl/worksheets/sheet1.xml", "xl/worksheets/sheet2.xml", "xl/worksheets/sheet3.xml"]));
+  const scenario = new TextDecoder().decode(parts.find((p) => p.name === "xl/worksheets/sheet2.xml")?.data);
+  expect(scenario).toContain("Pro forma EPS");
+  expect((scenario.match(/<f>/g) ?? []).length).toBeGreaterThan(30);
+  await expect(page.getByRole("status").filter({ hasText: /Excel workbook with 1 scenario downloaded/ })).toBeVisible();
 });
 
 test("Lab: load the training DCF, change WACC, see the sensitivity grid, save and reopen", async ({ page }) => {

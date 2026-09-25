@@ -38,8 +38,8 @@ function flatten(obj: unknown, prefix = ""): Array<[string, string | number | bo
   return Object.entries(obj as Record<string, unknown>).flatMap(([k, v]) => flatten(v, prefix ? `${prefix}.${k}` : k));
 }
 
-function download(name: string, text: string, type: string) {
-  const blob = new Blob([text], { type });
+function download(name: string, content: string | Uint8Array<ArrayBuffer>, type: string) {
+  const blob = new Blob([content], { type });
   const url = URL.createObjectURL(blob);
   const aEl = document.createElement("a");
   aEl.href = url;
@@ -56,6 +56,7 @@ export default function LabPage() {
   const tab: LabTab = isTab(tabParam) ? tabParam : "comparables";
   const dealId = route.query.get("deal");
   const modelId = route.query.get("model");
+  const { notify } = useToast();
 
   const comps = useScenarios<CompsAssumptions>("lab.comparables", compsBase);
   const dcf = useScenarios<DcfAssumptions>("lab.dcf", dcfBase);
@@ -94,6 +95,22 @@ export default function LabPage() {
     download(`finance-lab-${tab}-${new Date().toISOString().slice(0, 10)}.csv`, csv, "text/csv;charset=utf-8");
   };
 
+  // Formula-based workbook of every scenario on this tab (loaded on demand; built in the browser).
+  const [xlsxBusy, setXlsxBusy] = useState(false);
+  const exportXlsx = async () => {
+    setXlsxBusy(true);
+    try {
+      const { labWorkbook, XLSX_MIME } = await import("../../lib/labWorkbook");
+      const wb = labWorkbook(tab, active.state.scenarios);
+      download(wb.fileName, wb.bytes as Uint8Array<ArrayBuffer>, XLSX_MIME);
+      notify(`Excel workbook with ${active.state.scenarios.length} scenario${active.state.scenarios.length === 1 ? "" : "s"} downloaded. Outputs are live formulas over the blue input cells.`, "success");
+    } catch (e) {
+      notify(errorMessage(e), "error");
+    } finally {
+      setXlsxBusy(false);
+    }
+  };
+
   return (
     <div className="mf-page mf-lab">
       <PageHead
@@ -104,6 +121,9 @@ export default function LabPage() {
           <>
             <button type="button" className="mf-btn small" onClick={exportCsv}>
               <Icon name="download" size={15} /> CSV
+            </button>
+            <button type="button" className="mf-btn small" onClick={() => void exportXlsx()} disabled={xlsxBusy} aria-label="Download Excel workbook with live formulas for all scenarios">
+              <Icon name="download" size={15} /> Excel
             </button>
             <button type="button" className="mf-btn small" onClick={() => window.print()}>
               <Icon name="print" size={15} /> Print
