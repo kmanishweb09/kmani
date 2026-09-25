@@ -1,0 +1,101 @@
+# Command log
+
+Run at 2026-09-25T15:54:56Z · Node v22.22.2 · Linux x86_64 · Claude Code cloud build container (outbound access to publisher hosts blocked by the environment's egress policy)
+
+$ npm ci
+npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.hirok.io
+npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.hirok.io
+npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+added 377 packages, and audited 378 packages in 6s
+152 packages are looking for funding
+  run `npm fund` for details
+9 vulnerabilities (6 moderate, 3 high)
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+Run `npm audit` for details.
+→ exit 0 in 6 s
+
+$ npm run lint
+> manish-finance@0.1.0 lint
+> eslint .
+→ exit 0 in 4 s
+
+$ npm run typecheck
+> manish-finance@0.1.0 typecheck
+> tsc -p tsconfig.json && tsc -p tsconfig.node.json
+→ exit 0 in 12 s
+
+$ npm run verify:content
+PASS  Company dossiers (≥ 24 India-based, all eight sectors represented)                           target 48 / 24 / 8        actual 55 / 28 / 8
+PASS  Sector playbooks (eight, each ≥ 5 practice questions and a metric dictionary)                target 8                  actual 8
+PASS  Sector playbook length (roughly 600–1,000 useful words)                                      target ≥ 600 each         actual 604–1525
+PASS  Learning modules (all twelve, each ≥ 3 resolvable questions)                                 target 12                 actual 12
+PASS  Glossary terms (distinct)                                                                    target ≥ 80               actual 98
+PASS  Practice questions (no duplicates; answers or rubrics present)                               target ≥ 80               actual 92 (0 duplicates, 0 missing answer/rubric)
+PASS  Training models (fictional, separate from research records)                                  target ≥ 3                actual 4
+PASS  Historical brief examples                                                                    target 1 daily + 1 weekly actual 1 daily + 1 weekly
+PASS  Every deal cites at least one primary source                                                 target 0 without          actual 0 without
+PASS  Every material amount has claim-level evidence                                               target 0 missing          actual 0 missing
+PASS  No duplicate transactions (same parties and announcement date)                               target 0                  actual 0
+PASS  Cross-references resolve (unresolved ones are dropped at compile time, not shown as links)   target 0 unresolved       actual 15 unresolved
+PASS  Source documents marked unavailable (kept with provenance, flagged)                          target reported           actual 0
+21 passed, 0 warnings, 0 failed → release/reports/content-verification.json
+→ exit 0 in 0 s
+
+$ npm test
+(node:25507) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ tests/worker/private.test.ts (11 tests) 1901ms
+ ✓ tests/unit/migration.test.ts (3 tests) 509ms
+   ✓ finance migration > drizzle-kit generates SQL from the mirror that produces the same schema  486ms
+ ✓ tests/unit/scheduler.test.ts (11 tests) 21ms
+ ✓ tests/worker/sources.test.ts (21 tests) 10315ms
+   ✓ SEC EDGAR connector (fixture responses) > sends the configured User-Agent, keeps M&A-relevant forms and links the company  3089ms
+   ✓ SEC EDGAR connector (fixture responses) > is not configured without FINANCE_SEC_USER_AGENT and makes no request  1549ms
+   ✓ maintenance runner > owner refresh presses within two minutes share one run  3160ms
+ Test Files  8 passed (8)
+      Tests  160 passed (160)
+   Start at  15:55:18
+   Duration  12.22s (transform 856ms, setup 0ms, collect 3.29s, tests 20.80s, environment 1ms, prepare 529ms)
+→ exit 0 in 13 s
+
+$ npm run test:e2e
+  ✓  32 tests/e2e/visual.spec.ts:72:28 › desktop 1440 light: lab-fig (1.2s)
+  ✓  33 tests/e2e/visual.spec.ts:72:28 › desktop 1440 light: notebook-review (1.2s)
+  ✓  34 tests/e2e/visual.spec.ts:72:28 › desktop 1440 light: notebook-learn (1.1s)
+  ✓  35 tests/e2e/visual.spec.ts:72:28 › desktop 1440 light: briefs (1.1s)
+  ✓  36 tests/e2e/visual.spec.ts:72:28 › desktop 1440 light: sources (1.1s)
+  ✓  37 tests/e2e/visual.spec.ts:73:27 › mobile 390 light: desk (1.2s)
+  ✓  38 tests/e2e/visual.spec.ts:73:27 › mobile 390 light: deals (1.1s)
+  ✓  39 tests/e2e/visual.spec.ts:73:27 › mobile 390 light: deal-detail (1.1s)
+  ✓  40 tests/e2e/visual.spec.ts:73:27 › mobile 390 light: lab-dcf (1.1s)
+  ✓  41 tests/e2e/visual.spec.ts:75:53 › tablet 768 dark: deals (1.1s)
+  ✓  42 tests/e2e/visual.spec.ts:75:53 › tablet 768 dark: deal-detail (1.1s)
+  ✓  43 tests/e2e/visual.spec.ts:76:53 › wide 1920 dark: desk (1.3s)
+  ✓  44 tests/e2e/visual.spec.ts:76:53 › wide 1920 dark: deals (1.2s)
+  44 passed (1.1m)
+→ exit 0 in 67 s
+
+$ npm run check:sources:live
+> manish-finance@0.1.0 check:sources:live
+> node scripts/check-sources-live.mjs
+not_configured  —    sec-edgar-submissions     Set FINANCE_SEC_USER_AGENT (a real contact) to run the SEC check.
+http_error      403  rbi-press-releases        Host not in allowlist: rbi.org.in. Add this host to your network egress settings to allow access.
+http_error      403  rbi-notifications         Host not in allowlist: rbi.org.in. Add this host to your network egress settings to allow access.
+http_error      403  sebi-rss                  Host not in allowlist: www.sebi.gov.in. Add this host to your network egress settings to allow access.
+0 of 4 connectors returned parseable data from this machine → release/reports/live-source-check.json
+→ exit 0 in 0 s
+
+$ npm run package:handoff
+> manish-finance@0.1.0 package:handoff
+> node scripts/package-handoff.mjs
+1/4 clean production build
+archive: 42 deals, 55 companies, 8 sectors, 997 claims → archive-2026-09-25-3eutdy2dff
+build ok in 991 ms · initial JS 129.5 KB gz · CSS 8.0 KB gz · finance.mjs 529.5 KB gz
+2/4 manifest
+3/4 SHA256SUMS
+4/4 zip
+264 files → manish-finance-handoff.zip (7.3 MB)
+source 274fb236bb01 (uncommitted changes present) · tree 6d0bbf948e17a324
+→ exit 0 in 2 s
+

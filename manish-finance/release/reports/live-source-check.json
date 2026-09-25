@@ -1,21 +1,21 @@
 {
-  "ranAt": "2026-09-25T15:23:38.178Z",
+  "ranAt": "2026-09-25T15:56:38.706Z",
   "environment": "Claude Code cloud build container (egress policy blocks publisher hosts)",
   "results": [
     {
       "sourceId": "sec-edgar-submissions",
       "url": "https://data.sec.gov/submissions/CIK0000789019.json",
-      "checkedAt": "2026-09-25T15:23:37.815Z",
-      "outcome": "http_error",
-      "httpStatus": 403,
+      "checkedAt": "2026-09-25T15:56:38.438Z",
+      "outcome": "not_configured",
+      "httpStatus": null,
       "items": null,
       "sample": null,
-      "note": "Host not in allowlist: data.sec.gov. Add this host to your network egress settings to allow access."
+      "note": "Set FINANCE_SEC_USER_AGENT (a real contact) to run the SEC check."
     },
     {
       "sourceId": "rbi-press-releases",
       "url": "https://rbi.org.in/pressreleases_rss.xml",
-      "checkedAt": "2026-09-25T15:23:37.919Z",
+      "checkedAt": "2026-09-25T15:56:38.438Z",
       "outcome": "http_error",
       "httpStatus": 403,
       "items": null,
@@ -25,7 +25,7 @@
     {
       "sourceId": "rbi-notifications",
       "url": "https://rbi.org.in/notifications_rss.xml",
-      "checkedAt": "2026-09-25T15:23:38.094Z",
+      "checkedAt": "2026-09-25T15:56:38.632Z",
       "outcome": "http_error",
       "httpStatus": 403,
       "items": null,
@@ -35,7 +35,7 @@
     {
       "sourceId": "sebi-rss",
       "url": "https://www.sebi.gov.in/sebirss.xml",
-      "checkedAt": "2026-09-25T15:23:38.103Z",
+      "checkedAt": "2026-09-25T15:56:38.661Z",
       "outcome": "http_error",
       "httpStatus": 403,
       "items": null,

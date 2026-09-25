@@ -6,36 +6,31 @@ Resumable progress record for Finance Desk (see `SPEC.md` for the acceptance con
 
 | Milestone | State | Notes |
 |---|---|---|
-| M1 Foundation | Done | Worker module (`createFinance`), D1 migration, simulated host harness in workerd/Miniflare, esbuild pipeline, calc library with tests |
-| M2 Research core | Done | 42 deals (20 India, 9 APAC, 13 global), 10 autopsies, 55 companies (28 India), 8 sector playbooks + primers, evidence drawer, compare, exports |
+| M1 Foundation | Done | Worker module (`createFinance`), D1 migration, simulated host harness in workerd/Miniflare, esbuild pipeline, calc library |
+| M2 Research core | Done | 42 deals, 10 autopsies, 55 companies, 8 sector playbooks + primers, evidence drawer, compare, exports |
 | M3 Persistence | Done | Owner-only notes/watchlist/saved searches/models/preferences/memory/review/progress/interview, idempotency, revisions, export/import |
-| M4 Intelligence | Done (fixture-tested) | Fetch guard, RSS/Atom + SEC parsers, collector (dedupe, linking, versioning), review queue → published changes, manual sources, corrections, leases, jobs, compiled briefs |
-| M5 Learning & analysis | Done | Lab (comparables, DCF, accretion/dilution, FIG), Deal Memory + spaced review, 12 modules, 92 questions, 98 glossary terms, interview practice |
-| M6 Optional AI | Pending | Off by default; Anthropic adapter with evidence-ID validation, budgets and usage log still to build |
-| M7 Delivery | Pending | Lint config, e2e journeys + axe, screenshots, docs, verify-content, package-handoff |
+| M4 Intelligence | Done (fixture-tested) | Fetch guard, RSS/Atom + SEC connectors, dedupe/versioning/linking, review queue → published changes, manual sources, corrections, leases, jobs, compiled briefs |
+| M5 Learning & analysis | Done | Lab (comparables, DCF, accretion/dilution, FIG), Deal Memory + spaced review, 12 modules, 92 questions, 98 terms, interview practice |
+| M6 Optional AI | Done (fake-provider tested) | Anthropic SDK adapter, previews, grounding (citations, numbers, dates), budget reservation, usage log; off by default |
+| M7 Delivery | Done | Lint, Drizzle mirror + migration tests, verify:content, live check script, Playwright journeys + axe + visual captures, docs, manifest, checksums, handoff ZIP |
 
-## Last successful checks (2026-09-25)
+## Last successful checks (2026-09-25, final run 15:55 UTC)
 
-- `npm run typecheck` — clean.
-- `npx vitest run` — 139 tests passed (94 unit, 45 Worker/D1 on the simulated host).
-- `node scripts/build.mjs` — release bundle built; `release/server/finance.mjs` 2.26 MB unminified (436 KB gzip).
+`npm ci`, `lint`, `typecheck`, `verify:content` (21/21), `npm test` (160 passed), `test:e2e` (44 passed),
+`check:sources:live` (ran; 0/4 reachable — sandbox egress policy), `package:handoff` (264 files, 7.3 MB).
+Details: `release/reports/ACCEPTANCE_REPORT.md`, `release/reports/command-log.txt`.
 
 ## Source assumptions and blockers
 
-- The build environment's egress policy blocks rbi.org.in, sebi.gov.in, data.sec.gov and other publisher hosts
-  (CONNECT tunnel rejected with 403 by the sandbox proxy). **No live connector test has succeeded.** Connector
-  behaviour is verified only against fixtures authored to the documented formats (`tests/fixtures/sources/`).
-- SEC EDGAR needs `FINANCE_SEC_USER_AGENT` (a real contact) before it runs; without it the source reports
-  "Not configured" and makes no request.
-- RBI/SEBI RSS URLs come from the publishers' RSS directory pages; they stay "unverified" until a live fetch
-  from the deployed Worker records `live_verified_at`.
-- No background scheduler is attached. The protected endpoint `POST /api/finance/admin/jobs/run`
-  (Bearer `FINANCE_JOB_SECRET`) and `module.runMaintenance(env)` are ready for the deployment agent.
+- Build environment egress blocks publisher hosts; no live connector test succeeded. First live test belongs
+  to the deployed Worker or `npm run check:sources:live` on a machine with access.
+- SEC connector needs `FINANCE_SEC_USER_AGENT` (real contact). Optional AI needs a key, model ID, budget and
+  dated price table. No scheduler is attached.
+- Host integration follows the recorded contract (SPEC §2); not applied to the real repository.
 
-## Next concrete tasks
+## Next concrete tasks (for whoever continues)
 
-1. M6: AI provider adapter (off by default) — evidence pack, citation-ID validation, budgets, usage log.
-2. Drizzle schema mirror + migration test; `integration/` example.
-3. ESLint config, `scripts/verify-content.mjs`, `scripts/check-sources-live.mjs`, `scripts/package-handoff.mjs`.
-4. Playwright journeys with axe; screenshots at 390/768/1440/1920 in light and dark.
-5. Docs: README, DEPLOYMENT_HANDOFF, API, DATA_SOURCES, DATA_MODEL, DESIGN_SYSTEM, OPERATIONS, KNOWN_LIMITATIONS, ACCEPTANCE_REPORT.
+1. Integrate into the real host per `docs/DEPLOYMENT_HANDOFF.md`; run the smoke checks there.
+2. Run Sources → Test connection on each connector from the deployed Worker; record results in `docs/DATA_SOURCES.md`.
+3. Re-check key figures against retrieved primary documents and upgrade claim statuses in the archive where verified.
+4. Add dossiers for the 15 unlinked counterparties if they matter for study.

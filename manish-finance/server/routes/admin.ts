@@ -276,10 +276,19 @@ export function registerAdminRoutes(r: Router): void {
     handler: async (c) => {
       const userId = requireOwner(c);
       const db = requireDb(c);
-      // One bounded run per two-minute window, however many times Refresh is pressed.
-      const windowKey = `owner-refresh:${Math.floor(c.now.getTime() / 120_000)}`;
+      // Presses within two minutes of the owner's last refresh replay that run instead of starting another.
+      // (A sliding window, not fixed buckets, so two quick presses never straddle a boundary; truly
+      // simultaneous presses are serialised by the refresh lease.)
       return idempotent(c, userId, "admin.refresh", {}, async () => {
-        const report = await runMaintenanceJobs(deps(c, db), { jobs: ["refresh_sources"], requestedBy: "owner", refreshMode: "manual", idempotencyKey: windowKey });
+        const recent = await db
+          .prepare("SELECT id, status, result_json, error FROM finance_jobs WHERE job_type = 'refresh_sources' AND requested_by = 'owner' AND started_at > ? ORDER BY started_at DESC LIMIT 1")
+          .bind(new Date(c.now.getTime() - 120_000).toISOString())
+          .first<{ id: string; status: string; result_json: string | null; error: string | null }>();
+        if (recent) {
+          const status = recent.status === "running" ? "in_progress" : recent.status;
+          return { status: 200, body: { ok: status !== "failed", jobs: [{ job: "refresh_sources", status, jobId: recent.id, replayed: true, detail: recent.error ?? parseJsonColumn(recent.result_json, null) }] } };
+        }
+        const report = await runMaintenanceJobs(deps(c, db), { jobs: ["refresh_sources"], requestedBy: "owner", refreshMode: "manual", idempotencyKey: `owner-refresh:${newId()}` });
         return { status: 200, body: report };
       });
     },

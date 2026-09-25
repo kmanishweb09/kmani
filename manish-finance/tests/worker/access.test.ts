@@ -34,6 +34,40 @@ describe("existing host routes are untouched", () => {
   });
 });
 
+describe("routing contract: JSON APIs, asset misses, HEAD and canonical paths", () => {
+  it("unknown finance API routes and wrong methods answer JSON", async () => {
+    const r = await api(h, "/api/finance/no-such-route");
+    expect(r.status).toBe(404);
+    expect(r.headers.get("content-type")).toMatch(/application\/json/);
+    expect(r.json).toMatchObject({ error: { code: "NOT_FOUND" } });
+    const m = await api(h, "/api/finance/deals", { method: "DELETE", as: "owner" });
+    expect(m.status).toBe(405);
+    expect(m.headers.get("allow")).toContain("GET");
+  });
+  it("asset misses under /finance are plain 404s, never the app shell", async () => {
+    const r = await api(h, "/finance/finance-missing.js");
+    expect(r.status).toBe(404);
+    expect(r.headers.get("content-type")).toMatch(/text\/plain/);
+    expect(r.text).not.toContain("<html");
+  });
+  it("unknown extension-less finance pages get the shell with status 404", async () => {
+    const r = await api(h, "/finance/definitely-not-a-page");
+    expect(r.status).toBe(404);
+    expect(r.headers.get("content-type")).toMatch(/text\/html/);
+  });
+  it("trailing slashes redirect to the canonical path, keeping the query", async () => {
+    const r = await api(h, "/finance/deals/?geo=india");
+    expect(r.status).toBe(308);
+    expect(r.headers.get("location")).toBe("/finance/deals?geo=india");
+  });
+  it("HEAD mirrors GET headers without a body", async () => {
+    const r = await h.mf.dispatchFetch("http://localhost/api/finance/deals", { method: "HEAD" });
+    expect(r.status).toBe(200);
+    expect(r.headers.get("etag")).toBeTruthy();
+    expect(await r.text()).toBe("");
+  });
+});
+
 describe("access control (identity only from the host's getUser)", () => {
   it("public research is readable anonymously with cache validators", async () => {
     const r = await api(h, "/api/finance/deals");
