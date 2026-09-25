@@ -1,5 +1,5 @@
 /**
- * Drizzle (sqlite-core) mirror of migrations/0001_finance_init.sql for hosts that manage D1 with
+ * Drizzle (sqlite-core) mirror of migrations/0001_finance_init.sql and 0002_finance_research_drafts.sql for hosts that manage D1 with
  * Drizzle (kmanish.live keeps its schema in db/schema.ts). Merge these exports into the host schema;
  * tests/unit/migration.test.ts checks this file against the SQL so the two cannot drift.
  */
@@ -450,4 +450,31 @@ export const financeRateLimits = sqliteTable(
     windowStart: text("window_start").notNull(),
     count: integer("count").notNull(),
   },
+);
+
+export const financeResearchDrafts = sqliteTable(
+  "finance_research_drafts",
+  {
+    id: text("id").primaryKey().notNull(),
+    ownerId: text("owner_id").notNull(),
+    kind: text("kind").notNull(),
+    entityType: text("entity_type").notNull(),
+    entityId: text("entity_id").notNull(),
+    payloadJson: text("payload_json").notNull(),
+    evidenceJson: text("evidence_json").notNull(),
+    note: text("note"),
+    baseSeq: integer("base_seq").notNull().default(0),
+    revision: integer("revision").notNull().default(1),
+    status: text("status").notNull().default("draft"),
+    origin: text("origin").notNull(),
+    dedupeKey: text("dedupe_key").notNull(),
+    createdAt: text("created_at").notNull(),
+    updatedAt: text("updated_at").notNull(),
+    publishedChangeId: text("published_change_id"),
+    publishedAt: text("published_at"),
+  },
+  (t) => [
+    index("finance_research_drafts_owner_idx").on(t.ownerId, t.status, t.updatedAt),
+    uniqueIndex("finance_research_drafts_open_uidx").on(t.ownerId, t.dedupeKey).where(sql`status = 'draft'`),
+  ],
 );

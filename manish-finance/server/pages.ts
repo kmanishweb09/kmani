@@ -16,7 +16,7 @@ export type FinanceRoute =
 
 const PAGE_PATTERNS: RegExp[] = [
   /^\/finance$/,
-  /^\/finance\/(deals|sectors|companies|lab|briefs|notebook|sources|settings)$/,
+  /^\/finance\/(deals|sectors|companies|lab|briefs|notebook|sources|settings|research)$/,
   /^\/finance\/deals\/compare$/,
   /^\/finance\/deals\/[a-z0-9][a-z0-9-]{0,95}$/,
   /^\/finance\/sectors\/[a-z0-9][a-z0-9-]{0,95}$/,

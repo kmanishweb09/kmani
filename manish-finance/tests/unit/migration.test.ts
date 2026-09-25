@@ -10,7 +10,12 @@ import * as schema from "../../migrations/schema.finance";
 // node:sqlite (SQLite, like D1) loaded via require so the bundler does not try to resolve it.
 const { DatabaseSync } = createRequire(import.meta.url)("node:sqlite") as { DatabaseSync: new (p: string) => { exec(s: string): void; prepare(s: string): { all(...a: unknown[]): Array<Record<string, unknown>> } } };
 
-const MIGRATION = readFileSync("migrations/0001_finance_init.sql", "utf8");
+// All numbered migrations, applied in order (as the host's migration runner would).
+const MIGRATION = readdirSync("migrations")
+  .filter((f) => /^\d{4}_.*\.sql$/.test(f))
+  .sort()
+  .map((f) => readFileSync(join("migrations", f), "utf8"))
+  .join("\n");
 type Db = InstanceType<typeof DatabaseSync>;
 
 function describeSchema(db: Db) {

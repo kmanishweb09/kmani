@@ -5,6 +5,7 @@ import { runMaintenanceJobs, type MaintenanceOptions, type MaintenanceReport } f
 import { classifyFinanceRequest, financePageResponse, isFinanceApiPath } from "./pages";
 import { registerAdminRoutes } from "./routes/admin";
 import { registerAiRoutes } from "./routes/ai";
+import { registerCurationRoutes } from "./routes/curation";
 import { registerFeedRoutes } from "./routes/feed";
 import { registerPrivateRoutes } from "./routes/private";
 import { registerPublicRoutes } from "./routes/public";
@@ -24,6 +25,7 @@ function buildRouter(): Router {
   registerFeedRoutes(r);
   registerPrivateRoutes(r);
   registerAdminRoutes(r);
+  registerCurationRoutes(r);
   registerAiRoutes(r);
   return r;
 }

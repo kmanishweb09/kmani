@@ -22,6 +22,7 @@ import { ToastProvider } from "./toast";
 
 const LabPage = lazy(() => import("../pages/lab/LabPage"));
 const NotebookPage = lazy(() => import("../pages/notebook/NotebookPage"));
+const ResearchMaintenancePage = lazy(() => import("../pages/ResearchMaintenancePage"));
 
 function isTypingTarget(t: EventTarget | null): boolean {
   const el = t as HTMLElement | null;
@@ -62,6 +63,8 @@ function Routes() {
       return <SourcesPage />;
     case "settings":
       return <SettingsPage />;
+    case "research":
+      return <ResearchMaintenancePage />;
     default:
       return <NotFoundPage />;
   }

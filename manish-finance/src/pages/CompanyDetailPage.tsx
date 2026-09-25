@@ -13,6 +13,7 @@ import { Ev, useRegisterEvidence } from "../components/Evidence";
 import { Icon } from "../components/Icon";
 import { Dialog } from "../components/Overlay";
 import { AiAssist } from "../components/AiAssist";
+import { RecordHistory } from "../components/RecordHistory";
 import { PageHead } from "../components/PageHead";
 import { EmptyState, ErrorState, Monogram, ProvTag, Skeleton, StatusPill } from "../components/ui";
 import { dateLabel, headlineText } from "../lib/format";
@@ -333,9 +334,14 @@ export function CompanyDetailPage({ id }: { id: string }) {
                     </thead>
                     <tbody>
                       {c.observations.map((o) => (
-                        <tr key={o.id}>
+                        <tr key={o.id} style={o.supersededBy ? { opacity: 0.6 } : undefined}>
                           <td className="wrap">
                             {o.label}
+                            {o.supersededBy ? (
+                              <span className="mf-pill attention" style={{ marginLeft: 6 }} title={o.supersededBy.note}>
+                                Superseded {o.supersededBy.publishedAt.slice(0, 10)}
+                              </span>
+                            ) : null}
                             {o.definition ? <div className="mf-xsmall mf-muted">{o.definition}</div> : null}
                           </td>
                           <td className="nowrap mf-small">
@@ -357,7 +363,12 @@ export function CompanyDetailPage({ id }: { id: string }) {
               ) : (
                 <EmptyState title="No verified financial observations recorded">Fields stay empty rather than filled from memory. Figures are added only as dated observations with a cited source, through owner research maintenance (Sources → Research maintenance); corrections cover identity fields only.</EmptyState>
               )}
-              <HistoryTable observations={c.observations} />
+              <HistoryTable observations={c.observations.filter((o) => !o.supersededBy)} />
+              {isOwner ? (
+                <p className="mf-hint" style={{ marginTop: 8 }}>
+                  <Link to={`/finance/research?tab=edit&kind=observation&entity=${c.id}`}>Add a dated observation with its source</Link>
+                </p>
+              ) : null}
             </div>
           </section>
 
@@ -458,6 +469,7 @@ export function CompanyDetailPage({ id }: { id: string }) {
               </div>
             </section>
           ) : null}
+          <RecordHistory entries={c.history ?? []} />
           {c.corrections.length ? (
             <section className="mf-panel">
               <div className="mf-panel-head">

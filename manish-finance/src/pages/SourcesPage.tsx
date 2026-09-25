@@ -3,6 +3,7 @@ import type { SourceStatusView } from "../../shared/api";
 import { VERIFICATION_HELP, VERIFICATION_LABEL, type VerificationValue } from "../../shared/labels";
 import { apiSend, errorMessage, newIdempotencyKey } from "../app/api";
 import { invalidate, useQuery } from "../app/query";
+import { Link } from "../app/router";
 import { useSession } from "../app/session";
 import { useToast } from "../app/toast";
 import { Icon } from "../components/Icon";
@@ -39,6 +40,7 @@ interface ReviewItem {
   origin: string;
   status: string;
   createdAt: string;
+  warnings?: string[];
 }
 
 interface JobRow {
@@ -246,6 +248,9 @@ function OwnerAdmin() {
   };
   return (
     <div className="mf-stack">
+      <div className="mf-callout">
+        <strong>Research maintenance.</strong> Add or correct companies, deals, revised terms, dated observations, deal events and claim verifications — with evidence, preview, duplicate checks, revision checks and rollback. <Link to="/finance/research">Open research maintenance</Link>
+      </div>
       <div className="mf-row">
         <button type="button" className="mf-btn primary small" disabled={busy === "refresh"} onClick={() => void act("refresh", () => apiSend("POST", "/api/finance/admin/refresh", {}, { idempotencyKey: newIdempotencyKey() }), "Refresh requested (one bounded, deduplicated run).")}>
           <Icon name="refresh" size={15} /> Refresh sources now
@@ -315,6 +320,11 @@ function OwnerAdmin() {
                   </span>
                 </div>
                 <ReviewSummary item={r} />
+                {r.warnings?.map((w) => (
+                  <div key={w} className="mf-callout attention mf-small" style={{ marginTop: 6 }}>
+                    {w}
+                  </div>
+                ))}
                 <div className="mf-row" style={{ marginTop: 6 }}>
                   <button type="button" className="mf-btn small primary" onClick={() => void act(`p-${r.id}`, () => apiSend("POST", `/api/finance/admin/review/${r.id}/decision`, { decision: "publish" }, { idempotencyKey: newIdempotencyKey() }), "Published with its evidence.")}>
                     Publish

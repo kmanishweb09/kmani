@@ -183,6 +183,53 @@ test("Deal Memory: add cards, review one and see the next due date persist", asy
   await checkA11y(page, "deal-memory");
 });
 
+test("owner research maintenance: draft an observation, preview, publish, see it sourced on the company page, then roll it back", async ({ page }) => {
+  await signIn(page, "owner", "/finance/companies/ambuja-cements");
+  await page.getByRole("link", { name: "Add a dated observation with its source" }).click();
+  await expect(page).toHaveURL(/\/finance\/research\?tab=edit&kind=observation&entity=ambuja-cements/);
+  await expect(page.getByLabel("Proposal (JSON)")).toHaveValue(/"companyId": "ambuja-cements"/);
+  await page.getByLabel("URL (https)").fill("https://www.ambujacement.com/investors/annual-report-fy2026-test.pdf");
+  await page.getByLabel("Publisher").fill("Ambuja Cements Limited");
+  await page.getByLabel("Title", { exact: true }).fill("Annual report FY2026 (e2e fixture)");
+  await page.getByLabel("Published (date)").fill("2026-06-30");
+  await page.getByLabel("Proposal (JSON)").fill(
+    JSON.stringify({
+      companyId: "ambuja-cements",
+      observation: { metric: "revenue", value: 43210.5, unit: "currency", currency: "INR", scale: "crore", period: { type: "FY", end: "2026-03-31", months: 12, label: "FY2026" }, scope: "consolidated", basis: "reported", cites: [{ doc: "d1", locator: "Consolidated P&L", excerpt: null, status: "human_reviewed", checkedAt: null, method: "owner_entry" }] },
+    }),
+  );
+  await page.getByRole("button", { name: "Preview" }).click();
+  await expect(page.getByRole("region", { name: "Draft preview" })).toContainText("Ready to publish");
+  await checkA11y(page, "research-maintenance");
+  await page.getByRole("button", { name: "Save draft" }).click();
+  await expect(page).toHaveURL(/draft=dr_/);
+  await page.getByRole("button", { name: "Preview" }).click();
+  await page.getByRole("button", { name: "Publish…" }).click();
+  await page.getByRole("dialog", { name: "Publish this change?" }).getByRole("button", { name: "Publish" }).click();
+  await expect(page.getByRole("status").filter({ hasText: /Published\. The change is in the published history/ })).toBeVisible();
+  await page.goto("/finance/companies/ambuja-cements");
+  await expect(page.locator("main")).toContainText("43,210.5");
+  await expect(page.getByRole("list", { name: "Record history" })).toContainText("Observation added");
+  await page.goto("/finance/research?tab=history");
+  await page.getByRole("button", { name: /Roll back company observation on company:ambuja-cements/ }).click();
+  await page.getByLabel("Why? (shown in the history)").fill("E2E rollback check");
+  await page.getByRole("dialog", { name: "Roll back this change?" }).getByRole("button", { name: "Roll back" }).click();
+  await expect(page.getByRole("status").filter({ hasText: /Rolled back\. The original change/ })).toBeVisible();
+  await page.goto("/finance/companies/ambuja-cements");
+  await expect(page.locator("main")).not.toContainText("43,210.5");
+  await expect(page.getByRole("list", { name: "Record history" })).toContainText("Rollback");
+});
+
+test("owner: the evidence drawer offers a source check that opens a claim-verification draft", async ({ page }) => {
+  await signIn(page, "owner", "/finance/deals/disney-21st-century-fox");
+  await page.getByRole("button", { name: /Show evidence for headline value/ }).first().click();
+  await page.getByRole("dialog", { name: /Evidence: headline value/ }).getByRole("button", { name: "Record a source check" }).first().click();
+  await expect(page).toHaveURL(/\/finance\/research\?tab=edit&kind=claim_verification&entity=ev-/);
+  await expect(page.getByLabel("Proposal (JSON)")).toHaveValue(/"status": "source_checked"/);
+  await page.getByRole("button", { name: "Preview" }).click();
+  await expect(page.getByRole("region", { name: "Draft preview" })).toContainText(/retrieval required|locator required/i);
+});
+
 test("export private data, preview an import with duplicates, and nothing is deleted", async ({ page }) => {
   await signIn(page, "owner", "/finance/settings");
   const exp = await page.request.get("/api/finance/export");

@@ -16,7 +16,7 @@ const NAV: Array<{ to: string; label: string; icon: IconName; match: RouteName[]
 ];
 
 const UTIL: Array<{ to: string; label: string; icon: IconName; match: RouteName[] }> = [
-  { to: "/finance/sources", label: "Sources", icon: "sources", match: ["sources"] },
+  { to: "/finance/sources", label: "Sources", icon: "sources", match: ["sources", "research"] },
   { to: "/finance/settings", label: "Settings", icon: "settings", match: ["settings"] },
 ];
 

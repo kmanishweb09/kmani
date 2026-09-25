@@ -6,7 +6,7 @@ import { SECTOR_NAMES, SECTOR_SLUGS, type SectorSlugValue as SectorSlug } from "
 import { toCsv } from "../../shared/text/csv";
 import { HttpError, publicJson, textResponse } from "../http";
 import { runtimeClaim } from "../feedStore";
-import { archive, dealDetail, evidenceMap, getResearch, type ResearchView } from "../research";
+import { archive, dealDetail, evidenceMap, getResearch, publicHistory, type ResearchView } from "../research";
 
 export { dealDetail };
 import type { Router } from "../router";
@@ -300,6 +300,7 @@ export function registerPublicRoutes(r: Router): void {
           basis: o.basis,
           definition: o.definition ?? null,
           ev: o.ev,
+          supersededBy: (o as { supersededBy?: { id: string; publishedAt: string; note: string } }).supersededBy ?? null,
         })),
         peers: co.peers.map((p) => ({ ...p, displayName: view.companyById.get(p.companyId)?.displayName ?? null })),
         ownership: co.ownership.map((o) => ({ holder: o.holder, pct: o.pct, asOf: o.asOf, ev: o.ev })),
@@ -307,6 +308,7 @@ export function registerPublicRoutes(r: Router): void {
         corrections,
         evidence: evidenceMap(view, evIds),
         recordUpdated: co.recordUpdated,
+        history: publicHistory(view, `company:${id}`),
       };
       return publicJson(c.request, detail, { etagSeed: view.version });
     },

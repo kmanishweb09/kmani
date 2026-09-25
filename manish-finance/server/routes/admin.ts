@@ -321,7 +321,19 @@ export function registerAdminRoutes(r: Router): void {
         status === "all"
           ? await db.prepare("SELECT * FROM finance_review_queue ORDER BY created_at DESC LIMIT 200").all<ReviewRow>()
           : await db.prepare("SELECT * FROM finance_review_queue WHERE status = ? ORDER BY created_at DESC LIMIT 200").bind(status).all<ReviewRow>();
-      return privateJson({ items: (rows.results ?? []).map(reviewView) });
+      const view = await getResearch(db);
+      const items = (rows.results ?? []).map((row) => {
+        const v = reviewView(row);
+        const p = v.proposal as { dealId?: string; event?: { date?: string; statusAfter?: string | null } };
+        const deal = p.dealId ? view.dealById.get(p.dealId) : undefined;
+        const warnings: string[] = [];
+        // A status event older than the deal's current status is added to the timeline only.
+        if (deal && p.event?.statusAfter && p.event.date && p.event.date < deal.status.asOf) {
+          warnings.push(`Dated before the current status (${deal.status.value.replace(/_/g, " ")} as of ${deal.status.asOf}): publishing adds it to the timeline but does not change the status.`);
+        }
+        return { ...v, warnings };
+      });
+      return privateJson({ items });
     },
   });
 

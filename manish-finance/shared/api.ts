@@ -175,6 +175,19 @@ export interface DealDetail extends DealSummary {
   recordUpdated: string;
   evidence: Record<string, ClaimView>;
   archiveVersion: string;
+  /** Published changes to this record after the archive build (oldest first), including rollbacks. */
+  history: RecordHistoryEntry[];
+}
+
+export interface RecordHistoryEntry {
+  changeId: string;
+  changeType: string;
+  fields: string[];
+  note: string | null;
+  publishedAt: string;
+  revertedBy: string | null;
+  reverts: string | null;
+  statusNotApplied?: boolean;
 }
 
 export interface CompanySummary {
@@ -204,6 +217,8 @@ export interface ObservationView {
   basis: string;
   definition: string | null;
   ev: string[];
+  /** Set when a later published observation revised this value (the old value stays visible). */
+  supersededBy?: { id: string; publishedAt: string; note: string } | null;
 }
 
 export interface CompanyDetail extends CompanySummary {
@@ -221,6 +236,7 @@ export interface CompanyDetail extends CompanySummary {
   corrections: Array<{ id: string; field: string; previous: unknown; next: unknown; note: string; publishedAt: string; ev: string[] }>;
   evidence: Record<string, ClaimView>;
   recordUpdated: string;
+  history: RecordHistoryEntry[];
 }
 
 export interface FeedItemView {

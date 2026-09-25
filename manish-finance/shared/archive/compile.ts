@@ -6,6 +6,9 @@ import type {
   Cite,
   Company,
   Deal,
+  DealEvent,
+  DealTerm,
+  Observation,
   GlossaryTerm,
   LearningModule,
   Question,
@@ -152,14 +155,28 @@ export function termDisplay(t: { metric: string; amount: number | null; currency
   return parts.join(" ") || "—";
 }
 
-class ClaimCollector {
+/**
+ * Turns inline citations into claim records with stable IDs. The archive build uses content-hash IDs
+ * (`ev-<hash>`); owner-published records pass `idPrefix` so their claims get `ev-p-<prefix>-<n>` IDs
+ * that cannot collide with archive claims.
+ */
+export class ClaimCollector {
   claims: Record<string, CompiledClaim> = {};
-  constructor(private readonly docs: Record<string, SourceDocument>) {}
+  private n = 0;
+  constructor(
+    private readonly docs: Record<string, SourceDocument>,
+    private readonly idPrefix: string | null = null,
+  ) {}
 
   add(subject: CompiledClaim["subject"], field: string, label: string, display: string, cites: Cite[] | undefined | null): string[] {
     if (!cites?.length) return [];
     return cites.map((c, i) => {
       if (!this.docs[c.doc]) throw new Error(`Unknown document ${c.doc} cited by ${subject.type}:${subject.id} ${field}`);
+      if (this.idPrefix) {
+        const id = `ev-p-${this.idPrefix}-${this.n++}`;
+        this.claims[id] = { id, subject, field, label, display, documentId: c.doc, locator: c.locator ?? null, excerpt: c.excerpt ?? null, status: c.status, checkedAt: c.checkedAt, method: c.method, note: c.note ?? null };
+        return id;
+      }
       let id = `ev-${shortHash(`${subject.type}|${subject.id}|${field}|${c.doc}|${i}`)}`;
       let n = 1;
       while (this.claims[id]) id = `ev-${shortHash(`${subject.type}|${subject.id}|${field}|${c.doc}|${i}|${n++}`)}`;
@@ -194,33 +211,51 @@ function stakeDisplay(s: Deal["stake"]): string {
   return parts.join("; ");
 }
 
-export function compileDeal(d: Deal, col: ClaimCollector): CompiledDeal {
-  const subject = { type: "deal" as const, id: d.id };
-  const terms: TermView[] = d.terms.map((t, i) => {
-    const label = termLabel(t.metric, t.label);
-    return {
-      id: `${d.id}-t${i}`,
-      metric: t.metric,
-      label,
-      amount: t.amount ?? null,
-      currency: t.currency ?? null,
-      unit: t.unit ?? null,
-      ratio: t.ratio ?? null,
-      text: t.text ?? null,
-      valueBasis: t.valueBasis ?? null,
-      ownershipPct: t.ownershipPct ?? null,
-      kind: t.kind,
-      asOf: t.asOf,
-      reference: t.reference ?? null,
-      status: t.status,
-      note: t.note ?? null,
-      headline: t.headline ?? false,
-      multipleBasis: t.multipleBasis ?? null,
-      ev: col.add(subject, `terms.${i}`, label, termDisplay({ ...t, amount: t.amount ?? null }), t.cites),
+/** Compiles the sub-objects of a deal that an owner edit may replace, exactly as compileDeal does. */
+export function compileDealFields(dealId: string, f: Partial<Pick<Deal, "otherParties" | "advisers" | "rationale" | "financing" | "payment" | "stake">>, col: ClaimCollector): Partial<CompiledDeal> {
+  const subject = { type: "deal" as const, id: dealId };
+  const out: Partial<CompiledDeal> = {};
+  if (f.otherParties) out.otherParties = f.otherParties.map((p, i) => ({ ...party(col, dealId, `otherParties.${i}`, `Party (${p.role.replace("_", " ")})`, p), role: p.role }));
+  if (f.advisers)
+    out.advisers = {
+      disclosure: f.advisers.disclosure,
+      list: f.advisers.list.map((a, i) => ({ side: a.side, role: a.role, name: a.name, ev: col.add(subject, `advisers.${i}`, `${a.side} ${a.role} adviser`, a.name, a.cites) })),
+      note: f.advisers.note ?? null,
     };
-  });
-  const events: EventView[] = d.events.map((e, i) => ({
-    id: `${d.id}-e${i}`,
+  if (f.rationale) out.rationale = f.rationale.map((r, i) => ({ text: r.text, ev: col.add(subject, `rationale.${i}`, "Stated rationale", r.text.slice(0, 160), r.cites) }));
+  if (f.financing !== undefined) out.financing = f.financing ? { text: f.financing.text, ev: col.add(subject, "financing", "Financing", f.financing.text, f.financing.cites) } : null;
+  if (f.payment) out.payment = { mix: f.payment.mix, text: f.payment.text, ev: col.add(subject, "payment", "Consideration", f.payment.text, f.payment.cites) };
+  if (f.stake) out.stake = { acquiredPct: f.stake.acquiredPct, resultingPct: f.stake.resultingPct, note: f.stake.note ?? null, ev: col.add(subject, "stake", "Stake", stakeDisplay(f.stake), f.stake.cites) };
+  return out;
+}
+
+export function compileTerm(dealId: string, t: DealTerm, id: string, field: string, col: ClaimCollector): TermView {
+  const label = termLabel(t.metric, t.label);
+  return {
+    id,
+    metric: t.metric,
+    label,
+    amount: t.amount ?? null,
+    currency: t.currency ?? null,
+    unit: t.unit ?? null,
+    ratio: t.ratio ?? null,
+    text: t.text ?? null,
+    valueBasis: t.valueBasis ?? null,
+    ownershipPct: t.ownershipPct ?? null,
+    kind: t.kind,
+    asOf: t.asOf,
+    reference: t.reference ?? null,
+    status: t.status,
+    note: t.note ?? null,
+    headline: t.headline ?? false,
+    multipleBasis: t.multipleBasis ?? null,
+    ev: col.add({ type: "deal", id: dealId }, field, label, termDisplay({ ...t, amount: t.amount ?? null }), t.cites),
+  };
+}
+
+export function compileEvent(dealId: string, e: DealEvent, id: string, field: string, col: ClaimCollector): EventView {
+  return {
+    id,
     type: e.type,
     date: { date: e.date.date, precision: e.date.precision },
     publishedDate: e.publishedDate ?? null,
@@ -230,9 +265,15 @@ export function compileDeal(d: Deal, col: ClaimCollector): CompiledDeal {
     authority: e.authority ?? null,
     statusAfter: e.statusAfter ?? null,
     whyItMatters: e.whyItMatters ?? null,
-    ev: col.add(subject, `events.${i}`, e.title, `${formatDateValue(e.date)}: ${e.title}`, e.cites),
+    ev: col.add({ type: "deal", id: dealId }, field, e.title, `${formatDateValue(e.date)}: ${e.title}`, e.cites),
     origin: "archive" as const,
-  }));
+  };
+}
+
+export function compileDeal(d: Deal, col: ClaimCollector): CompiledDeal {
+  const subject = { type: "deal" as const, id: d.id };
+  const terms: TermView[] = d.terms.map((t, i) => compileTerm(d.id, t, `${d.id}-t${i}`, `terms.${i}`, col));
+  const events: EventView[] = d.events.map((e, i) => compileEvent(d.id, e, `${d.id}-e${i}`, `events.${i}`, col));
   const autopsy: CompiledAutopsy | null = d.autopsy
     ? {
         asAnnounced: d.autopsy.asAnnounced,
@@ -367,17 +408,19 @@ export function observationDisplay(o: { value: number | null; unit: string; curr
   return o.scale && o.scale !== "one" ? `${o.value} ${o.scale}` : o.value.toLocaleString("en-US");
 }
 
+export function compileObservation(companyId: string, o: Observation, id: string, field: string, col: ClaimCollector): CompiledCompany["observations"][number] {
+  const { cites, ...ob } = o;
+  const label = `${observationLabel(o.metric, o.label)} — ${o.period.label}`;
+  return { ...ob, id, ev: col.add({ type: "company", id: companyId }, field, label, observationDisplay(o), cites) };
+}
+
 export function compileCompany(c: Company, col: ClaimCollector): CompiledCompany {
   const subject = { type: "company" as const, id: c.id };
   const { identityCites, observations, ownership, ...rest } = c;
   return {
     ...rest,
     identityEv: col.add(subject, "identity", "Identity (legal name, listing, country)", `${c.legalName} (${c.country})`, identityCites),
-    observations: observations.map((o, i) => {
-      const { cites, ...ob } = o;
-      const label = `${observationLabel(o.metric, o.label)} — ${o.period.label}`;
-      return { ...ob, id: `${c.id}-o${i}`, ev: col.add(subject, `observations.${i}`, label, observationDisplay(o), cites) };
-    }),
+    observations: observations.map((o, i) => compileObservation(c.id, o, `${c.id}-o${i}`, `observations.${i}`, col)),
     ownership: ownership.map((o, i) => {
       const { cites, ...ow } = o;
       return { ...ow, ev: col.add(subject, `ownership.${i}`, "Shareholding", `${o.holder}: ${o.pct ?? "?"}% (as of ${o.asOf})`, cites) };

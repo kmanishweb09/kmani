@@ -3,6 +3,8 @@ import type { ClaimView } from "../../shared/api";
 import { formatDateValue } from "../../shared/dates";
 import { VERIFICATION_HELP, VERIFICATION_LABEL } from "../../shared/labels";
 import { apiGet, errorMessage } from "../app/api";
+import { navigate } from "../app/router";
+import { useSession } from "../app/session";
 import { Icon } from "./Icon";
 import { Drawer } from "./Overlay";
 
@@ -49,7 +51,7 @@ export function VerificationBadge({ status }: { status: ClaimView["status"] }) {
   );
 }
 
-function ClaimCard({ claim }: { claim: ClaimView }) {
+function ClaimCard({ claim, onVerify }: { claim: ClaimView; onVerify?: (() => void) | undefined }) {
   const d = claim.document;
   const [copied, setCopied] = useState(false);
   const citation = `${d.publisher}, “${d.title}”${d.publishedDate ? `, ${formatDateValue(d.publishedDate)}` : ""}. ${d.url}`;
@@ -112,6 +114,11 @@ function ClaimCard({ claim }: { claim: ClaimView }) {
           >
             <Icon name="copy" size={14} /> {copied ? "Copied" : "Copy citation"}
           </button>
+          {onVerify ? (
+            <button type="button" className="mf-btn small" onClick={onVerify}>
+              <Icon name="check" size={14} /> Record a source check
+            </button>
+          ) : null}
         </div>
       </div>
     </article>
@@ -119,6 +126,7 @@ function ClaimCard({ claim }: { claim: ClaimView }) {
 }
 
 export function EvidenceProvider({ children }: { children: ReactNode }) {
+  const { isOwner } = useSession();
   const [req, setReq] = useState<EvidenceRequest | null>(null);
   const [claims, setClaims] = useState<ClaimView[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -162,7 +170,18 @@ export function EvidenceProvider({ children }: { children: ReactNode }) {
         {error ? <p className="mf-error-text">{error}</p> : null}
         {!loading && !error && !claims.length ? <p className="mf-muted">No evidence record is attached to this value.</p> : null}
         {claims.map((c) => (
-          <ClaimCard key={c.id} claim={c} />
+          <ClaimCard
+            key={c.id}
+            claim={c}
+            onVerify={
+              isOwner
+                ? () => {
+                    setReq(null);
+                    navigate(`/finance/research?tab=edit&kind=claim_verification&entity=${encodeURIComponent(c.id)}`);
+                  }
+                : undefined
+            }
+          />
         ))}
         <p className="mf-hint">
           Provenance policy: primary sources (filings, company and regulator documents) take precedence; only short permitted excerpts are stored. See{" "}

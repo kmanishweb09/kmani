@@ -16,6 +16,7 @@ import { Ev, useRegisterEvidence } from "../components/Evidence";
 import { Icon } from "../components/Icon";
 import { Dialog } from "../components/Overlay";
 import { AiAssist } from "../components/AiAssist";
+import { RecordHistory } from "../components/RecordHistory";
 import { PageHead } from "../components/PageHead";
 import { EmptyState, ErrorState, ProvTag, SaveState, Segmented, Skeleton, StatusPill, TabPanel, Tabs } from "../components/ui";
 import { useAutosave } from "../lib/autosave";
@@ -385,6 +386,7 @@ function DealActions({ deal, historical }: { deal: DealDetail; historical: Histo
 
 export function DealDetailPage({ id }: { id: string }) {
   const route = useRoute();
+  const { isOwner } = useSession();
   const { prefs } = usePrefs();
   const q = useQuery<DealDetail>(`/api/finance/deals/${id}`);
   const deal = q.data;
@@ -628,6 +630,29 @@ export function DealDetailPage({ id }: { id: string }) {
                   )}
                 </div>
               </section>
+              {!announcedMode ? <RecordHistory entries={deal.history ?? []} /> : null}
+              {isOwner && !announcedMode ? (
+                <section className="mf-panel">
+                  <div className="mf-panel-head">
+                    <h2 className="mf-panel-title" style={{ fontSize: 16 }}>
+                      Maintain this record
+                    </h2>
+                  </div>
+                  <div className="mf-panel-body">
+                    <ul className="mf-list mf-small">
+                      <li>
+                        <Link to={`/finance/research?tab=edit&kind=deal_event&entity=${deal.id}`}>Add a dated event with its source</Link>
+                      </li>
+                      <li>
+                        <Link to={`/finance/research?tab=edit&kind=term_revision&entity=${deal.id}`}>Record a revised term or transaction multiple</Link>
+                      </li>
+                      <li>
+                        <Link to={`/finance/research?tab=edit&kind=deal_edit&entity=${deal.id}`}>Edit counterparties, advisers or other fields</Link>
+                      </li>
+                    </ul>
+                  </div>
+                </section>
+              ) : null}
               <AiAssist subject={{ type: "deal", id: shown.id }} subjectTitle={shown.title} asOf={historical?.cutoff ?? null} ops={["summarize", "questions", "explain", "draft_note"]} />
             </aside>
           </div>

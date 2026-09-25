@@ -1,5 +1,5 @@
 import ARCHIVE from "virtual:finance-archive";
-import type { ClaimView, CompanySummary, DealDetail, DealSummary, EventView, TermView } from "../shared/api";
+import type { ClaimView, CompanySummary, DealDetail, DealSummary, EventView, RecordHistoryEntry, TermView } from "../shared/api";
 import type { CompiledArchive, CompiledClaim, CompiledCompany, CompiledDeal } from "../shared/archive/compile";
 import { collectEvidenceIds, summarizeDeal } from "../shared/archive/derive";
 import { dealSearchText, normalizeSearchText } from "../shared/dealQuery";
@@ -53,6 +53,63 @@ export interface ResearchView {
   claims: Record<string, CompiledClaim>;
   documents: Record<string, SourceDocument>;
   aliasIndex: Array<{ alias: string; type: "deal" | "company"; id: string; name: string }>;
+  /** Published-change history per entity ("deal:<id>", "company:<id>", "claim:<id>"), oldest first. */
+  history: Map<string, HistoryEntry[]>;
+  /** Sequence of the latest effective change per entity field ("deal:<id>:<field>"; "*" = whole record). */
+  fieldSeq: Map<string, number>;
+}
+
+export interface HistoryEntry {
+  changeId: string;
+  seq: number;
+  changeType: string;
+  fields: string[];
+  note: string | null;
+  publishedAt: string;
+  /** Set when a later revert undid this change. */
+  revertedBy: string | null;
+  /** For a revert: the change it undid. */
+  reverts: string | null;
+  /** For edits: values before and after the change. */
+  previous?: Record<string, unknown> | null;
+  next?: Record<string, unknown> | null;
+  /** Set when an event was appended but, being older than the current status, did not change it. */
+  statusNotApplied?: boolean;
+}
+
+/** Deal fields an owner edit may replace (identity and dates move only through events and revisions). */
+export const DEAL_EDITABLE = ["title", "aliases", "subsector", "peerGroup", "perimeter", "otherParties", "advisers", "rationale", "financing", "payment", "stake", "sectorContext", "tags", "comparables"] as const;
+/** Company fields an owner edit may replace. */
+export const COMPANY_EDITABLE = ["displayName", "legalName", "aliases", "website", "irUrl", "subsector", "tickers", "lifecycle", "businessModel", "country", "peers"] as const;
+
+/** Fields a published change touches (drives revision-conflict checks and history). */
+export function changeFields(changeType: string, payload: Record<string, unknown>): string[] {
+  switch (changeType) {
+    case "event_append":
+      return (payload.event as EventView | undefined)?.statusAfter ? ["events", "status"] : ["events"];
+    case "term_revision":
+      return ["terms"];
+    case "company_observation":
+      return ["observations"];
+    case "company_correction":
+      return typeof payload.field === "string" ? [payload.field] : [];
+    case "deal_edit":
+    case "company_edit":
+      return Object.keys((payload.fields as Record<string, unknown> | undefined) ?? {});
+    case "claim_status":
+      return ["status"];
+    case "new_deal":
+    case "deal_create":
+    case "company_create":
+      return ["*"];
+    default:
+      return [];
+  }
+}
+
+/** Entity key a published change applies to. */
+export function changeEntityKey(ch: Pick<PublishedChangeRow, "entity_type" | "entity_id">): string {
+  return `${ch.entity_type}:${ch.entity_id}`;
 }
 
 let cached: ResearchView | null = null;
@@ -108,19 +165,61 @@ function buildView(changes: PublishedChangeRow[]): ResearchView {
     return c;
   };
 
+  // Reverts are resolved first: a reverted change is skipped entirely (its evidence too), and the
+  // revert itself is recorded in the entity's history.
+  const reverted = new Map<string, string>();
+  for (const ch of changes) {
+    if (ch.change_type !== "revert") continue;
+    const target = parseJsonColumn<{ revertsChangeId?: string }>(ch.payload_json, {}).revertsChangeId;
+    if (target) reverted.set(target, ch.id);
+  }
+  const history = new Map<string, HistoryEntry[]>();
+  const fieldSeq = new Map<string, number>();
+  const byId = new Map(changes.map((c) => [c.id, c]));
+  const record = (ch: PublishedChangeRow, fields: string[], extra: Partial<HistoryEntry> = {}) => {
+    const key = changeEntityKey(ch);
+    const list = history.get(key) ?? [];
+    list.push({ changeId: ch.id, seq: ch.seq, changeType: ch.change_type, fields, note: ch.note, publishedAt: ch.published_at, revertedBy: reverted.get(ch.id) ?? null, reverts: null, ...extra });
+    history.set(key, list);
+  };
+  const touch = (ch: PublishedChangeRow, fields: string[]) => {
+    for (const f of fields) fieldSeq.set(`${changeEntityKey(ch)}:${f}`, ch.seq);
+  };
+
   for (const ch of changes) {
     const payload = parseJsonColumn<Record<string, unknown>>(ch.payload_json, {});
+    const fields = changeFields(ch.change_type, payload);
+    if (ch.change_type === "revert") {
+      const target = byId.get(typeof payload.revertsChangeId === "string" ? payload.revertsChangeId : "");
+      if (target) {
+        const tf = changeFields(target.change_type, parseJsonColumn<Record<string, unknown>>(target.payload_json, {}));
+        touch({ ...ch, entity_type: target.entity_type, entity_id: target.entity_id }, tf);
+      }
+      record(ch, [], { reverts: target?.id ?? null });
+      continue;
+    }
+    if (reverted.has(ch.id)) {
+      record(ch, fields);
+      touch(ch, fields);
+      continue;
+    }
     const ev = parseJsonColumn<EvidencePayload>(ch.evidence_json, {});
     for (const d of ev.documents ?? []) documents[d.id] = d;
     for (const cl of ev.claims ?? []) claims[cl.id] = cl;
     const evIds = (ev.claims ?? []).map((c) => c.id);
+    let extra: Partial<HistoryEntry> = {};
     switch (ch.change_type) {
       case "event_append": {
         const d = mutableDeal(ch.entity_id);
         const e = payload.event as EventView | undefined;
         if (!d || !e) break;
         d.events.push({ ...e, ev: e.ev?.length ? e.ev : evIds, origin: "published_update" });
-        if (e.statusAfter) d.status = { value: e.statusAfter, asOf: e.date.date, note: null, ev: evIds };
+        // An event dated before the current status (e.g. a historical filing imported later) is added to
+        // the timeline but never moves the current status backwards.
+        if (e.statusAfter) {
+          if (e.date.date >= d.status.asOf) d.status = { value: e.statusAfter, asOf: e.date.date, note: null, ev: e.ev?.length ? e.ev : evIds };
+          else extra = { statusNotApplied: true };
+        }
         lastChanged.set(d.id, ch.published_at);
         break;
       }
@@ -131,30 +230,65 @@ function buildView(changes: PublishedChangeRow[]): ResearchView {
         const supersedes = typeof payload.supersedesTermId === "string" ? payload.supersedesTermId : null;
         if (supersedes) {
           const old = d.terms.find((x) => x.id === supersedes);
-          if (old) old.correction = { publishedAt: ch.published_at, note: ch.note ?? "Revised terms published" };
+          if (old && old.asOf <= t.asOf) old.correction = { publishedAt: ch.published_at, note: ch.note ?? "Revised terms published" };
         }
-        d.terms.push({ ...t, ev: t.ev?.length ? t.ev : evIds });
+        // A revision dated before the latest current term of the same metric cannot become the headline.
+        const newer = d.terms.some((x) => x.metric === t.metric && !x.correction && x.asOf > t.asOf);
+        d.terms.push({ ...t, headline: newer ? false : t.headline, ev: t.ev?.length ? t.ev : evIds });
         lastChanged.set(d.id, ch.published_at);
         break;
       }
-      case "new_deal": {
+      case "new_deal":
+      case "deal_create": {
         const nd = payload.deal as CompiledDeal | undefined;
         if (!nd || deals.has(nd.id)) break;
         deals.set(nd.id, nd);
+        cloned.add(`deal:${nd.id}`);
         lastChanged.set(nd.id, ch.published_at);
         break;
       }
-      case "company_correction": {
+      case "deal_edit": {
+        const d = mutableDeal(ch.entity_id);
+        const f = (payload.fields as Record<string, unknown> | undefined) ?? {};
+        if (!d) break;
+        for (const [k, v] of Object.entries(f)) if ((DEAL_EDITABLE as readonly string[]).includes(k)) (d as unknown as Record<string, unknown>)[k] = v;
+        extra = { previous: (payload.previous as Record<string, unknown>) ?? null, next: f };
+        lastChanged.set(d.id, ch.published_at);
+        break;
+      }
+      case "company_create": {
+        const nc = payload.company as CompiledCompany | undefined;
+        if (!nc || companies.has(nc.id)) break;
+        companies.set(nc.id, nc);
+        cloned.add(`company:${nc.id}`);
+        break;
+      }
+      case "company_correction":
+      case "company_edit": {
         const c = mutableCompany(ch.entity_id);
-        const field = typeof payload.field === "string" ? payload.field : "";
-        if (!c || !field) break;
-        const allowed = ["displayName", "legalName", "aliases", "website", "irUrl", "subsector", "tickers", "lifecycle", "businessModel", "country"];
-        if (!allowed.includes(field)) break;
-        const previous = (c as unknown as Record<string, unknown>)[field];
-        (c as unknown as Record<string, unknown>)[field] = payload.next;
+        if (!c) break;
+        const f: Record<string, unknown> = ch.change_type === "company_edit" ? ((payload.fields as Record<string, unknown>) ?? {}) : typeof payload.field === "string" ? { [payload.field]: payload.next } : {};
         const list = companyCorrections.get(c.id) ?? [];
-        list.push({ id: ch.id, field, previous, next: payload.next, note: ch.note ?? "", publishedAt: ch.published_at, ev: evIds });
+        for (const [field, next] of Object.entries(f)) {
+          if (!(COMPANY_EDITABLE as readonly string[]).includes(field)) continue;
+          const previous = (c as unknown as Record<string, unknown>)[field];
+          (c as unknown as Record<string, unknown>)[field] = next;
+          list.push({ id: ch.id, field, previous, next, note: ch.note ?? "", publishedAt: ch.published_at, ev: evIds });
+        }
         companyCorrections.set(c.id, list);
+        extra = { previous: (payload.previous as Record<string, unknown>) ?? null, next: f };
+        break;
+      }
+      case "company_observation": {
+        const c = mutableCompany(ch.entity_id);
+        const o = payload.observation as CompiledCompany["observations"][number] | undefined;
+        if (!c || !o) break;
+        const supersedes = typeof payload.supersedesObservationId === "string" ? payload.supersedesObservationId : null;
+        if (supersedes) {
+          const old = c.observations.find((x) => x.id === supersedes) as (CompiledCompany["observations"][number] & { supersededBy?: unknown }) | undefined;
+          if (old) old.supersededBy = { id: o.id, publishedAt: ch.published_at, note: ch.note ?? "Revised observation published" };
+        }
+        c.observations.push({ ...o, ev: o.ev?.length ? o.ev : evIds });
         break;
       }
       case "claim_status": {
@@ -167,13 +301,21 @@ function buildView(changes: PublishedChangeRow[]): ResearchView {
           checkedAt: (payload.checkedAt as string) ?? existing.checkedAt,
           method: (payload.method as CompiledClaim["method"]) ?? existing.method,
           note: (payload.note as string) ?? existing.note,
+          locator: typeof payload.locator === "string" ? payload.locator : existing.locator,
+          excerpt: typeof payload.excerpt === "string" ? payload.excerpt : existing.excerpt,
         };
+        const docPatch = payload.document as Partial<SourceDocument> & { id?: string } | undefined;
+        const doc = docPatch?.id ? documents[docPatch.id] : undefined;
+        if (doc && docPatch?.retrievedAt) documents[doc.id] = { ...doc, retrievedAt: docPatch.retrievedAt, retrievalStatus: "retrieved", retrievalNote: docPatch.retrievalNote ?? doc.retrievalNote ?? null };
         if (existing.subject.type === "deal") lastChanged.set(existing.subject.id, ch.published_at);
+        extra = { previous: { status: existing.status, checkedAt: existing.checkedAt, method: existing.method }, next: { status: claims[id]?.status, checkedAt: claims[id]?.checkedAt, method: claims[id]?.method, checkedValue: payload.checkedValue ?? null } };
         break;
       }
       default:
         break;
     }
+    record(ch, fields, extra);
+    touch(ch, fields);
   }
 
   const dealList = [...deals.values()];
@@ -218,7 +360,20 @@ function buildView(changes: PublishedChangeRow[]): ResearchView {
     claims,
     documents,
     aliasIndex,
+    history,
+    fieldSeq,
   };
+}
+
+/** Latest effective change sequence among the given fields of an entity (0 when untouched since the archive). */
+export function entityFieldSeq(view: Pick<ResearchView, "fieldSeq">, entityKey: string, fields: string[]): number {
+  let max = view.fieldSeq.get(`${entityKey}:*`) ?? 0;
+  const all = fields.includes("*");
+  for (const [k, v] of view.fieldSeq) {
+    if (!k.startsWith(`${entityKey}:`)) continue;
+    if (all || fields.includes(k.slice(entityKey.length + 1))) max = Math.max(max, v);
+  }
+  return max;
 }
 
 /** Returns the current research view, reloading overlays only when D1 has newer published changes. */
@@ -296,5 +451,11 @@ export function dealDetail(view: ResearchView, id: string): DealDetail | null {
     recordUpdated: d.recordUpdated,
     evidence: evidenceMap(view, collectEvidenceIds(d)),
     archiveVersion: view.archiveVersion,
+    history: publicHistory(view, `deal:${id}`),
   };
+}
+
+/** Public view of a record's change history (no internal sequence numbers or before/after payloads). */
+export function publicHistory(view: Pick<ResearchView, "history">, key: string): RecordHistoryEntry[] {
+  return (view.history.get(key) ?? []).map((h) => ({ changeId: h.changeId, changeType: h.changeType, fields: h.fields, note: h.note, publishedAt: h.publishedAt, revertedBy: h.revertedBy, reverts: h.reverts, ...(h.statusNotApplied ? { statusNotApplied: true } : {}) }));
 }

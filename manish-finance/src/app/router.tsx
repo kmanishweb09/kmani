@@ -21,6 +21,7 @@ export type RouteName =
   | "note"
   | "sources"
   | "settings"
+  | "research"
   | "not_found";
 
 export interface Route {
@@ -47,6 +48,7 @@ const TABLE: Array<{ name: RouteName; re: RegExp; keys?: string[] }> = [
   { name: "note", re: /^\/finance\/notebook\/([A-Za-z0-9][A-Za-z0-9_-]*)$/, keys: ["id"] },
   { name: "sources", re: /^\/finance\/sources$/ },
   { name: "settings", re: /^\/finance\/settings$/ },
+  { name: "research", re: /^\/finance\/research$/ },
 ];
 
 export function matchRoute(pathname: string, search = "", hash = ""): Route {
