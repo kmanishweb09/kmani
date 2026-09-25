@@ -9,6 +9,11 @@ import * as hdfc from "./deals/hdfc-hdfc-bank";
 import * as indiaAutopsies from "./deals/india-autopsies";
 import * as indiaDeals from "./deals/india-deals";
 import * as indiaFig from "./deals/india-fig";
+import * as sectorDocs from "./sectors/docs";
+import { fig } from "./sectors/fig";
+import { PRIMERS } from "./sectors/primers";
+import { businessServices, energyInfra, industrials, realEstate } from "./sectors/ind-energy-bs-re";
+import { consumer, healthcare, tmt } from "./sectors/tmt-healthcare-consumer";
 
 /**
  * Research archive entry point. Content modules are registered here; `npm run verify:content`
@@ -33,7 +38,7 @@ const DEAL_MODULES: DealModule[] = [hdfc, indiaFig, indiaAutopsies, indiaDeals, 
 const COMPANY_MODULES: CompanyModule[] = [figIndia, indiaCompanies, globalCompanies];
 
 export function loadArchiveSource(): ArchiveSource {
-  const documents: SourceDocument[] = [...DEAL_MODULES.flatMap((m) => m.documents), ...COMPANY_MODULES.flatMap((m) => m.documents)];
+  const documents: SourceDocument[] = [...DEAL_MODULES.flatMap((m) => m.documents), ...COMPANY_MODULES.flatMap((m) => m.documents), ...sectorDocs.documents];
   const deals = DEAL_MODULES.flatMap((m) => [...(m.deal ? [m.deal] : []), ...(m.deals ?? [])]) as Deal[];
   const companies = COMPANY_MODULES.flatMap((m) => m.companies) as Company[];
   return {
@@ -41,7 +46,7 @@ export function loadArchiveSource(): ArchiveSource {
     documents,
     deals,
     companies,
-    sectors: [] as Sector[],
+    sectors: [fig, tmt, healthcare, consumer, industrials, energyInfra, businessServices, realEstate].map((s) => ({ ...s, primer: PRIMERS[s.slug] ?? null })) as Sector[],
     glossary: [] as GlossaryTerm[],
     modules: [] as LearningModule[],
     questions: [] as Question[],

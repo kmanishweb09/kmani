@@ -434,7 +434,10 @@ function resolveReferences(deals: CompiledDeal[], companies: CompiledCompany[], 
     if (c.lifecycle.successorId && !companyIds.has(c.lifecycle.successorId)) c.lifecycle.successorId = null;
     if (c.lifecycle.parentId && !companyIds.has(c.lifecycle.parentId)) c.lifecycle.parentId = null;
   }
-  for (const s of sectors) s.players = s.players.filter((p) => companyIds.has(p.companyId));
+  for (const s of sectors) {
+    s.players = s.players.filter((p) => companyIds.has(p.companyId));
+    for (const v of s.valueChain) v.examples = v.examples.filter((id) => companyIds.has(id));
+  }
 }
 
 export function findUnresolvedReferences(src: ArchiveSource): UnresolvedReference[] {
@@ -455,6 +458,9 @@ export function findUnresolvedReferences(src: ArchiveSource): UnresolvedReferenc
     party(`company:${c.id}`, "lifecycle.successorId", c.lifecycle.successorId);
     party(`company:${c.id}`, "lifecycle.parentId", c.lifecycle.parentId);
   }
-  for (const s of src.sectors) for (const p of s.players) if (!companyIds.has(p.companyId)) out.push({ from: `sector:${s.slug}`, field: "players", ref: p.companyId });
+  for (const s of src.sectors) {
+    for (const p of s.players) if (!companyIds.has(p.companyId)) out.push({ from: `sector:${s.slug}`, field: "players", ref: p.companyId });
+    for (const v of s.valueChain) for (const id of v.examples ?? []) if (!companyIds.has(id)) out.push({ from: `sector:${s.slug}`, field: "valueChain.examples", ref: id });
+  }
   return out;
 }

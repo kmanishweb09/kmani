@@ -1,11 +1,11 @@
 {
-  "measuredAt": "2026-09-25T13:58:59.830Z",
+  "measuredAt": "2026-09-25T14:07:05.977Z",
   "browser": {
     "files": [
       {
-        "file": "finance-app-MHMXM22Q.js",
-        "bytes": 414029,
-        "gzipBytes": 119467
+        "file": "finance-app-YFGQRJLV.js",
+        "bytes": 414213,
+        "gzipBytes": 119504
       },
       {
         "file": "finance-chunk-A7NCSWG6.js",
@@ -30,27 +30,27 @@
       {
         "file": "finance.html",
         "bytes": 1089,
-        "gzipBytes": 562
+        "gzipBytes": 563
       }
     ],
     "initialJsFiles": [
-      "finance-app-MHMXM22Q.js",
+      "finance-app-YFGQRJLV.js",
       "finance-chunk-ZZ4E67KI.js"
     ],
-    "initialJsGzipBytes": 124134,
+    "initialJsGzipBytes": 124171,
     "cssGzipBytes": 6821,
-    "totalGzipBytes": 131814,
+    "totalGzipBytes": 131852,
     "budgetInitialJsGzipBytes": 307200
   },
   "server": {
     "file": "release/server/finance.mjs",
-    "bytes": 1228253,
-    "gzipBytes": 228926
+    "bytes": 1350172,
+    "gzipBytes": 261408
   },
   "combinedHarnessWorker": {
     "file": ".local/harness/worker.mjs",
     "note": "Simulated host bundle: host sentinels + embedded finance assets + finance module. Compare with the real host's Worker size limit.",
-    "bytes": 1693631,
-    "gzipBytes": 361308
+    "bytes": 1815734,
+    "gzipBytes": 393604
   }
 }

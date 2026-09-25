@@ -374,6 +374,8 @@ export const zSector = z.object({
   tagline: z.string().max(200),
   howItMakesMoney: z.string().min(200),
   valueAccrual: z.string().min(100),
+  /** Analyst primer (Markdown): connective reasoning, written as analysis rather than sourced claims. */
+  primer: z.string().min(200).nullish(),
   subsectors: z.array(z.object({ id: zId, name: z.string(), businessModel: z.string().min(40), keyMetrics: z.array(zId).min(1), valuation: z.string().min(20) })).min(3),
   valueChain: z.array(z.object({ stage: z.string(), description: z.string(), economics: z.string(), examples: z.array(zId).default([]) })).min(3),
   metrics: z.array(zMetricDef).min(6),

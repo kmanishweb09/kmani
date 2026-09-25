@@ -1,0 +1,255 @@
+import type { SectorInput } from "../../../shared/schemas/research";
+import { ws } from "../lib";
+
+export const tmt: SectorInput = {
+  slug: "tmt",
+  name: "Technology, Media and Telecom (TMT)",
+  tagline: "IT services, software, internet platforms, telecom, media and semiconductors — recurring revenue, network effects and hardware cycles under one label.",
+  howItMakesMoney:
+    "TMT groups businesses whose revenue quality differs sharply. IT services firms sell people-time on contracts, so revenue scales with headcount and utilisation. Software companies sell subscriptions with high gross margins, so value depends on retention and the cost of acquiring customers. Internet platforms monetise traffic through take rates or advertising. Telecom operators sell connectivity with heavy capital spending and earn a return on network assets. Media owners monetise content through advertising and subscriptions, with sports rights as a major cost. Semiconductor companies ride design wins and capacity cycles.",
+  valueAccrual:
+    "Value accrues to owners of recurring, high-margin revenue with low churn (enterprise software, installed bases such as VMware), to platforms with network effects, and to owners of scarce content or spectrum. Hardware and project businesses capture less value through the cycle unless they own a bottleneck technology.",
+  subsectors: [
+    { id: "it-services", name: "IT services", businessModel: "Multi-year application, cloud and engineering services priced on effort or outcomes; revenue = headcount × utilisation × billing rate.", keyMetrics: ["constant-currency-growth", "ebit-margin-it", "deal-tcv"], valuation: "P/E and EV/EBIT; growth and margin durability drive multiples." },
+    { id: "software", name: "Software and SaaS", businessModel: "Subscriptions with high gross margin; customer acquisition is expensive but retention compounds value.", keyMetrics: ["arr", "nrr", "gross-margin-sw"], valuation: "EV/revenue or EV/ARR for growth; EV/FCF for mature franchises." },
+    { id: "internet-platforms", name: "Internet platforms", businessModel: "Marketplaces, ride-hailing, delivery and ad-funded services; revenue is a take rate on transaction value or advertising yield.", keyMetrics: ["take-rate-tmt"], valuation: "EV/revenue early, EV/EBITDA once profitable; contribution margin per order." },
+    { id: "telecom", name: "Telecom", businessModel: "Connectivity subscriptions over networks requiring spectrum and heavy capex.", keyMetrics: ["arpu"], valuation: "EV/EBITDA and EV/(EBITDA − capex); spectrum liabilities count as debt-like." },
+    { id: "media", name: "Media and entertainment", businessModel: "Advertising and subscription revenue from content; sports rights and originals are the key costs.", keyMetrics: ["arpu"], valuation: "EV/EBITDA; content amortisation policy matters." },
+    { id: "semiconductors", name: "Semiconductors", businessModel: "Chip design and/or manufacturing with long design-in cycles and cyclical demand.", keyMetrics: ["gross-margin-sw"], valuation: "EV/EBITDA and P/E on normalised cycle earnings." },
+  ],
+  valueChain: [
+    { stage: "Silicon and infrastructure", description: "Chips, networks, data centres and cloud capacity.", economics: "Capital- and R&D-intensive; cyclical but with bottleneck winners.", examples: ["broadcom", "renesas"] },
+    { stage: "Software and platforms", description: "Operating systems, enterprise software, marketplaces.", economics: "High gross margins; winner-take-most dynamics in some categories.", examples: ["microsoft", "grab", "uber"] },
+    { stage: "Services and integration", description: "IT services firms implement and run technology for enterprises.", economics: "Labour-based, moderate margins, sticky relationships.", examples: ["wipro", "ltimindtree"] },
+    { stage: "Content and distribution", description: "Studios, broadcasters, streamers and games publishers.", economics: "Hit-driven content costs; value in franchises and distribution scale.", examples: ["disney", "jiostar", "electronic-arts", "zee-entertainment"] },
+  ],
+  metrics: [
+    { id: "arr", name: "Annual recurring revenue (ARR)", formula: "Annualised value of active recurring subscriptions at a point in time", denominator: "n/a (point-in-time run rate)", interpretation: "Scale of contracted recurring revenue.", limitations: "Company-defined; excludes usage and one-time services; not the same as reported revenue.", unit: "currency" },
+    { id: "nrr", name: "Net revenue retention (NRR)", formula: "Recurring revenue this period from customers existing a year ago ÷ their recurring revenue a year ago", denominator: "Prior-year recurring revenue of the same cohort", interpretation: "Above 100% means expansion outweighs churn.", limitations: "Definitions differ (cohort, currency, inclusion of usage).", unit: "percent" },
+    { id: "gross-margin-sw", name: "Gross margin", formula: "(Revenue − cost of revenue) ÷ revenue", denominator: "Revenue", interpretation: "Headroom to fund R&D and sales; software is typically much higher than services.", limitations: "Classification of hosting, support and amortisation varies.", unit: "percent" },
+    { id: "constant-currency-growth", name: "Constant-currency revenue growth", formula: "Growth after restating current revenue at prior-period exchange rates", denominator: "Prior-period revenue", interpretation: "Underlying growth for firms billing in many currencies (Indian IT services).", limitations: "Company methodology; excludes real economic currency effects.", unit: "percent" },
+    { id: "ebit-margin-it", name: "EBIT margin", formula: "EBIT ÷ revenue", denominator: "Revenue", interpretation: "Operating profitability of services firms.", limitations: "One-offs, acquisition amortisation and segment definitions differ.", unit: "percent" },
+    { id: "deal-tcv", name: "Deal wins / total contract value (TCV)", formula: "Sum of contract values signed in the period", denominator: "n/a", interpretation: "Leading indicator of services revenue.", limitations: "Includes renewals and multi-year value; conversion timing is uncertain.", unit: "currency" },
+    { id: "take-rate-tmt", name: "Take rate", formula: "Platform revenue ÷ gross merchandise or gross booking value", denominator: "GMV or gross bookings", interpretation: "Share of transaction value the platform keeps.", limitations: "Gross vs net revenue accounting and incentives distort comparisons.", unit: "percent" },
+    { id: "arpu", name: "Average revenue per user (ARPU)", formula: "Revenue ÷ average subscribers in the period (monthly)", denominator: "Average subscribers", interpretation: "Monetisation per user for telecom and subscription media.", limitations: "Subscriber definitions (active vs registered) vary.", unit: "currency" },
+  ],
+  valuation: [
+    { method: "EV/revenue or EV/ARR", whenUseful: "Early or high-growth software where profits are depressed by growth spending.", whenMisleading: "When comparing businesses with very different gross margins or retention; never compare software ARR with telecom revenue as if interchangeable." },
+    { method: "EV/EBITDA", whenUseful: "Telecom, media and mature platforms with stable EBITDA.", whenMisleading: "When capex or capitalised development is large (EBITDA ignores it) or stock compensation is significant." },
+    { method: "P/E and EV/EBIT", whenUseful: "IT services and mature software with steady earnings.", whenMisleading: "When earnings include large one-offs or the business is at a cyclical peak (semiconductors)." },
+    { method: "DCF on free cash flow", whenUseful: "Installed-base software and franchises with visible cash flows.", whenMisleading: "Terminal value dominates; small changes in growth or WACC swing the result." },
+  ],
+  mnaMotives: [
+    "Buy recurring revenue and installed bases (Broadcom–VMware).",
+    "Buy content or franchises to strengthen a platform (Microsoft–Activision, Disney–Fox).",
+    "Consolidate competitors to end subsidy wars (Grab–Uber SEA, Reliance–Disney JV).",
+    "Acquire capabilities and talent (Wipro–Harman DTS, Renesas–Altium).",
+    "Take-private to restructure away from public markets (EA).",
+  ],
+  integrationIssues: [
+    "Retaining engineers and creative talent; stock-compensation replacement.",
+    "Customer reaction to pricing and packaging changes.",
+    "Platform-neutrality commitments imposed by regulators.",
+    "Integrating go-to-market and product roadmaps without losing focus.",
+  ],
+  diligenceQuestions: [
+    "How much revenue is recurring vs project, advertising or hardware?",
+    "What are gross and net retention by cohort, and how concentrated are customers?",
+    "Does value depend on a platform the acquirer does not control (app stores, cloud providers)?",
+    "What remedies might antitrust authorities require, including under India's deal value threshold?",
+    "How much of the target's value sits in people who can leave?",
+  ],
+  recurringStructures: [
+    "Cash-and-stock elections with proration (Broadcom–VMware).",
+    "Behavioural or divestiture remedies to win clearance (Microsoft–Activision cloud rights to Ubisoft).",
+    "Joint ventures combining assets rather than outright sales (JioStar).",
+  ],
+  regulators: [
+    { body: "Ministry of Electronics and IT (MeitY)", url: "https://www.meity.gov.in", role: "Digital policy, including the Digital Personal Data Protection Act and Rules." },
+    { body: "Telecom Regulatory Authority of India (TRAI)", url: "https://www.trai.gov.in", role: "Telecom and broadcasting tariffs and regulation." },
+    { body: "Competition Commission of India (CCI)", url: "https://www.cci.gov.in", role: "Merger control, including the deal value threshold aimed at digital deals." },
+  ],
+  whatChanged: [
+    { date: "2024-09-10", stage: "effective", title: "India's deal value threshold for merger control takes effect", detail: "Targets with substantial Indian operations and deal value above ₹2,000 crore now need CCI approval — designed with digital acquisitions in mind.", cites: [ws("morganlewis-cci-dvt-2024-09")] },
+    { date: "2025-11-13", stage: "rule", title: "DPDP Rules notified; Data Protection Board provisions effective", detail: "Phase I effective on notification; consent-manager provisions after 12 months; most substantive obligations after 18 months.", cites: [ws("pib-dpdp-rules-2025-11"), ws("sam-dpdp-2025-11")] },
+    { date: "2026-11-13", stage: "effective", title: "DPDP consent-manager provisions scheduled to take effect", detail: "Future date under the phased timeline.", cites: [ws("sam-dpdp-2025-11")] },
+    { date: "2027-05-13", stage: "effective", title: "Most DPDP compliance obligations scheduled to take effect", detail: "Future date; relevant diligence item for data-heavy acquisitions.", cites: [ws("sam-dpdp-2025-11")] },
+    { date: "2023-10-13", stage: "approval", title: "UK CMA clears restructured Microsoft–Activision deal", detail: "Clearance followed a divestiture of cloud-streaming rights to Ubisoft — a template for vertical-foreclosure remedies.", cites: [ws("slaughter-cma-atvi-2023-10")] },
+  ],
+  players: [
+    { companyId: "wipro", group: "India — IT services" },
+    { companyId: "ltimindtree", group: "India — IT services" },
+    { companyId: "jiostar", group: "India — media" },
+    { companyId: "zee-entertainment", group: "India — media" },
+    { companyId: "microsoft", group: "Global — software and platforms" },
+    { companyId: "broadcom", group: "Global — semiconductors and infrastructure software" },
+    { companyId: "renesas", group: "Asia — semiconductors" },
+    { companyId: "softbank", group: "Asia — technology investors" },
+    { companyId: "grab", group: "Asia — internet platforms" },
+    { companyId: "uber", group: "Global — internet platforms" },
+    { companyId: "disney", group: "Global — media" },
+    { companyId: "electronic-arts", group: "Global — games" },
+  ],
+  practiceQuestionIds: ["q-tmt-1", "q-tmt-2", "q-tmt-3", "q-tmt-4", "q-tmt-5"],
+  sourcesNote: "Company metrics are defined by each issuer; compare only like-for-like definitions.",
+  recordUpdated: "2026-09-25",
+};
+
+export const healthcare: SectorInput = {
+  slug: "healthcare",
+  name: "Healthcare",
+  tagline: "Pharmaceuticals, hospitals, diagnostics, devices and contract manufacturing — regulated products versus service delivery.",
+  howItMakesMoney:
+    "Healthcare splits into regulated products and service delivery. Pharma companies earn high gross margins on branded or patented medicines and thinner margins on generics, with R&D and regulatory approvals as gatekeepers. Hospitals earn revenue per occupied bed and per procedure; profitability depends on occupancy, case mix, doctor engagement and payer mix. Diagnostics chains earn on test volumes and realisation per test. Contract research and manufacturing (CRO/CDMO) sell capacity and quality systems to drug developers.",
+  valueAccrual:
+    "Value accrues to owners of differentiated products (specialty drugs, patented molecules, strong brands in chronic therapies), to hospital networks with mature, well-occupied beds and strong clinical teams, and to manufacturers with clean regulatory records. Commodity generics and new hospital capacity earn less until they mature.",
+  subsectors: [
+    { id: "pharma", name: "Pharmaceuticals", businessModel: "Branded generics (India, emerging markets), U.S. generics, specialty and innovative drugs.", keyMetrics: ["rnd-intensity", "ebitda-margin-hc"], valuation: "EV/EBITDA and P/E; pipeline sum-of-the-parts for innovators; patent-cliff adjustments." },
+    { id: "hospitals", name: "Hospitals", businessModel: "Inpatient and outpatient care; revenue = occupied beds × ARPOB.", keyMetrics: ["occupancy-hc", "arpob", "alos"], valuation: "EV/EBITDA, separating mature from new beds; EV per bed as a cross-check." },
+    { id: "diagnostics", name: "Diagnostics", businessModel: "Test volumes across walk-in, home collection and B2B channels.", keyMetrics: ["ebitda-margin-hc"], valuation: "EV/EBITDA and P/E; volume vs realisation split." },
+    { id: "cdmo", name: "Contract research and manufacturing", businessModel: "Development and manufacturing services for drug owners.", keyMetrics: ["ebitda-margin-hc"], valuation: "EV/EBITDA with customer and molecule concentration discounts." },
+  ],
+  valueChain: [
+    { stage: "Discovery and development", description: "Research, clinical trials and regulatory filings.", economics: "High risk, long timelines; value realised on approval.", examples: ["pfizer"] },
+    { stage: "Manufacturing and quality", description: "API and formulation plants meeting GMP standards (U.S. FDA, revised Schedule M).", economics: "Compliance failures stop sales; scale lowers cost.", examples: ["sun-pharma", "torrent-pharma"] },
+    { stage: "Brands and distribution", description: "Field forces, doctor engagement, distributors and pharmacies.", economics: "Branded generics in India earn strong margins from prescriber loyalty.", examples: ["torrent-pharma", "jb-chemicals"] },
+    { stage: "Care delivery", description: "Hospitals and diagnostic networks.", economics: "Operating leverage once beds mature; doctors are the key asset.", examples: ["manipal-health"] },
+  ],
+  metrics: [
+    { id: "occupancy-hc", name: "Bed occupancy", formula: "Occupied bed-days ÷ available (operational) bed-days", denominator: "Operational bed-days (not licensed beds)", interpretation: "Utilisation of capacity; drives operating leverage.", limitations: "Licensed vs operational bed counts differ; new capacity dilutes the ratio.", unit: "percent" },
+    { id: "arpob", name: "Average revenue per occupied bed (ARPOB)", formula: "Inpatient revenue ÷ occupied bed-days (often annualised)", denominator: "Occupied bed-days", interpretation: "Pricing and case-mix intensity.", limitations: "Some include outpatient revenue; payer mix changes move it.", unit: "currency" },
+    { id: "alos", name: "Average length of stay (ALOS)", formula: "Total inpatient days ÷ number of discharges", denominator: "Discharges", interpretation: "Shorter stays with steady revenue per patient raise capacity.", limitations: "Case mix drives it; not a quality measure on its own.", unit: "days" },
+    { id: "rnd-intensity", name: "R&D intensity", formula: "R&D expense ÷ revenue", denominator: "Revenue", interpretation: "Investment in the future pipeline.", limitations: "Capitalisation policies differ.", unit: "percent" },
+    { id: "ebitda-margin-hc", name: "EBITDA margin", formula: "EBITDA ÷ revenue", denominator: "Revenue", interpretation: "Operating profitability.", limitations: "Company-adjusted EBITDA definitions differ; one-offs and litigation costs.", unit: "percent" },
+    { id: "us-generics-mix", name: "U.S. generics share of revenue", formula: "U.S. generics revenue ÷ total revenue", denominator: "Total revenue", interpretation: "Exposure to price erosion and FDA compliance risk.", limitations: "Segment disclosures vary.", unit: "percent" },
+  ],
+  valuation: [
+    { method: "EV/EBITDA", whenUseful: "Hospitals, diagnostics and branded-generics companies with steady earnings.", whenMisleading: "Hospitals with large new capacity still ramping (EBITDA understates mature value) or where rent is a big cost (IND AS 116 lease effects)." },
+    { method: "Risk-adjusted NPV / sum-of-the-parts", whenUseful: "Innovative pharma with identifiable pipeline assets.", whenMisleading: "Probability-of-success assumptions are subjective." },
+    { method: "EV per bed", whenUseful: "Cross-check for hospital acquisitions.", whenMisleading: "Ignores location, case mix and maturity." },
+  ],
+  mnaMotives: [
+    "Replace revenue facing patent expiry (Pfizer–Seagen).",
+    "Buy brand portfolios in chronic therapies (Torrent–JB Chemicals).",
+    "Consolidate minority stakes to simplify structure (Sun–Taro).",
+    "Build hospital networks across cities (Manipal's acquisitions; Temasek's stake increase).",
+  ],
+  integrationIssues: [
+    "Retaining doctors and medical staff.",
+    "Harmonising quality systems and regulatory compliance across plants.",
+    "Merging field forces without losing prescriber relationships.",
+    "Pricing regulation (NPPA price controls) limiting synergy assumptions.",
+  ],
+  diligenceQuestions: [
+    "Which products or facilities drive most profit, and what is their patent or regulatory status?",
+    "What is the compliance history with U.S. FDA and Indian GMP (revised Schedule M)?",
+    "For hospitals: mature vs new bed mix, occupancy, ARPOB trend and doctor contracts.",
+    "What share of revenue depends on government schemes or insurers with bargaining power?",
+    "Are there product liability or pricing investigations?",
+  ],
+  recurringStructures: [
+    "Stake purchase from a financial sponsor followed by an open offer and merger (Torrent–JB).",
+    "Controlling shareholder buyout of minorities (Sun–Taro).",
+    "Sponsor or sovereign stake increases in private hospital platforms (Temasek–Manipal).",
+  ],
+  regulators: [
+    { body: "Central Drugs Standard Control Organisation (CDSCO)", url: "https://cdsco.gov.in", role: "Drug approvals and manufacturing standards (revised Schedule M)." },
+    { body: "National Pharmaceutical Pricing Authority (NPPA)", url: "https://www.nppaindia.nic.in", role: "Price controls on scheduled formulations." },
+    { body: "Competition Commission of India (CCI)", url: "https://www.cci.gov.in", role: "Merger control." },
+  ],
+  whatChanged: [
+    { date: "2025-01-01", stage: "effective", title: "Revised Schedule M (GMP) effective for larger manufacturers", detail: "Upgraded good manufacturing practice standards, notified in December 2023.", cites: [ws("bs-schedule-m-2025-11-08")] },
+    { date: "2025-12-31", stage: "effective", title: "Extended Schedule M compliance deadline for MSME drugmakers", detail: "Smaller units that applied for an extension had to comply by 31 December 2025; state regulators were asked to start inspections.", cites: [ws("bs-schedule-m-2025-11-08")] },
+    { date: "2025-09-22", stage: "effective", title: "GST rationalisation lowers rates on many medicines", detail: "Two-rate GST structure took effect; many medicines moved to the 5% slab or nil.", cites: [ws("pib-gst-56-faq-2025-09")] },
+  ],
+  players: [
+    { companyId: "sun-pharma", group: "India — pharmaceuticals" },
+    { companyId: "torrent-pharma", group: "India — pharmaceuticals" },
+    { companyId: "jb-chemicals", group: "India — historical entities", note: "Merged into Torrent in July 2026." },
+    { companyId: "manipal-health", group: "India — hospitals" },
+    { companyId: "pfizer", group: "Global — innovative pharma" },
+  ],
+  practiceQuestionIds: ["q-hc-1", "q-hc-2", "q-hc-3", "q-hc-4", "q-hc-5"],
+  sourcesNote: "Hospital KPIs are company-defined; check whether beds are operational or licensed.",
+  recordUpdated: "2026-09-25",
+};
+
+export const consumer: SectorInput = {
+  slug: "consumer",
+  name: "Consumer",
+  tagline: "Staples, discretionary brands, retail and consumer platforms — volume, price and mix, and the difference between GMV and revenue.",
+  howItMakesMoney:
+    "Consumer companies make money by selling products or services to households, but through different models. FMCG brand owners earn gross margin on volume and price, spending heavily on advertising and distribution to keep shelf space and mind share. Retailers earn a thinner margin on goods bought from others, with store productivity and inventory turns as the key levers. Consumer platforms (marketplaces, food and quick-commerce delivery) earn a take rate on gross order value plus advertising, and may hold inventory depending on regulation. Sell-in (to distributors) is not sell-through (to consumers), and GMV is not revenue.",
+  valueAccrual:
+    "Value accrues to brands with pricing power and distribution reach, to retailers with superior unit economics and supply chains, and to platforms that achieve density (orders per store or per rider). Premiumisation and new channels (quick commerce, D2C) shift value between incumbents and challengers.",
+  subsectors: [
+    { id: "staples", name: "FMCG / staples", businessModel: "Branded everyday products sold through general trade, modern trade and online.", keyMetrics: ["uvg", "gross-margin-cons", "ad-spend"], valuation: "P/E and EV/EBITDA; premium multiples for durable growth and high ROCE." },
+    { id: "retail", name: "Retail", businessModel: "Stores and e-commerce selling third-party and private-label goods.", keyMetrics: ["sssg", "inventory-turns"], valuation: "EV/EBITDA (pre- and post-lease), store-level returns." },
+    { id: "consumer-platforms", name: "Consumer platforms", businessModel: "Marketplaces and delivery apps earning take rates, fees and advertising.", keyMetrics: ["gmv-vs-revenue", "contribution-margin"], valuation: "EV/revenue or EV/GMV early; EV/EBITDA as profits emerge." },
+    { id: "personal-care", name: "Personal care and consumer health", businessModel: "Brands in skin care, hygiene and over-the-counter health.", keyMetrics: ["gross-margin-cons", "uvg"], valuation: "EV/EBITDA and P/E; litigation adjustments where relevant." },
+  ],
+  valueChain: [
+    { stage: "Sourcing and manufacturing", description: "Commodities, packaging and plants.", economics: "Commodity swings hit gross margin; scale procurement matters.", examples: ["hindustan-unilever", "kimberly-clark"] },
+    { stage: "Brands and marketing", description: "Brand building, innovation and advertising.", economics: "Advertising sustains pricing power; D2C brands acquire customers online.", examples: ["kenvue", "hindustan-unilever"] },
+    { stage: "Distribution and retail", description: "Distributors, kirana stores, modern trade, e-commerce and quick commerce.", economics: "Channel mix shifts margins; platforms capture fees.", examples: ["walmart", "flipkart", "eternal"] },
+  ],
+  metrics: [
+    { id: "uvg", name: "Underlying volume growth (UVG)", formula: "Growth in volumes sold, excluding price and acquisitions", denominator: "Prior-period volume", interpretation: "Real demand for FMCG products.", limitations: "Company-defined; mix changes can blur volume vs price.", unit: "percent" },
+    { id: "gross-margin-cons", name: "Gross margin", formula: "(Revenue − cost of goods sold) ÷ revenue", denominator: "Revenue", interpretation: "Pricing power vs commodity costs.", limitations: "Classification of freight and discounts differs.", unit: "percent" },
+    { id: "ad-spend", name: "Advertising and promotion ratio", formula: "A&P spend ÷ revenue", denominator: "Revenue", interpretation: "Investment behind brands.", limitations: "Trade discounts may be netted from revenue instead.", unit: "percent" },
+    { id: "sssg", name: "Same-store sales growth", formula: "Sales growth from stores open in both periods", denominator: "Prior-period sales of the same stores", interpretation: "Organic retail performance excluding new stores.", limitations: "Store-age definitions vary.", unit: "percent" },
+    { id: "inventory-turns", name: "Inventory turns", formula: "Cost of goods sold ÷ average inventory", denominator: "Average inventory", interpretation: "Working-capital efficiency.", limitations: "Seasonality and year-end stocking distort.", unit: "ratio" },
+    { id: "gmv-vs-revenue", name: "GMV vs revenue", formula: "GMV = value of goods/orders transacted; revenue = platform's share (fees, commissions) or gross sales if it holds inventory", denominator: "n/a", interpretation: "GMV measures scale, not the company's income.", limitations: "Never apply revenue multiples to GMV without adjustment.", unit: "currency" },
+    { id: "contribution-margin", name: "Contribution margin per order", formula: "(Revenue − variable costs of delivery, payment, discounts) ÷ orders or ÷ GOV", denominator: "Orders or gross order value", interpretation: "Unit economics before fixed costs.", limitations: "Company-defined; allocation of costs varies.", unit: "percent" },
+  ],
+  valuation: [
+    { method: "P/E and EV/EBITDA", whenUseful: "Mature staples and profitable retailers.", whenMisleading: "When lease accounting changes EBITDA (Ind AS 116) or when margins are temporarily depressed by commodity spikes." },
+    { method: "EV/revenue or EV/GMV", whenUseful: "Early-stage platforms and D2C brands.", whenMisleading: "When comparing businesses with different take rates or inventory models; GMV is not revenue." },
+    { method: "DCF", whenUseful: "Stable brands with predictable cash flow.", whenMisleading: "When terminal growth assumptions exceed nominal GDP for long periods." },
+  ],
+  mnaMotives: [
+    "Buy premium or digital-first brands (HUL–Minimalist).",
+    "Enter large growth markets through a leader (Walmart–Flipkart).",
+    "Scale in adjacent categories and procurement (Kimberly-Clark–Kenvue).",
+    "Consolidate a global retail footprint (Couche-Tard's approach to Seven & i).",
+  ],
+  integrationIssues: [
+    "Keeping founders and brand culture after a large company buys a D2C brand.",
+    "Channel conflict between distributors, modern trade and quick commerce.",
+    "Working-capital and supply-chain integration.",
+    "Product liability or litigation inherited with brands.",
+  ],
+  diligenceQuestions: [
+    "How much growth is volume vs price vs mix?",
+    "Is revenue reported gross or net, and how does GMV reconcile to revenue?",
+    "What are store or order-level unit economics after discounts?",
+    "How dependent is the brand on one channel or platform?",
+    "What regulatory limits apply (FDI rules for marketplaces, GST changes)?",
+  ],
+  recurringStructures: [
+    "Majority stake with a staged buyout of founders (HUL–Minimalist 90.5% then remainder).",
+    "Primary plus secondary investment for control (Walmart–Flipkart).",
+    "All-stock acquisition of a platform by a listed parent (Zomato–Blinkit).",
+  ],
+  regulators: [
+    { body: "GST Council", url: "https://gstcouncil.gov.in", role: "Indirect tax rates on goods and services." },
+    { body: "Department for Promotion of Industry and Internal Trade (DPIIT)", url: "https://dpiit.gov.in", role: "FDI policy, including e-commerce marketplace rules." },
+    { body: "Food Safety and Standards Authority of India (FSSAI)", url: "https://www.fssai.gov.in", role: "Food standards and labelling." },
+  ],
+  whatChanged: [
+    { date: "2025-09-03", stage: "approval", title: "GST Council recommends a two-rate structure", detail: "Standard 18% and merit 5% rates, with a 40% rate for a small set of demerit goods.", cites: [ws("gstcouncil-56-pr-2025-09-03")] },
+    { date: "2025-09-22", stage: "effective", title: "New GST rates take effect on most goods", detail: "Many daily essentials, personal-care items and appliances moved to lower slabs; tobacco rates changed later.", cites: [ws("pib-gst-56-faq-2025-09")] },
+    { date: "2025-07-16", stage: "market_event", title: "Couche-Tard withdraws its proposal for Seven & i", detail: "A reminder that unsolicited cross-border consumer deals can fail without target engagement.", cites: [ws("act-pr-2025-07-16")] },
+  ],
+  players: [
+    { companyId: "hindustan-unilever", group: "India — FMCG" },
+    { companyId: "eternal", group: "India — consumer platforms" },
+    { companyId: "flipkart", group: "India — consumer platforms" },
+    { companyId: "walmart", group: "Global — retail" },
+    { companyId: "kimberly-clark", group: "Global — personal care" },
+    { companyId: "kenvue", group: "Global — consumer health" },
+  ],
+  practiceQuestionIds: ["q-con-1", "q-con-2", "q-con-3", "q-con-4", "q-con-5"],
+  sourcesNote: "Distinguish GMV from revenue and sell-in from sell-through when comparing companies.",
+  recordUpdated: "2026-09-25",
+};

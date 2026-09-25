@@ -116,6 +116,14 @@ export function SectorDetailPage({ slug }: { slug: string }) {
                 <h2>Where value accrues</h2>
                 <Markdown source={s.valueAccrual} />
               </section>
+              {s.primer ? (
+                <section className="mf-section">
+                  <h2>
+                    Analyst primer <ProvTag kind="analysis" />
+                  </h2>
+                  <Markdown source={s.primer} />
+                </section>
+              ) : null}
             </div>
             <aside className="mf-panel">
               <div className="mf-panel-head">
