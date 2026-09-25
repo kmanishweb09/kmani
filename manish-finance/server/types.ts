@@ -45,6 +45,11 @@ export interface FinanceEnv {
   FINANCE_JOB_SECRET?: string;
   FINANCE_SEC_USER_AGENT?: string;
   FINANCE_SCHEDULE_EXPECTED_MINUTES?: string;
+  /**
+   * Set to "1" only by the simulated host when upstream fetches are answered by local test fixtures.
+   * A fixture response then never counts as live verification of a real endpoint. Never set in production.
+   */
+  FINANCE_UPSTREAM_FIXTURES?: string;
   [key: string]: unknown;
 }
 

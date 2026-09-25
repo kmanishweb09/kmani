@@ -4,7 +4,7 @@
  * and scripts/verify-content.mjs.
  */
 import { loadArchiveSource } from "../../data/archive/index";
-import { type ArchiveSource, compileArchive } from "../../shared/archive/compile";
+import { type ArchiveSource, compileArchive, findUnresolvedReferences } from "../../shared/archive/compile";
 import { zBrief, zCompany, zDeal, zGlossaryTerm, zModule, zPeerSet, zQuestion, zSector, zSourceDocument, zTrainingModel } from "../../shared/schemas/research";
 import type { ZodType } from "zod";
 
@@ -53,5 +53,7 @@ export function buildArchive() {
   } catch (e) {
     compileError = e instanceof Error ? e.message : String(e);
   }
-  return { source: parsed, compiled, issues, compileError };
+  // Unresolved cross-references are dropped at compile time (never rendered as broken links); report them.
+  const unresolved = findUnresolvedReferences(parsed);
+  return { source: parsed, compiled, issues, compileError, unresolved };
 }

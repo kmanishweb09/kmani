@@ -4,7 +4,7 @@ import { doc, lead, ws } from "../lib";
 const MAR26 = { type: "point" as const, end: "2026-03-31", months: 0, label: "31 Mar 2026" };
 const FY26 = { type: "FY" as const, end: "2026-03-31", months: 12, label: "FY26 (year to 31 Mar 2026)" };
 const Q4FY26 = { type: "Q" as const, end: "2026-03-31", months: 3, label: "Q4 FY26" };
-const BASIS = "Analysis written for Finance Desk from public disclosures listed in the evidence; not a statement by the company.";
+const BASIS = "Background analysis written for Finance Desk from public information about the company. The cited documents support its identity and the figures shown, not every sentence of this summary, which has not been source-checked. Not a statement by the company.";
 const pct = (metric: "gnpa_ratio" | "nnpa_ratio" | "crar" | "cet1_ratio" | "casa_ratio", value: number, cites: ReturnType<typeof ws>[], definition?: string) => ({ metric, value, unit: "percent" as const, period: MAR26, scope: "standalone" as const, basis: "regulatory" as const, definition: definition ?? null, cites });
 // Peer-set history (September 2026 follow-up): year-end ratios and annual profit for FY24 and FY25.
 const MAR24 = { type: "point" as const, end: "2024-03-31", months: 0, label: "31 Mar 2024" };
@@ -106,7 +106,7 @@ export const companies: CompanyInput[] = [
       costDrivers: "Deposit costs, branch network and staff, technology, credit losses (provisions) and regulatory reserve requirements (CRR/SLR) that earn little.",
       positioning: "Scale deposit franchise and a long record of low credit losses; the merger added a large mortgage book that dilutes margins but lowers risk.",
       risks: ["Funding growth: deposits must keep pace with lending after the merger", "Net interest margin pressure from the lower-yielding mortgage book", "Unsecured retail credit cycle", "Technology and outage risk, which has drawn regulatory action in the past"],
-      basisNote: "Analysis written for Finance Desk from the bank's disclosures listed in the evidence; not a statement by the company.",
+      basisNote: "Background analysis written for Finance Desk from the bank's public disclosures. The cited documents support the figures shown, not every sentence of this summary, which has not been source-checked. Not a statement by the bank.",
     },
     observations: [
       { metric: "gnpa_ratio", value: 1.33, unit: "percent", period: { type: "point", end: "2025-03-31", months: 0, label: "31 Mar 2025" }, scope: "standalone", basis: "regulatory", definition: "Gross NPAs as a percentage of gross advances (RBI asset classification).", cites: [ws("bs-hdfcbank-q4fy25-2025-04-21"), ws("hdfcbank-q4fy25-presentation")] },

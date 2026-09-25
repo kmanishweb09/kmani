@@ -64,7 +64,7 @@ export function registerStatusRoutes(r: Router): void {
           ai: c.viewer.role === "owner" ? { enabled: ai.enabled, reason: ai.reason } : { enabled: false, reason: ai.enabled ? "Available to the site owner." : "AI features are off." },
           maintenance: await schedulerStatus(c),
         },
-        sources: { summary, lastSuccessAt, items: sources.map((s) => ({ id: s.id, name: s.name, health: s.health, healthLabel: s.healthLabel, lastSuccessAt: s.lastSuccessAt })) },
+        sources: { summary, lastSuccessAt, ...(c.env.FINANCE_UPSTREAM_FIXTURES === "1" ? { fixtureUpstreams: true } : {}), items: sources.map((s) => ({ id: s.id, name: s.name, health: s.health, healthLabel: s.healthLabel, lastSuccessAt: s.lastSuccessAt })) },
         counts: { deals: view.summaries.length, companies: view.companySummaries.length, sectors: archive.sectors.length, feedItems },
         serverTime: c.now.toISOString(),
         signInUrl: signInUrl(c.options, returnTo),

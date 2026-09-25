@@ -26,7 +26,64 @@ interface Coverage {
   modules: number;
   claims: Record<VerificationValue, number>;
   documents: { total: number; primary: number; retrieved: number };
+  numeric?: {
+    companiesWithFigures: number;
+    companies: number;
+    peerSets: Array<{ id: string; name: string; members: number; filled: number; expected: number }>;
+    dealsWithMultiples: number;
+    dealsWithAdvisers: number;
+    dealsAdvisersNotResearched: number;
+    principalPartiesLinked: number;
+    principalParties: number;
+  };
   training: number;
+}
+
+function NumericCoverage({ c }: { c: Coverage }) {
+  const n = c.numeric;
+  if (!n) return null;
+  const rows: Array<[string, string, string]> = [
+    ["Company dossiers with sourced figures", `${n.companiesWithFigures} of ${n.companies}`, "At least one dated financial observation with its source. Counterparty dossiers mostly hold identity and background only."],
+    ...n.peerSets.map((p): [string, string, string] => [`Peer set: ${p.name}`, `${p.filled} of ${p.expected} values`, `${p.members} companies × metrics × three fiscal years; empty cells mean no sourced value, never zero.`]),
+    ["Deals with a transaction multiple", `${n.dealsWithMultiples} of ${c.deals}`, "Only multiples with a stated denominator period, accounting basis and perimeter; most deals do not disclose one."],
+    ["Deals with adviser roles recorded", `${n.dealsWithAdvisers} of ${c.deals}`, `${n.dealsAdvisersNotResearched} deals not yet researched for advisers.`],
+    ["Acquirers and targets linked to a dossier", `${n.principalPartiesLinked} of ${n.principalParties}`, "Unlinked parties are mostly business units, consortia or funds."],
+  ];
+  return (
+    <section className="mf-panel">
+      <div className="mf-panel-head">
+        <h2 className="mf-panel-title">Numeric coverage</h2>
+      </div>
+      <div className="mf-panel-body flush">
+        <p className="mf-hint" style={{ padding: "0 16px" }}>
+          Which numbers exist in the archive. How each one was checked is shown separately under claim verification below.
+        </p>
+        <div className="mf-table-wrap">
+          <table className="mf-table compact">
+            <caption className="mf-sr-only">Numeric coverage of the research archive</caption>
+            <thead>
+              <tr>
+                <th scope="col">Measure</th>
+                <th scope="col" className="num">
+                  Covered
+                </th>
+                <th scope="col">Note</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map(([label, value, note]) => (
+                <tr key={label}>
+                  <td className="strong">{label}</td>
+                  <td className="num nowrap">{value}</td>
+                  <td className="wrap mf-small">{note}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  );
 }
 
 interface ReviewItem {
@@ -107,8 +164,8 @@ function SourceTable({ items }: { items: SourceStatusView[] }) {
               </td>
               <td className="mf-small">{s.accessMethod === "api" ? "API" : s.accessMethod === "rss" ? "RSS/Atom" : s.accessMethod === "manual" ? "Manual source" : "Link only"}</td>
               <td className="mf-small wrap">
-                <span className={`mf-pill ${s.endpointVerification.status === "verified_live" ? "positive" : s.endpointVerification.status === "manual" ? "muted" : "attention"}`}>
-                  {s.endpointVerification.status === "verified_live" ? "Verified live" : s.endpointVerification.status === "manual" ? "Manual" : "Unverified"}
+                <span className={`mf-pill ${s.endpointVerification.status === "verified_live" ? "positive" : s.endpointVerification.status === "manual" || s.endpointVerification.status === "fixture" ? "muted" : "attention"}`}>
+                  {s.endpointVerification.status === "verified_live" ? "Verified live" : s.endpointVerification.status === "manual" ? "Manual" : s.endpointVerification.status === "fixture" ? "Test fixture only" : "Unverified"}
                 </span>
                 <div className="mf-xsmall mf-muted">{s.endpointVerification.note}</div>
               </td>
@@ -152,6 +209,7 @@ function CoveragePanel() {
           </div>
         </div>
       </div>
+      <NumericCoverage c={c} />
       <section className="mf-panel">
         <div className="mf-panel-head">
           <h2 className="mf-panel-title">Claim verification ({totalClaims} claims)</h2>

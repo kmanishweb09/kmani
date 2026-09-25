@@ -33,6 +33,16 @@ const DESKTOP: Shot[] = [
   { name: "sources", path: "/finance/sources" },
   { name: "research-maintenance", path: "/finance/research", owner: true },
   {
+    name: "sources-coverage",
+    path: "/finance/sources",
+    action: async (page) => {
+      await page.getByRole("tab", { name: "Coverage and citations" }).click();
+      const table = page.getByRole("table", { name: "Numeric coverage of the research archive" });
+      await table.scrollIntoViewIfNeeded();
+      await expect(table).toBeVisible();
+    },
+  },
+  {
     name: "company-peer-set",
     path: "/finance/companies/infosys",
     action: async (page) => {

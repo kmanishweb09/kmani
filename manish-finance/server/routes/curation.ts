@@ -419,7 +419,8 @@ export function registerCurationRoutes(r: Router): void {
       const all = entity ? [[entity, view.history.get(entity) ?? []] as const] : [...view.history.entries()];
       const items = all.flatMap(([key, list]) => list.map((h) => ({ entity: key, ...h, canRevert: h.changeType !== "revert" && !h.revertedBy && latestEffective(view, key)?.changeId === h.changeId })));
       items.sort((a, b) => b.seq - a.seq);
-      return privateJson({ items: items.slice(0, 200) });
+      const warnings = entity ? view.warnings.filter((w) => w.entity === entity) : view.warnings;
+      return privateJson({ items: items.slice(0, 200), warnings: [...warnings].sort((a, b) => b.seq - a.seq) });
     },
   });
 

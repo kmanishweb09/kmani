@@ -104,6 +104,10 @@ async function compileArchive() {
     console.error(`Archive compile failed: ${result.compileError}`);
     process.exit(1);
   }
+  if (result.unresolved.length) {
+    console.warn(`warning: ${result.unresolved.length} unresolved cross-reference(s) dropped from the archive (see npm run verify:content):`);
+    for (const u of result.unresolved.slice(0, 10)) console.warn(`  ${u.from} ${u.field} → ${u.ref}`);
+  }
   const json = JSON.stringify(result.compiled);
   writeFileSync(join(BUILD, "archive.json"), json);
   // Machine-readable research ledger: one row per claim with its document provenance.

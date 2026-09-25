@@ -1,17 +1,17 @@
 # Primary-evidence worklist
 
-Generated 2026-09-25T17:47:04.871Z from archive-2026-09-25-7466h06o5x. Autopsy deals (tier 1) first, then the remaining deals; within a deal the most consequential fields first. Regenerate with `npm run evidence:worklist`.
+Generated 2026-09-25T18:37:49.310Z from archive-2026-09-25-qpoy220olc. Autopsy deals (tier 1) first, then the remaining deals; within a deal the most consequential fields first. Regenerate with `npm run evidence:worklist`.
 
 ## Counts
 
 | Measure | Count |
 |---|---|
-| Claims search corroborated (all subjects) | 969 |
-| Claims pending (all subjects) | 30 |
-| Deal claims awaiting a primary-document check | 792 |
-| …of which consequential (value, material terms, status, stake, consideration) | 394 |
-| …consequential claims supported only by secondary sources | 92 |
-| Documents to retrieve (primary) | 209 (128) |
+| Claims search corroborated (all subjects) | 1137 |
+| Claims pending (all subjects) | 34 |
+| Deal claims awaiting a primary-document check | 825 |
+| …of which consequential (value, material terms, status, stake, consideration) | 397 |
+| …consequential claims supported only by secondary sources | 94 |
+| Documents to retrieve (primary) | 210 (128) |
 
 ## Tier 1: deep autopsies — consequential claims
 

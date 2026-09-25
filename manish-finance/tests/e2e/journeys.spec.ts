@@ -127,6 +127,16 @@ test("company peer comparison: sourced values by period, empty cells stay empty,
   await page.keyboard.press("Escape");
 });
 
+test("Sources: numeric coverage and claim verification are reported separately", async ({ page }) => {
+  await page.goto("/finance/sources");
+  await page.getByRole("tab", { name: "Coverage and citations" }).click();
+  const numeric = page.getByRole("table", { name: "Numeric coverage of the research archive" });
+  await expect(numeric).toBeVisible();
+  await expect(numeric.getByRole("row", { name: /Peer set: Indian banks/ })).toContainText(/\d+ of 105 values/);
+  await expect(page.getByRole("heading", { name: /Claim verification \(\d[\d,]* claims\)/ })).toBeVisible();
+  await checkA11y(page, "sources-coverage");
+});
+
 test("owner: follow a company, open its sector and save a research question", async ({ page }) => {
   await signIn(page, "owner", "/finance/companies/hdfc-bank");
   const follow = page.getByRole("button", { name: /Follow/ }).first();

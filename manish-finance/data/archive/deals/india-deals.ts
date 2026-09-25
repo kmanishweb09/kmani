@@ -321,7 +321,7 @@ export const deals: DealInput[] = [
     subsector: "Beauty and personal care (D2C brands)",
     peerGroup: "consumer-brands",
     acquirer: { companyId: "hindustan-unilever", name: "Hindustan Unilever Limited", country: "IN", cites: [ws("unilever-pr-2025-01-23")] },
-    target: { companyId: null, name: "Uprising Science Private Limited (Minimalist)", country: "IN", cites: [ws("unilever-pr-2025-01-23")] },
+    target: { companyId: "minimalist", name: "Uprising Science Private Limited (Minimalist)", country: "IN", cites: [ws("unilever-pr-2025-01-23")] },
     otherParties: [],
     perimeter: "90.5% of Uprising Science through a secondary purchase from founders and investors plus a small primary infusion; option over the remaining 9.5% in about two years.",
     stake: { acquiredPct: 90.5, resultingPct: 90.5, note: "HUL has an option to acquire the remaining 9.5% about two years after completion.", cites: [ws("unilever-pr-2025-01-23"), ws("bs-hul-complete-2025-04-22")] },

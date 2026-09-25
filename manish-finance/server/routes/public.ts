@@ -165,6 +165,22 @@ export function registerPublicRoutes(r: Router): void {
       const dealsByRegion: Record<string, number> = { india: 0, apac: 0, global: 0 };
       for (const d of view.summaries) dealsByRegion[region(d)] = (dealsByRegion[region(d)] ?? 0) + 1;
       const recentDeals = view.deals.filter((d) => d.events.some((e) => e.date.date > yearAgoIso && e.date.date <= archive.cutoff)).length;
+      // Which numbers exist (separate from how they were verified, reported in `claims`).
+      const MULTIPLES = new Set(["ev_revenue", "ev_ebitda", "price_to_book", "price_to_earnings"]);
+      const principal = view.deals.flatMap((d) => [d.acquirer, d.target]);
+      const numeric = {
+        companiesWithFigures: view.companies.filter((co) => co.observations.some((o) => o.value !== null)).length,
+        companies: view.companies.length,
+        peerSets: archive.peerSets.map((ps) => {
+          const m = buildPeerMatrix(ps, view.companyById);
+          return { id: ps.id, name: ps.name, members: m.companies.length, filled: m.coverage.filled, expected: m.coverage.expected };
+        }),
+        dealsWithMultiples: view.deals.filter((d) => d.terms.some((t) => MULTIPLES.has(t.metric) && !t.correction && t.multipleBasis)).length,
+        dealsWithAdvisers: view.deals.filter((d) => d.advisers.list.length > 0).length,
+        dealsAdvisersNotResearched: view.deals.filter((d) => d.advisers.disclosure === "not_researched").length,
+        principalPartiesLinked: principal.filter((p) => p.companyId).length,
+        principalParties: principal.length,
+      };
       return publicJson(
         c.request,
         {
@@ -182,6 +198,7 @@ export function registerPublicRoutes(r: Router): void {
           modules: archive.modules.length,
           claims,
           documents: { total: docs.length, primary: docs.filter((d) => d.isPrimary).length, retrieved: docs.filter((d) => d.retrievalStatus === "retrieved").length },
+          numeric,
           training: archive.training.length,
         },
         { etagSeed: view.version },

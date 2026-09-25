@@ -48,7 +48,7 @@ export function SourceStatusControl() {
   const ok = s.summary.working;
   const problems = s.summary.failed + s.summary.access_unavailable + s.summary.rate_limited + s.summary.stale;
   const tone = problems ? "attention" : ok ? "positive" : "muted";
-  const label = s.lastSuccessAt ? `Sources updated ${relativeAge(s.lastSuccessAt, now)}` : "No source refresh yet";
+  const label = s.lastSuccessAt ? `Sources updated ${relativeAge(s.lastSuccessAt, now)}${s.fixtureUpstreams ? " (test fixtures)" : ""}` : "No source refresh yet";
   return (
     <Link to="/finance/sources" className="mf-btn ghost small" title={`${label}. Archive cutoff ${status.app.archiveCutoff}. Background schedule: ${status.capabilities.maintenance.scheduler.replace("_", " ")}.`}>
       <span className={`mf-pill ${tone}`} style={{ height: 20, padding: "0 6px" }}>

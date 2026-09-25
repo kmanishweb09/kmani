@@ -188,6 +188,8 @@ export interface RecordHistoryEntry {
   revertedBy: string | null;
   reverts: string | null;
   statusNotApplied?: boolean;
+  /** Present when the change could not be applied to this archive version, or applied only in part. */
+  warning?: { code: string; applied: "no" | "partly"; message: string };
 }
 
 export interface CompanySummary {
@@ -289,7 +291,7 @@ export interface SourceStatusView {
   lastSuccessAt: string | null;
   lastItemCount: number | null;
   error: string | null;
-  endpointVerification: { status: "verified_live" | "unverified" | "manual"; checkedAt: string | null; note: string };
+  endpointVerification: { status: "verified_live" | "unverified" | "manual" | "fixture"; checkedAt: string | null; note: string };
 }
 
 export interface StatusResponse {
@@ -301,7 +303,8 @@ export interface StatusResponse {
     ai: { enabled: boolean; reason: string };
     maintenance: { scheduler: "not_configured" | "observed" | "stale"; lastScheduledRunAt: string | null; lastRunAt: string | null };
   };
-  sources: { summary: Record<SourceHealth, number>; lastSuccessAt: string | null; items: Array<Pick<SourceStatusView, "id" | "name" | "health" | "healthLabel" | "lastSuccessAt">> };
+  /** fixtureUpstreams: true only in the simulated host when upstream fetches are answered by test fixtures. */
+  sources: { summary: Record<SourceHealth, number>; lastSuccessAt: string | null; fixtureUpstreams?: boolean; items: Array<Pick<SourceStatusView, "id" | "name" | "health" | "healthLabel" | "lastSuccessAt">> };
   counts: { deals: number; companies: number; sectors: number; feedItems: number };
   serverTime: string;
   signInUrl: string;

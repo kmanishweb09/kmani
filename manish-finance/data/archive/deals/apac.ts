@@ -355,7 +355,7 @@ export const deals: DealInput[] = [
     subsector: "Commercial REITs (office, retail, business parks)",
     peerGroup: "commercial-real-estate",
     acquirer: { companyId: "mapletree-pact", name: "Mapletree Commercial Trust (now Mapletree Pan Asia Commercial Trust)", country: "SG", cites: [ws("mct-mnact-pr-2021-12-31")] },
-    target: { companyId: null, name: "Mapletree North Asia Commercial Trust", country: "SG", cites: [ws("mct-mnact-pr-2021-12-31")] },
+    target: { companyId: "mapletree-north-asia-commercial-trust", name: "Mapletree North Asia Commercial Trust", country: "SG", cites: [ws("mct-mnact-pr-2021-12-31")] },
     otherParties: [{ role: "regulator", name: "Securities Industry Council (Singapore)", country: "SG", cites: [ws("mas-sic-mct-2024-02-15")] }],
     perimeter: "All units of MNACT, acquired by trust scheme of arrangement.",
     stake: { acquiredPct: 100, resultingPct: 100, note: null, cites: [ws("mas-sic-mct-2024-02-15")] },

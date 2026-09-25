@@ -346,6 +346,7 @@ export async function loadSourceStates(db: D1Database | undefined): Promise<Map<
 export function sourceStatusView(def: SourceDefinition, state: SourceStateRow | undefined, env: FinanceEnv, now: Date, detailed: boolean): SourceStatusView {
   const { health, label } = computeHealth(def, state, env, now);
   const verified = state?.live_verified_at ?? null;
+  const fixtureOnly = env.FINANCE_UPSTREAM_FIXTURES === "1" && !verified && Boolean(state?.last_success_at);
   return {
     id: def.id,
     name: def.name,
@@ -370,7 +371,9 @@ export function sourceStatusView(def: SourceDefinition, state: SourceStateRow | 
         ? { status: "manual", checkedAt: null, note: def.verificationNote }
         : verified
           ? { status: "verified_live", checkedAt: verified, note: "A live fetch succeeded from the deployed Worker." }
-          : { status: "unverified", checkedAt: null, note: def.verificationNote },
+          : fixtureOnly
+            ? { status: "fixture", checkedAt: null, note: "Only a local test fixture has answered (simulated host); the real endpoint has not been verified." }
+            : { status: "unverified", checkedAt: null, note: def.verificationNote },
   };
 }
 

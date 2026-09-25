@@ -4,6 +4,7 @@ import { residualIncomeValuation } from "../../shared/calc/residualIncome";
 import { impliedValueFromStake } from "../../shared/calc/stake";
 import { compareDeals, MIN_SAMPLE } from "../../shared/compare";
 import { compileBriefContent, explainWhy, mergeDuplicateCandidates } from "../../server/briefCompiler";
+import { isFuture } from "../../server/curation";
 import { getResearch } from "../../server/research";
 import { computeComps, compsBase, precedentRows } from "../../src/pages/lab/ComparablesTab";
 import { computeFig, figBase } from "../../src/pages/lab/FigTab";
@@ -218,5 +219,18 @@ describe("briefs: one development reported by several origins appears once (audi
   it("falls back to a labelled generic explanation only when nothing specific is known", () => {
     expect(explainWhy({ whyItMatters: null, eventType: "rule", dealContext: null }).basis).toBe("generic");
     expect(explainWhy({ whyItMatters: null, eventType: "completion", dealContext: { title: "X buys Y", statusAfter: "completed" } })).toMatchObject({ basis: "item", text: expect.stringMatching(/^X buys Y moved to “Completed”/) });
+  });
+});
+
+describe("retrieval times are compared as instants, not strings (found in the September 2026 follow-up)", () => {
+  it("a retrieval in the same second as the request is not 'in the future'", () => {
+    // As strings, "…:05Z" sorts after "…:05.500Z" because "Z" > ".".
+    expect("2026-09-25T18:51:05Z" > "2026-09-25T18:51:05.500Z").toBe(true);
+    expect(isFuture("2026-09-25T18:51:05Z", "2026-09-25T18:51:05.500Z")).toBe(false);
+    expect(isFuture("2026-09-25T18:51Z", "2026-09-25T18:51:30.000Z")).toBe(false);
+  });
+  it("allows five minutes of device-clock skew and rejects anything later", () => {
+    expect(isFuture("2026-09-25T18:55:00Z", "2026-09-25T18:51:05.000Z")).toBe(false);
+    expect(isFuture("2026-09-25T18:57:00Z", "2026-09-25T18:51:05.000Z")).toBe(true);
   });
 });

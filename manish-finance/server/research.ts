@@ -57,6 +57,25 @@ export interface ResearchView {
   history: Map<string, HistoryEntry[]>;
   /** Sequence of the latest effective change per entity field ("deal:<id>:<field>"; "*" = whole record). */
   fieldSeq: Map<string, number>;
+  /** Published changes that could not be applied, or applied only in part, to this archive version. */
+  warnings: OverlayWarning[];
+}
+
+export type OverlayWarningCode = "DEAL_NOT_FOUND" | "COMPANY_NOT_FOUND" | "CLAIM_NOT_FOUND" | "CLAIM_CHANGED" | "SUPERSEDED_NOT_FOUND" | "SUPERSEDED_CHANGED" | "ID_TAKEN" | "REVERT_TARGET_NOT_FOUND" | "EMPTY_PAYLOAD";
+
+/**
+ * Raised when a published change refers to something this archive version does not have, or no
+ * longer has in the same form (for example after an archive update). Such a change is never applied
+ * to a different record: it is skipped (applied "no") or applied without the missing link ("partly").
+ */
+export interface OverlayWarning {
+  changeId: string;
+  seq: number;
+  changeType: string;
+  entity: string;
+  code: OverlayWarningCode;
+  applied: "no" | "partly";
+  message: string;
 }
 
 export interface HistoryEntry {
@@ -75,6 +94,8 @@ export interface HistoryEntry {
   next?: Record<string, unknown> | null;
   /** Set when an event was appended but, being older than the current status, did not change it. */
   statusNotApplied?: boolean;
+  /** Set when the change could not be applied, or applied only in part (see OverlayWarning). */
+  warning?: Pick<OverlayWarning, "code" | "applied" | "message">;
 }
 
 /** Deal fields an owner edit may replace (identity and dates move only through events and revisions). */
@@ -185,6 +206,11 @@ function buildView(changes: PublishedChangeRow[]): ResearchView {
   const touch = (ch: PublishedChangeRow, fields: string[]) => {
     for (const f of fields) fieldSeq.set(`${changeEntityKey(ch)}:${f}`, ch.seq);
   };
+  const warnings: OverlayWarning[] = [];
+  const warn = (ch: PublishedChangeRow, code: OverlayWarningCode, applied: OverlayWarning["applied"], message: string): Partial<HistoryEntry> => {
+    warnings.push({ changeId: ch.id, seq: ch.seq, changeType: ch.change_type, entity: changeEntityKey(ch), code, applied, message });
+    return { warning: { code, applied, message } };
+  };
 
   for (const ch of changes) {
     const payload = parseJsonColumn<Record<string, unknown>>(ch.payload_json, {});
@@ -195,7 +221,7 @@ function buildView(changes: PublishedChangeRow[]): ResearchView {
         const tf = changeFields(target.change_type, parseJsonColumn<Record<string, unknown>>(target.payload_json, {}));
         touch({ ...ch, entity_type: target.entity_type, entity_id: target.entity_id }, tf);
       }
-      record(ch, [], { reverts: target?.id ?? null });
+      record(ch, [], { reverts: target?.id ?? null, ...(target ? {} : warn(ch, "REVERT_TARGET_NOT_FOUND", "no", "The change this rollback refers to was not found.")) });
       continue;
     }
     if (reverted.has(ch.id)) {
@@ -212,13 +238,20 @@ function buildView(changes: PublishedChangeRow[]): ResearchView {
       case "event_append": {
         const d = mutableDeal(ch.entity_id);
         const e = payload.event as EventView | undefined;
-        if (!d || !e) break;
+        if (!d) {
+          extra = warn(ch, "DEAL_NOT_FOUND", "no", `Deal “${ch.entity_id}” is not in this archive version; the event was not added.`);
+          break;
+        }
+        if (!e) {
+          extra = warn(ch, "EMPTY_PAYLOAD", "no", "The published change has no event.");
+          break;
+        }
         d.events.push({ ...e, ev: e.ev?.length ? e.ev : evIds, origin: "published_update" });
         // An event dated before the current status (e.g. a historical filing imported later) is added to
         // the timeline but never moves the current status backwards.
         if (e.statusAfter) {
           if (e.date.date >= d.status.asOf) d.status = { value: e.statusAfter, asOf: e.date.date, note: null, ev: e.ev?.length ? e.ev : evIds };
-          else extra = { statusNotApplied: true };
+          else extra = { ...extra, statusNotApplied: true };
         }
         lastChanged.set(d.id, ch.published_at);
         break;
@@ -226,11 +259,21 @@ function buildView(changes: PublishedChangeRow[]): ResearchView {
       case "term_revision": {
         const d = mutableDeal(ch.entity_id);
         const t = payload.term as TermView | undefined;
-        if (!d || !t) break;
+        if (!d) {
+          extra = warn(ch, "DEAL_NOT_FOUND", "no", `Deal “${ch.entity_id}” is not in this archive version; the revised term was not added.`);
+          break;
+        }
+        if (!t) {
+          extra = warn(ch, "EMPTY_PAYLOAD", "no", "The published change has no term.");
+          break;
+        }
         const supersedes = typeof payload.supersedesTermId === "string" ? payload.supersedesTermId : null;
         if (supersedes) {
           const old = d.terms.find((x) => x.id === supersedes);
-          if (old && old.asOf <= t.asOf) old.correction = { publishedAt: ch.published_at, note: ch.note ?? "Revised terms published" };
+          const fp = payload.supersedesFingerprint as { metric?: string; label?: string; asOf?: string } | null | undefined;
+          if (!old) extra = warn(ch, "SUPERSEDED_NOT_FOUND", "partly", `The term it revises (${supersedes}) is not in this archive version; the new term was added but no earlier term was marked as revised.`);
+          else if (fp && (fp.metric !== old.metric || fp.label !== old.label || fp.asOf !== old.asOf)) extra = warn(ch, "SUPERSEDED_CHANGED", "partly", `The term it revises now reads “${old.label}” (${old.asOf}), not “${fp.label}” (${fp.asOf}); it was not marked as revised. Check which term this revision replaces.`);
+          else if (old.asOf <= t.asOf) old.correction = { publishedAt: ch.published_at, note: ch.note ?? "Revised terms published" };
         }
         // A revision dated before the latest current term of the same metric cannot become the headline.
         const newer = d.terms.some((x) => x.metric === t.metric && !x.correction && x.asOf > t.asOf);
@@ -241,7 +284,14 @@ function buildView(changes: PublishedChangeRow[]): ResearchView {
       case "new_deal":
       case "deal_create": {
         const nd = payload.deal as CompiledDeal | undefined;
-        if (!nd || deals.has(nd.id)) break;
+        if (!nd) {
+          extra = warn(ch, "EMPTY_PAYLOAD", "no", "The published change has no deal record.");
+          break;
+        }
+        if (deals.has(nd.id)) {
+          extra = warn(ch, "ID_TAKEN", "no", `A deal with the ID “${nd.id}” already exists in this archive version; the published record was not applied. Publish its details as edits to that record.`);
+          break;
+        }
         deals.set(nd.id, nd);
         cloned.add(`deal:${nd.id}`);
         lastChanged.set(nd.id, ch.published_at);
@@ -250,7 +300,10 @@ function buildView(changes: PublishedChangeRow[]): ResearchView {
       case "deal_edit": {
         const d = mutableDeal(ch.entity_id);
         const f = (payload.fields as Record<string, unknown> | undefined) ?? {};
-        if (!d) break;
+        if (!d) {
+          extra = warn(ch, "DEAL_NOT_FOUND", "no", `Deal “${ch.entity_id}” is not in this archive version; the edit was not applied.`);
+          break;
+        }
         for (const [k, v] of Object.entries(f)) if ((DEAL_EDITABLE as readonly string[]).includes(k)) (d as unknown as Record<string, unknown>)[k] = v;
         extra = { previous: (payload.previous as Record<string, unknown>) ?? null, next: f };
         lastChanged.set(d.id, ch.published_at);
@@ -258,7 +311,14 @@ function buildView(changes: PublishedChangeRow[]): ResearchView {
       }
       case "company_create": {
         const nc = payload.company as CompiledCompany | undefined;
-        if (!nc || companies.has(nc.id)) break;
+        if (!nc) {
+          extra = warn(ch, "EMPTY_PAYLOAD", "no", "The published change has no company record.");
+          break;
+        }
+        if (companies.has(nc.id)) {
+          extra = warn(ch, "ID_TAKEN", "no", `A company with the ID “${nc.id}” already exists in this archive version; the published record was not applied. Publish its details as edits to that record.`);
+          break;
+        }
         companies.set(nc.id, nc);
         cloned.add(`company:${nc.id}`);
         break;
@@ -266,7 +326,10 @@ function buildView(changes: PublishedChangeRow[]): ResearchView {
       case "company_correction":
       case "company_edit": {
         const c = mutableCompany(ch.entity_id);
-        if (!c) break;
+        if (!c) {
+          extra = warn(ch, "COMPANY_NOT_FOUND", "no", `Company “${ch.entity_id}” is not in this archive version; the edit was not applied.`);
+          break;
+        }
         const f: Record<string, unknown> = ch.change_type === "company_edit" ? ((payload.fields as Record<string, unknown>) ?? {}) : typeof payload.field === "string" ? { [payload.field]: payload.next } : {};
         const list = companyCorrections.get(c.id) ?? [];
         for (const [field, next] of Object.entries(f)) {
@@ -282,11 +345,21 @@ function buildView(changes: PublishedChangeRow[]): ResearchView {
       case "company_observation": {
         const c = mutableCompany(ch.entity_id);
         const o = payload.observation as CompiledCompany["observations"][number] | undefined;
-        if (!c || !o) break;
+        if (!c) {
+          extra = warn(ch, "COMPANY_NOT_FOUND", "no", `Company “${ch.entity_id}” is not in this archive version; the observation was not added.`);
+          break;
+        }
+        if (!o) {
+          extra = warn(ch, "EMPTY_PAYLOAD", "no", "The published change has no observation.");
+          break;
+        }
         const supersedes = typeof payload.supersedesObservationId === "string" ? payload.supersedesObservationId : null;
         if (supersedes) {
           const old = c.observations.find((x) => x.id === supersedes) as (CompiledCompany["observations"][number] & { supersededBy?: unknown }) | undefined;
-          if (old) old.supersededBy = { id: o.id, publishedAt: ch.published_at, note: ch.note ?? "Revised observation published" };
+          const fp = payload.supersedesFingerprint as { metric?: string; periodEnd?: string; scope?: string; basis?: string } | null | undefined;
+          if (!old) extra = warn(ch, "SUPERSEDED_NOT_FOUND", "partly", `The observation it revises (${supersedes}) is not in this archive version; the new value was added but no earlier value was marked as revised.`);
+          else if (fp && (fp.metric !== old.metric || fp.periodEnd !== old.period.end || fp.scope !== old.scope || fp.basis !== old.basis)) extra = warn(ch, "SUPERSEDED_CHANGED", "partly", `The observation it revises is now ${old.metric} for ${old.period.label}, not ${fp.metric} for the period ending ${fp.periodEnd}; it was not marked as revised.`);
+          else old.supersededBy = { id: o.id, publishedAt: ch.published_at, note: ch.note ?? "Revised observation published" };
         }
         c.observations.push({ ...o, ev: o.ev?.length ? o.ev : evIds });
         break;
@@ -294,7 +367,17 @@ function buildView(changes: PublishedChangeRow[]): ResearchView {
       case "claim_status": {
         const id = typeof payload.claimId === "string" ? payload.claimId : "";
         const existing = claims[id];
-        if (!existing) break;
+        if (!existing) {
+          extra = warn(ch, "CLAIM_NOT_FOUND", "no", `Claim ${id || "(none)"} is not in this archive version; the verification was not applied.`);
+          break;
+        }
+        // A check recorded against a claim whose wording, value or document has since changed (e.g. after an
+        // archive update) must not carry over to the new content.
+        const fp = payload.claimFingerprint as { label?: string; display?: string; documentId?: string } | null | undefined;
+        if (fp && (fp.label !== existing.label || fp.display !== existing.display || fp.documentId !== existing.documentId)) {
+          extra = warn(ch, "CLAIM_CHANGED", "no", `The claim now reads “${existing.label}: ${existing.display}”; the verification was recorded against “${fp.label}: ${fp.display}” and was not applied. Check the claim again.`);
+          break;
+        }
         claims[id] = {
           ...existing,
           status: (payload.status as CompiledClaim["status"]) ?? existing.status,
@@ -362,6 +445,7 @@ function buildView(changes: PublishedChangeRow[]): ResearchView {
     aliasIndex,
     history,
     fieldSeq,
+    warnings,
   };
 }
 
@@ -457,5 +541,5 @@ export function dealDetail(view: ResearchView, id: string): DealDetail | null {
 
 /** Public view of a record's change history (no internal sequence numbers or before/after payloads). */
 export function publicHistory(view: Pick<ResearchView, "history">, key: string): RecordHistoryEntry[] {
-  return (view.history.get(key) ?? []).map((h) => ({ changeId: h.changeId, changeType: h.changeType, fields: h.fields, note: h.note, publishedAt: h.publishedAt, revertedBy: h.revertedBy, reverts: h.reverts, ...(h.statusNotApplied ? { statusNotApplied: true } : {}) }));
+  return (view.history.get(key) ?? []).map((h) => ({ changeId: h.changeId, changeType: h.changeType, fields: h.fields, note: h.note, publishedAt: h.publishedAt, revertedBy: h.revertedBy, reverts: h.reverts, ...(h.statusNotApplied ? { statusNotApplied: true } : {}), ...(h.warning ? { warning: h.warning } : {}) }));
 }

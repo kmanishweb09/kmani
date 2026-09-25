@@ -30,6 +30,15 @@ import { canonicalizeUrl, checkPublicLink, FetchGuardError } from "./sources/fet
  * append-only overlay used by the review queue — so history and rollback work the same way for all.
  */
 
+/**
+ * Timestamps are compared as instants, not strings ("…:05Z" sorts after "…:05.500Z"), with five
+ * minutes' allowance for the owner's device clock running ahead of the server.
+ */
+const CLOCK_SKEW_MS = 5 * 60_000;
+export function isFuture(timestamp: string, nowIso: string): boolean {
+  return Date.parse(timestamp) > Date.parse(nowIso) + CLOCK_SKEW_MS;
+}
+
 export const DRAFT_KINDS = ["company_create", "company_edit", "deal_create", "deal_edit", "term_revision", "observation", "deal_event", "claim_verification"] as const;
 export type DraftKind = (typeof DRAFT_KINDS)[number];
 
@@ -151,7 +160,7 @@ async function resolveDocuments(evidence: DraftEvidence, view: ResearchView, err
       errors.push({ path: `${path}.url`, code: "INVALID_URL", message: e instanceof FetchGuardError ? e.message : "Enter a public https URL." });
       continue;
     }
-    if (d.retrievedAt && d.retrievedAt > nowIso) errors.push({ path: `${path}.retrievedAt`, code: "FUTURE_RETRIEVAL", message: "The retrieval time cannot be in the future." });
+    if (d.retrievedAt && isFuture(d.retrievedAt, nowIso)) errors.push({ path: `${path}.retrievedAt`, code: "FUTURE_RETRIEVAL", message: "The retrieval time cannot be in the future." });
     const id = `own-${await sha256Hex(url, 20)}`;
     const existing = view.documents[id] ?? Object.values(view.documents).find((x) => x.url === url);
     out.set(
@@ -421,7 +430,8 @@ export async function evaluateDraft(kind: DraftKind, rawPayload: unknown, rawEvi
       if (newer) warnings.push({ path: "payload.term.asOf", code: "OLDER_THAN_CURRENT", message: `A later ${newer.label} (${newer.asOf}) exists; this term is added to the history but will not become the headline.` });
       const term = compileTerm(d.id, t, `${d.id}-r-${idStem}`, "terms.revision", col);
       diff.push({ field: "terms", before: old ?? null, after: term });
-      return finish(e, "term_revision", { term, supersedesTermId: p.supersedesTermId ?? null });
+      // The fingerprint lets the overlay refuse to mark a different term as revised if the archive changes.
+      return finish(e, "term_revision", { term, supersedesTermId: p.supersedesTermId ?? null, supersedesFingerprint: old ? { metric: old.metric, label: old.label, asOf: old.asOf } : null });
     }
     case "observation": {
       const p = payload as { companyId: string; observation: z.infer<typeof zObservation>; supersedesObservationId?: string | null };
@@ -447,7 +457,8 @@ export async function evaluateDraft(kind: DraftKind, rawPayload: unknown, rawEvi
       if (p.supersedesObservationId && !current.some((x) => x.id === p.supersedesObservationId)) errors.push({ path: "payload.supersedesObservationId", code: "NOT_FOUND", message: "The observation to supersede is not current on this company." });
       const obs = compileObservation(co.id, o, `${co.id}-p-${idStem}`, "observations.new", col);
       diff.push({ field: "observations", before: clash ?? null, after: obs });
-      return finish(e, "company_observation", { observation: obs, supersedesObservationId: p.supersedesObservationId ?? null });
+      const sup = p.supersedesObservationId ? current.find((x) => x.id === p.supersedesObservationId) : undefined;
+      return finish(e, "company_observation", { observation: obs, supersedesObservationId: p.supersedesObservationId ?? null, supersedesFingerprint: sup ? { metric: sup.metric, periodEnd: sup.period.end, scope: sup.scope, basis: sup.basis } : null });
     }
     case "deal_event": {
       const p = payload as { dealId: string; event: z.infer<typeof zDealEvent> };
@@ -489,7 +500,7 @@ export async function evaluateDraft(kind: DraftKind, rawPayload: unknown, rawEvi
       }
       if (p.status === "source_checked") {
         if (!p.retrievedAt) errors.push({ path: "payload.retrievedAt", code: "RETRIEVAL_REQUIRED", message: "Record when you retrieved the document (UTC); a source check means the document itself was read." });
-        else if (p.retrievedAt > nowIso) errors.push({ path: "payload.retrievedAt", code: "FUTURE_RETRIEVAL", message: "The retrieval time cannot be in the future." });
+        else if (isFuture(p.retrievedAt, nowIso)) errors.push({ path: "payload.retrievedAt", code: "FUTURE_RETRIEVAL", message: "The retrieval time cannot be in the future." });
         else if (doc.publishedDate && p.retrievedAt.slice(0, 10) < doc.publishedDate.date) errors.push({ path: "payload.retrievedAt", code: "RETRIEVAL_BEFORE_PUBLICATION", message: "The retrieval time is before the document's publication date." });
         if (!p.locator) errors.push({ path: "payload.locator", code: "LOCATOR_REQUIRED", message: "Give an exact locator (page, section, paragraph or table)." });
         if (!p.excerpt) errors.push({ path: "payload.excerpt", code: "EXCERPT_REQUIRED", message: "Quote a short excerpt (at most 300 characters) that supports the value." });
@@ -512,6 +523,8 @@ export async function evaluateDraft(kind: DraftKind, rawPayload: unknown, rawEvi
         locator: p.locator ?? null,
         excerpt: p.excerpt ?? null,
         checkedValue: p.checkedValue ?? null,
+        // What the check was made against; the overlay withholds the check if the claim later changes.
+        claimFingerprint: { label: claim.label, display: claim.display, documentId: claim.documentId },
         document: p.status === "source_checked" && p.retrievedAt ? { id: doc.id, retrievedAt: p.retrievedAt, retrievalNote: "Retrieved and read by the site owner for a source check." } : null,
       };
       diff.push({ field: "status", before: { status: claim.status, method: claim.method, checkedAt: claim.checkedAt }, after: { status: p.status, method, checkedAt: changePayload.checkedAt } });

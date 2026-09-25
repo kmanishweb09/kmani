@@ -12,7 +12,8 @@ export type Outbound = (request: Request) => Response | Promise<Response>;
 export async function startTestHost(opts: { bindings?: Record<string, string>; outbound?: Outbound } = {}): Promise<TestHost> {
   // Outbound fetches never reach the network in tests: an unmatched request fails loudly.
   const outbound: Outbound = opts.outbound ?? ((req) => new Response(`unexpected outbound fetch to ${req.url}`, { status: 599 }));
-  const h = await startHost({ root: process.cwd(), bindings: opts.bindings ?? {}, outboundService: outbound });
+  // Upstreams are always fixtures here, and the Worker is told so (no fixture response counts as live).
+  const h = await startHost({ root: process.cwd(), bindings: { FINANCE_UPSTREAM_FIXTURES: "1", ...(opts.bindings ?? {}) }, outboundService: outbound });
   return h as unknown as TestHost;
 }
 

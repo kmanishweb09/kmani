@@ -58,3 +58,19 @@ describe("counterparties, advisers and transaction multiples", () => {
     expect(ev?.observations.find((o) => o.dealId === "torrent-jb-chemicals")?.eligible).toBe(false);
   });
 });
+
+describe("coverage reports numbers and verification separately", () => {
+  it("returns numeric coverage next to, not merged with, claim verification counts", async () => {
+    type Cov = { deals: number; claims: Record<string, number>; documents: { total: number; retrieved: number }; numeric: { companiesWithFigures: number; companies: number; peerSets: Array<{ id: string; filled: number; expected: number; members: number }>; dealsWithMultiples: number; dealsWithAdvisers: number; dealsAdvisersNotResearched: number; principalPartiesLinked: number; principalParties: number } };
+    const c = (await api<Cov>(h, "/api/finance/coverage")).json;
+    expect(c.numeric.peerSets.map((p) => p.id)).toEqual(["india-banks", "india-it-services"]);
+    for (const p of c.numeric.peerSets) expect(p.filled).toBeLessThanOrEqual(p.expected);
+    expect(c.numeric.companiesWithFigures).toBeLessThanOrEqual(c.numeric.companies);
+    expect(c.numeric.dealsWithMultiples).toBeGreaterThanOrEqual(2);
+    expect(c.numeric.dealsWithAdvisers + c.numeric.dealsAdvisersNotResearched).toBeLessThanOrEqual(c.deals);
+    expect(c.numeric.principalParties).toBe(c.deals * 2);
+    // Verification stays its own measure: nothing in this build was retrieved, so nothing is source checked.
+    expect(c.documents.retrieved).toBe(0);
+    expect(c.claims.source_checked).toBe(0);
+  });
+});

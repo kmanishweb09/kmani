@@ -31,7 +31,8 @@ const outboundService = fixtures
     }
   : undefined;
 
-const host = await startHost({ root: ROOT, port: PORT, bindings: { FINANCE_PUBLIC_ORIGIN: `http://localhost:${PORT}` }, ...(outboundService ? { outboundService } : {}) });
+// With fixtures, the Worker is told so: a fixture response must never count as live verification.
+const host = await startHost({ root: ROOT, port: PORT, bindings: { FINANCE_PUBLIC_ORIGIN: `http://localhost:${PORT}`, ...(fixtures ? { FINANCE_UPSTREAM_FIXTURES: "1" } : {}) }, ...(outboundService ? { outboundService } : {}) });
 console.log(`Finance Desk release (simulated host, in-memory D1${fixtures ? ", fixture sources" : ""}) → http://localhost:${PORT}/finance`);
 const stop = async () => {
   await host.mf.dispose();

@@ -68,6 +68,16 @@ describe("RSS connector (fixture responses)", () => {
     expect(feed.json.items.find((i) => i.title.includes("penalty"))?.newlyDiscovered).toBe(true);
   });
 
+  it("a fixture response is never reported as live verification of the real endpoint", async () => {
+    const r = await test("rbi-press-releases");
+    expect(r.json.outcome).toMatchObject({ firstLiveSuccess: false });
+    const state = await h.db.prepare("SELECT live_verified_at, last_success_at FROM finance_source_state WHERE source_id = 'rbi-press-releases'").first<{ live_verified_at: string | null; last_success_at: string | null }>();
+    expect(state?.last_success_at).toBeTruthy();
+    expect(state?.live_verified_at).toBeNull();
+    const pub = await api<{ items: Array<{ id: string; endpointVerification: { status: string } }> }>(h, "/api/finance/sources");
+    expect(pub.json.items.find((x) => x.id === "rbi-press-releases")?.endpointVerification.status).toBe("fixture");
+  });
+
   it("uses conditional requests and deduplicates repeats", async () => {
     routes.set(RBI, (req) => (req.headers.get("if-none-match") === '"v1"' ? new Response(null, { status: 304 }) : new Response(PRESS)));
     const r = await test("rbi-press-releases");

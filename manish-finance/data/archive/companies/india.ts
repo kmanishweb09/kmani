@@ -1,7 +1,7 @@
 import type { CompanyInput } from "../../../shared/schemas/research";
 import { doc, lead, ws } from "../lib";
 
-const BASIS = "Analysis written for Finance Desk from public disclosures listed in the evidence; not a statement by the company.";
+const BASIS = "Background analysis written for Finance Desk from public information about the company. The cited documents support its identity and the figures shown, not every sentence of this summary, which has not been source-checked. Not a statement by the company.";
 const FY26 = { type: "FY" as const, end: "2026-03-31", months: 12, label: "FY26 (year to 31 Mar 2026)" };
 const FY25 = { type: "FY" as const, end: "2025-03-31", months: 12, label: "FY25 (year to 31 Mar 2025)" };
 const MAR26 = { type: "point" as const, end: "2026-03-31", months: 0, label: "31 Mar 2026" };
@@ -759,6 +759,34 @@ export const companies: CompanyInput[] = [
       { holder: "DLF Limited", pct: 66.66, asOf: "2017-12-26", cites: [ws("dlf-qip-2019")] },
       { holder: "GIC Real Estate", pct: 33.34, asOf: "2017-12-26", cites: [ws("dlf-qip-2019")] },
     ],
+    recordUpdated: "2026-09-25",
+  },
+  // Counterparty dossier (September 2026 follow-up, second pass): identity cited to the deal's documents.
+  {
+    id: "minimalist",
+    legalName: "Uprising Science Private Limited",
+    displayName: "Minimalist",
+    aliases: ["Uprising Science", "Be Minimalist"],
+    tickers: [],
+    country: "IN",
+    sector: "consumer",
+    subsector: "Beauty and personal care (D2C brands)",
+    lifecycle: { status: "acquired", note: "Hindustan Unilever acquired 90.5% (see the deal record for timing and terms).", validTo: "2025-04-21", successorId: "hindustan-unilever" },
+    website: null,
+    identityCites: [ws("unilever-pr-2025-01-23", "Names the company and the brand"), ws("bs-hul-complete-2025-04-22", "Names Uprising Science as the company acquired")],
+    businessModel: {
+      summary: "A Jaipur-based direct-to-consumer skincare brand, founded in 2020, known for products labelled by active ingredient and concentration and sold mainly online.",
+      customers: "Urban Indian consumers buying online, through quick commerce and increasingly in stores.",
+      products: "Serums, moisturisers, sunscreens and hair care.",
+      revenueModel: "Product sales through its own website, marketplaces, quick commerce and offline retail.",
+      costDrivers: "Performance marketing, contract manufacturing, packaging and logistics.",
+      positioning: "A fast-growing, digital-native premium brand in a segment where Hindustan Unilever had limited presence.",
+      risks: ["Customer-acquisition costs for marketing-led growth", "Many ingredient-led competitors", "Keeping the brand's appeal inside a large company"],
+      basisNote: BASIS,
+    },
+    observations: [],
+    peers: [{ companyId: "hindustan-unilever", reason: "Acquirer (90.5%)." }],
+    ownership: [],
     recordUpdated: "2026-09-25",
   },
 ];

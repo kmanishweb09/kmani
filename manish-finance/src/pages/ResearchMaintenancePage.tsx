@@ -632,6 +632,16 @@ interface HistoryItem {
   reverts: string | null;
   canRevert: boolean;
   statusNotApplied?: boolean;
+  warning?: { code: string; applied: "no" | "partly"; message: string };
+}
+
+interface OverlayWarningItem {
+  changeId: string;
+  changeType: string;
+  entity: string;
+  code: string;
+  applied: "no" | "partly";
+  message: string;
 }
 
 function entityLink(key: string): string | null {
@@ -643,7 +653,7 @@ function entityLink(key: string): string | null {
 
 function HistoryTab() {
   const { notify } = useToast();
-  const q = useQuery<{ items: HistoryItem[] }>("/api/finance/admin/history", { scope: "private", staleMs: 5_000 });
+  const q = useQuery<{ items: HistoryItem[]; warnings?: OverlayWarningItem[] }>("/api/finance/admin/history", { scope: "private", staleMs: 5_000 });
   const [target, setTarget] = useState<HistoryItem | null>(null);
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
@@ -665,8 +675,27 @@ function HistoryTab() {
   if (q.error) return <ErrorState error={q.error} onRetry={() => void q.refetch()} what="the published history" />;
   if (!q.data) return <Skeleton lines={6} />;
   if (!q.data.items.length) return <EmptyState title="No published changes yet">Changes published from drafts or the review queue appear here, newest first.</EmptyState>;
+  const warnings = q.data.warnings ?? [];
   return (
     <div className="mf-stack">
+      {warnings.length ? (
+        <section className="mf-callout attention" aria-labelledby="rm-overlay-warnings">
+          <strong id="rm-overlay-warnings">
+            {warnings.length} published change{warnings.length === 1 ? "" : "s"} could not be fully applied to this archive version
+          </strong>
+          <p className="mf-small">A change is never applied to a different record. Review each one, then publish a corrected draft or roll it back.</p>
+          <ul className="mf-list mf-small">
+            {warnings.map((w) => {
+              const link = entityLink(w.entity);
+              return (
+                <li key={w.changeId}>
+                  <span className="mf-pill attention">{w.applied === "no" ? "Not applied" : "Partly applied"}</span> {w.changeType.replace(/_/g, " ")} on {link ? <Link to={link}>{w.entity}</Link> : w.entity}: {w.message}
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ) : null}
       <p className="mf-hint">Newest first. A rollback is itself a published change; roll back a record's changes newest first.</p>
       <div className="mf-table-wrap">
         <table className="mf-table compact">
@@ -694,7 +723,7 @@ function HistoryTab() {
                   </td>
                   <td className="wrap mf-small">{h.note ?? "—"}</td>
                   <td className="mf-small">
-                    {h.reverts ? `Rollback of ${h.reverts}` : h.revertedBy ? <span className="mf-pill attention">Rolled back</span> : "In effect"}
+                    {h.reverts ? `Rollback of ${h.reverts}` : h.revertedBy ? <span className="mf-pill attention">Rolled back</span> : h.warning ? <span className="mf-pill attention">{h.warning.applied === "no" ? "Not applied" : "Partly applied"}</span> : "In effect"}
                     {h.canRevert ? (
                       <div>
                         <button type="button" className="mf-btn small" aria-label={`Roll back ${h.changeType.replace(/_/g, " ")} on ${h.entity}`} onClick={() => setTarget(h)}>

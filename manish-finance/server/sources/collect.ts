@@ -429,13 +429,15 @@ export async function refreshSource(sourceId: string, deps: CollectDeps, mode: "
       const r = def.connector === "rss" ? { ...(await collectRss(def, deps, state)), partial: [] as string[] } : await collectSec(def, deps, state);
       const view = await getResearch(db);
       const stored = r.items.length ? await storeItems(def, r.items, deps, view) : { inserted: 0, updated: 0, duplicates: 0, reviewItems: 0 };
-      const firstLive = !state.live_verified_at;
+      // A response from a local test fixture is never recorded as live verification of the real endpoint.
+      const fixtureUpstream = deps.env.FINANCE_UPSTREAM_FIXTURES === "1";
+      const firstLive = !state.live_verified_at && !fixtureUpstream;
       const message = r.partial.length ? `Partial: ${r.partial.slice(0, 3).join("; ")}` : null;
       await db
         .prepare(
           "UPDATE finance_source_state SET last_success_at = ?, last_status = 'working', last_error = ?, last_http_status = ?, etag = ?, last_modified = ?, consecutive_failures = 0, next_allowed_at = NULL, last_item_count = ?, live_verified_at = COALESCE(live_verified_at, ?), config_json = COALESCE(?, config_json), updated_at = ? WHERE source_id = ?",
         )
-        .bind(nowIso, message ? redact(message, deps.env) : null, r.httpStatus, r.etag, r.lastModified, r.items.length, nowIso, r.config ? JSON.stringify(r.config) : null, nowIso, def.id)
+        .bind(nowIso, message ? redact(message, deps.env) : null, r.httpStatus, r.etag, r.lastModified, r.items.length, fixtureUpstream ? null : nowIso, r.config ? JSON.stringify(r.config) : null, nowIso, def.id)
         .run();
       deps.log?.({ level: "info", message: "source refreshed", data: { sourceId: def.id, fetched: r.items.length, ...stored } });
       return { ...base, status: r.notModified ? "not_modified" : "working", httpStatus: r.httpStatus, fetched: r.items.length, ...stored, message, firstLiveSuccess: firstLive };

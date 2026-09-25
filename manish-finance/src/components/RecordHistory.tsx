@@ -33,6 +33,8 @@ export function RecordHistory({ entries, title = "Record history" }: { entries: 
               {h.fields.length && !h.fields.includes("*") && h.changeType !== "revert" ? <span className="mf-muted"> · {h.fields.join(", ")}</span> : null}
               <span className="mf-muted"> · {formatTimestamp(h.publishedAt)}</span>
               {h.revertedBy ? <span className="mf-pill attention" style={{ marginLeft: 6 }}>Rolled back</span> : null}
+              {h.warning ? <span className="mf-pill attention" style={{ marginLeft: 6 }}>{h.warning.applied === "no" ? "Not applied" : "Partly applied"}</span> : null}
+              {h.warning ? <div className="mf-hint">{h.warning.message}</div> : null}
               {h.statusNotApplied ? <div className="mf-hint">Older than the current status, so it was added to the timeline without changing the status.</div> : null}
               {h.note ? <div className="mf-hint">{h.note}</div> : null}
             </li>
