@@ -1,46 +1,66 @@
 {
-  "ranAt": "2026-09-25T15:56:38.706Z",
-  "environment": "Claude Code cloud build container (egress policy blocks publisher hosts)",
+  "ranAt": "2026-09-25T17:49:11.594Z",
+  "environment": "Claude Code cloud build container (egress policy: publisher hosts not allowed)",
   "results": [
     {
       "sourceId": "sec-edgar-submissions",
       "url": "https://data.sec.gov/submissions/CIK0000789019.json",
-      "checkedAt": "2026-09-25T15:56:38.438Z",
-      "outcome": "not_configured",
-      "httpStatus": null,
+      "checkedAt": "2026-09-25T17:49:11.076Z",
+      "outcome": "egress_blocked",
+      "httpStatus": 403,
       "items": null,
       "sample": null,
-      "note": "Set FINANCE_SEC_USER_AGENT (a real contact) to run the SEC check."
+      "note": "Refused by this machine's egress proxy, not by the publisher: Host not in allowlist: data.sec.gov. Add this host to your network egress settings to allow access."
     },
     {
       "sourceId": "rbi-press-releases",
       "url": "https://rbi.org.in/pressreleases_rss.xml",
-      "checkedAt": "2026-09-25T15:56:38.438Z",
-      "outcome": "http_error",
+      "checkedAt": "2026-09-25T17:49:11.167Z",
+      "outcome": "egress_blocked",
       "httpStatus": 403,
       "items": null,
       "sample": null,
-      "note": "Host not in allowlist: rbi.org.in. Add this host to your network egress settings to allow access."
+      "note": "Refused by this machine's egress proxy, not by the publisher: Host not in allowlist: rbi.org.in. Add this host to your network egress settings to allow access."
     },
     {
       "sourceId": "rbi-notifications",
       "url": "https://rbi.org.in/notifications_rss.xml",
-      "checkedAt": "2026-09-25T15:56:38.632Z",
-      "outcome": "http_error",
+      "checkedAt": "2026-09-25T17:49:11.311Z",
+      "outcome": "egress_blocked",
       "httpStatus": 403,
       "items": null,
       "sample": null,
-      "note": "Host not in allowlist: rbi.org.in. Add this host to your network egress settings to allow access."
+      "note": "Refused by this machine's egress proxy, not by the publisher: Host not in allowlist: rbi.org.in. Add this host to your network egress settings to allow access."
     },
     {
       "sourceId": "sebi-rss",
       "url": "https://www.sebi.gov.in/sebirss.xml",
-      "checkedAt": "2026-09-25T15:56:38.661Z",
-      "outcome": "http_error",
+      "checkedAt": "2026-09-25T17:49:11.338Z",
+      "outcome": "egress_blocked",
       "httpStatus": 403,
       "items": null,
       "sample": null,
-      "note": "Host not in allowlist: www.sebi.gov.in. Add this host to your network egress settings to allow access."
+      "note": "Refused by this machine's egress proxy, not by the publisher: Host not in allowlist: www.sebi.gov.in. Add this host to your network egress settings to allow access."
+    },
+    {
+      "sourceId": "pib-press-releases",
+      "url": "https://www.pib.gov.in/RssMain.aspx?ModId=6&Lang=1&Regid=3",
+      "checkedAt": "2026-09-25T17:49:11.484Z",
+      "outcome": "egress_blocked",
+      "httpStatus": 403,
+      "items": null,
+      "sample": null,
+      "note": "Refused by this machine's egress proxy, not by the publisher: Host not in allowlist: www.pib.gov.in. Add this host to your network egress settings to allow access."
+    },
+    {
+      "sourceId": "uk-cma-cases",
+      "url": "https://www.gov.uk/cma-cases.atom",
+      "checkedAt": "2026-09-25T17:49:11.580Z",
+      "outcome": "egress_blocked",
+      "httpStatus": 403,
+      "items": null,
+      "sample": null,
+      "note": "Refused by this machine's egress proxy, not by the publisher: Host not in allowlist: www.gov.uk. Add this host to your network egress settings to allow access."
     }
   ]
 }

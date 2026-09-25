@@ -112,6 +112,9 @@ export type FeedEventType = (typeof FEED_EVENT_TYPES)[number];
 /** Keyword rules for regulator/publisher headlines. Order matters: proposals before rules. */
 export function classifyHeadline(title: string): FeedEventType {
   const t = title.toLowerCase();
+  // An authority approving a transaction ("CCI approves proposed combination …") is an approval, even
+  // though the headline says "proposed"; it must not be read as a proposed rule.
+  if (/\b(approv(es|ed|al)|clears?|cleared)\b.*\b(combination|merger|acquisition|amalgamation|stake|takeover)\b/.test(t)) return "approval";
   if (/\b(draft|consultation paper|consultation|discussion paper|comments? (invited|sought)|proposed)\b/.test(t)) return "proposed_rule";
   if (/\b(penalt(y|ies)|imposes|cancels? (the )?(licen[cs]e|certificate|registration)|adjudication order|settlement order)\b/.test(t)) return "enforcement";
   if (/\b(monetary policy|repo rate|policy rate|mpc)\b/.test(t)) return "monetary_policy";

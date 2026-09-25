@@ -5,6 +5,7 @@ import { canonicalizeUrl, checkPublicLink, checkUrl, FetchGuardError, guardedFet
 import { classifyHeadline, clusterKey, dealEventTypeFor, linkEntities } from "../../server/sources/link";
 import { FeedParseError, parseFeed, plainText } from "../../server/sources/rss";
 import { parseSubmissions, secEventType } from "../../server/sources/sec";
+import { SOURCES } from "../../server/sources/registry";
 
 // Fixture tests: inputs are authored to the documented formats (see tests/fixtures/sources/README.md).
 const RSS = readFileSync("tests/fixtures/sources/rbi-press-releases.fixture.xml", "utf8");
@@ -295,5 +296,28 @@ describe("AI grounding checks", async () => {
       expect.stringMatching(/Dates not found.*2023-10-01/),
       expect.stringMatching(/Numbers not found.*2012/),
     ]);
+  });
+});
+
+describe("candidate connectors added in the audit follow-up (fixture shapes, not live responses)", () => {
+  it("registers PIB and UK CMA as disabled, unverified RSS/Atom connectors limited to their own hosts", () => {
+    for (const id of ["pib-press-releases", "uk-cma-cases"]) {
+      const def = SOURCES.find((s) => s.id === id);
+      expect(def, id).toBeTruthy();
+      expect(def?.defaultEnabled).toBe(false);
+      expect(def?.connector).toBe("rss");
+      expect(def?.verificationNote).toMatch(/never been fetched/);
+      expect(def?.allowedHosts.every((h) => new URL(def?.endpoint as string).host === h || h.endsWith(new URL(def?.endpoint as string).host.replace(/^www\./, "")))).toBe(true);
+    }
+  });
+  it("parses a GOV.UK-style Atom entry and classifies a CCI approval headline", () => {
+    // Synthetic Atom shaped like GOV.UK finder feeds; the real feed is verified only by a live run.
+    const atom = `<?xml version="1.0" encoding="UTF-8"?><feed xmlns="http://www.w3.org/2005/Atom"><title>CMA cases</title><entry><id>tag:www.gov.uk,2005:/cma-cases/example-merger-inquiry</id><updated>2026-09-20T10:00:00+01:00</updated><link rel="alternate" type="text/html" href="https://www.gov.uk/cma-cases/example-merger-inquiry"/><title>Example Ltd / Sample plc merger inquiry</title><summary>The CMA is investigating the anticipated acquisition.</summary></entry></feed>`;
+    const f = parseFeed(atom);
+    expect(f.items).toHaveLength(1);
+    expect(f.format).toBe("atom");
+    expect(f.items[0]).toMatchObject({ link: "https://www.gov.uk/cma-cases/example-merger-inquiry", title: "Example Ltd / Sample plc merger inquiry" });
+    expect(f.items[0]?.publishedAt).toMatch(/^2026-09-20T09:00/);
+    expect(classifyHeadline("CCI approves proposed combination involving acquisition of shareholding")).toBe("approval");
   });
 });

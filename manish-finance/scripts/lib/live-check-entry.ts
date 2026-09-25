@@ -12,7 +12,8 @@ export interface LiveResult {
   sourceId: string;
   url: string;
   checkedAt: string;
-  outcome: "ok" | "http_error" | "network_error" | "parse_error" | "not_configured";
+  /** "egress_blocked": the machine's own network policy refused the host (not the publisher). */
+  outcome: "ok" | "http_error" | "egress_blocked" | "network_error" | "parse_error" | "not_configured";
   httpStatus: number | null;
   items: number | null;
   sample: string | null;
@@ -32,6 +33,10 @@ export async function runLiveCheck(env: { secUserAgent: string | null }): Promis
     const ua = def.connector === "sec_submissions" ? (env.secUserAgent as string) : "FinanceDesk/0.1 (+https://kmanish.live/finance) live-check";
     try {
       const res = await guardedFetch(url, { allowedHosts: def.allowedHosts, fetcher: fetch, headers: { "user-agent": ua }, timeoutMs: 20_000, maxBytes: 4 * 1024 * 1024 });
+      if (res.status === 403 && /Host not in allowlist/i.test(res.text.slice(0, 300))) {
+        out.push({ ...base, outcome: "egress_blocked", httpStatus: res.status, items: null, sample: null, note: `Refused by this machine's egress proxy, not by the publisher: ${res.text.slice(0, 120)}` });
+        continue;
+      }
       if (res.status < 200 || res.status >= 300) {
         out.push({ ...base, outcome: "http_error", httpStatus: res.status, items: null, sample: null, note: res.text.slice(0, 160) || null });
         continue;
