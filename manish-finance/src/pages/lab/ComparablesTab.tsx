@@ -8,7 +8,7 @@ import { useQuery } from "../../app/query";
 import { Link } from "../../app/router";
 import { Ev, useRegisterEvidence } from "../../components/Evidence";
 import { ProvTag } from "../../components/ui";
-import { dateLabel, headlineText } from "../../lib/format";
+import { asReported, dateLabel, headlineText } from "../../lib/format";
 import { Formula, fmtNum, fmtPct, fmtX, IssueList, LabSection, NumField, ResultFigure } from "./fields";
 import type { ScenarioApi } from "./useScenarios";
 
@@ -382,7 +382,7 @@ function DealContext({ dealId }: { dealId: string }) {
           {d.terms.map((t) => (
             <tr key={t.id}>
               <th scope="row">{t.label}</th>
-              <td className="mf-num">{t.amount !== null ? `${fmtNum(t.amount, 2)} ${t.currency ?? ""} ${t.unit ?? ""}` : t.ratio !== null ? fmtNum(t.ratio, 3) : (t.text ?? "—")}</td>
+              <td className="mf-num">{t.amount !== null ? asReported(t.amount, t.currency, t.unit) : t.ratio !== null ? fmtNum(t.ratio, 3) : (t.text ?? "—")}</td>
               <td>{t.valueBasis ? VALUE_BASIS_SHORT[t.valueBasis] : "—"}</td>
               <td>
                 <ProvTag kind={t.status === "reported" ? "reported" : "calculated"} />

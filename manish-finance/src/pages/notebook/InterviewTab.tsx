@@ -10,7 +10,7 @@ import { Ev, useRegisterEvidence } from "../../components/Evidence";
 import { Icon } from "../../components/Icon";
 import { useConfirm } from "../../components/Overlay";
 import { EmptyState, Skeleton } from "../../components/ui";
-import { dateLabel, headlineText } from "../../lib/format";
+import { asReported, dateLabel, headlineText } from "../../lib/format";
 
 type SubjectKind = "deal" | "sector";
 
@@ -39,7 +39,7 @@ interface AutopsyShape {
 function dealOutline(prompt: string, d: DealDetail): Array<{ text: string; ev?: string[] }> {
   const head = d.headline ? headlineText(d.headline) : null;
   const a = (d.autopsy ?? null) as AutopsyShape | null;
-  const terms = d.terms.slice(0, 3).map((t) => ({ text: `${t.label}: ${t.amount !== null ? `${t.amount.toLocaleString("en-IN")} ${t.currency ?? ""} ${t.unit ?? ""}` : (t.text ?? "")} (${t.kind}, as of ${t.asOf})`, ev: t.ev }));
+  const terms = d.terms.slice(0, 3).map((t) => ({ text: `${t.label}: ${t.amount !== null ? asReported(t.amount, t.currency, t.unit) : (t.text ?? "")} (${t.kind}, as of ${t.asOf})`, ev: t.ev }));
   const situation = { text: `${d.acquirer.name} → ${d.target.name}. Announced ${dateLabel(d.announced)}; status ${DEAL_STATUS_LABEL[d.status]} as of ${d.statusAsOf}.${head ? ` Headline ${head.value} (${head.basis}).` : ""}`, ev: [...d.announced.ev, ...d.statusEv] };
   const why = d.rationale.slice(0, 2).map((r) => ({ text: `Stated rationale: ${r.text}`, ev: r.ev }));
   switch (prompt) {
@@ -98,7 +98,9 @@ export function InterviewTab() {
   const memory = useQuery<{ items: Array<{ subjectType: string; subjectId: string }> }>("/api/finance/memory", { scope: "private" });
   const [dealId, setDealId] = useState<string>("");
   const [sectorSlug, setSectorSlug] = useState<string>("fig");
-  const subjectId = prompt.subject === "deal" ? dealId || (deals.data?.items[0]?.id ?? "") : sectorSlug;
+  const memoryDealIds = new Set((memory.data?.items ?? []).filter((m) => m.subjectType === "deal").map((m) => m.subjectId));
+  const dealOptions = [...(deals.data?.items ?? [])].sort((a, b) => Number(memoryDealIds.has(b.id)) - Number(memoryDealIds.has(a.id)));
+  const subjectId = prompt.subject === "deal" ? dealId || (dealOptions[0]?.id ?? "") : sectorSlug;
   const dealQ = useQuery<DealDetail>(prompt.subject === "deal" && subjectId ? `/api/finance/deals/${encodeURIComponent(subjectId)}` : null);
   const sectorQ = useQuery<{ sector: CompiledSector; evidence: Record<string, never> }>(prompt.subject === "sector" ? `/api/finance/sectors/${sectorSlug}` : null);
   useRegisterEvidence(dealQ.data?.evidence);
@@ -118,9 +120,6 @@ export function InterviewTab() {
     if (prompt.subject === "sector" && sectorQ.data) return sectorOutline(prompt.id, sectorQ.data.sector);
     return [];
   }, [prompt, dealQ.data, sectorQ.data]);
-
-  const memoryDealIds = new Set((memory.data?.items ?? []).filter((m) => m.subjectType === "deal").map((m) => m.subjectId));
-  const dealOptions = [...(deals.data?.items ?? [])].sort((a, b) => Number(memoryDealIds.has(b.id)) - Number(memoryDealIds.has(a.id)));
 
   const resetAttempt = () => {
     timer.reset();
