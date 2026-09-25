@@ -239,12 +239,12 @@ export function BriefsPage() {
   const params = new URLSearchParams();
   if (kind) params.set("kind", kind);
   if (sector) params.set("sector", sector);
-  const list = useQuery<{ items: BriefSummary[]; today: string; todaysBriefId: string | null; scheduleNote: string }>(`/api/finance/briefs?${params.toString()}`);
+  const list = useQuery<{ items: BriefSummary[]; today: string; todaysBriefId: string | null; scheduleNote: string; lastError: { at: string; message: string } | null }>(`/api/finance/briefs?${params.toString()}`);
   const { isOwner } = useSession();
   const { notify } = useToast();
-  const compile = async () => {
+  const compile = async (scope: "private" | "public") => {
     try {
-      const r = await apiSend<{ brief: { id: string } }>("POST", "/api/finance/briefs/compile", { kind: "daily" }, { idempotencyKey: newIdempotencyKey() });
+      const r = await apiSend<{ brief: { id: string } }>("POST", "/api/finance/briefs/compile", { kind: "daily", scope }, { idempotencyKey: newIdempotencyKey() });
       invalidate("/api/finance/briefs");
       navigate(`/finance/briefs/${r.brief.id}`);
     } catch (e) {
@@ -258,9 +258,14 @@ export function BriefsPage() {
         sub="Daily and weekly research summaries with their evidence. Historical briefs are immutable snapshots; corrections create a new version."
         actions={
           isOwner ? (
-            <button type="button" className="mf-btn small primary" onClick={() => void compile()}>
-              <Icon name="refresh" size={15} /> Compile today’s brief
-            </button>
+            <>
+              <button type="button" className="mf-btn small primary" onClick={() => void compile("private")} title="Ranked with your followed sectors and watchlist; visible only to you.">
+                <Icon name="refresh" size={15} /> Compile my brief
+              </button>
+              <button type="button" className="mf-btn small" onClick={() => void compile("public")} title="General brief ranked with the desk focus (FIG); visible to visitors.">
+                Publish general brief
+              </button>
+            </>
           ) : null
         }
       />
@@ -294,6 +299,7 @@ export function BriefsPage() {
           {!list.data.todaysBriefId ? (
             <div className="mf-callout attention">
               No brief for today ({dateLabel(list.data.today)}) yet. {list.data.scheduleNote}
+              {list.data.lastError ? <span className="mf-block mf-small">Last compile attempt ({formatTimestamp(list.data.lastError.at)}) did not produce a brief: {list.data.lastError.message}</span> : null}
             </div>
           ) : null}
           {list.data.items.length ? (

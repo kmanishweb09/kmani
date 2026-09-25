@@ -1,4 +1,5 @@
 import { requireOwner } from "../auth";
+import { lastBriefError } from "../briefCompiler";
 import { archiveBriefOut, archiveBriefs, type BriefOut, type BriefRow, briefToMarkdown, rowToBriefOut, todayLocal } from "../briefs";
 import { listFeed } from "../feedStore";
 import { HttpError, privateJson, publicJson, textResponse } from "../http";
@@ -103,7 +104,7 @@ export function registerFeedRoutes(r: Router): void {
         .sort((a, b) => b.periodEnd.localeCompare(a.periodEnd) || b.generatedAt.localeCompare(a.generatedAt));
       const today = todayLocal(c);
       const todays = generated.find((b) => b.kind === "daily" && b.periodEnd === today) ?? null;
-      const body = { items: all.map(summary), today, todaysBriefId: todays?.id ?? null, scheduleNote: await scheduleNote(c) };
+      const body = { items: all.map(summary), today, todaysBriefId: todays?.id ?? null, scheduleNote: await scheduleNote(c), lastError: await lastBriefError(c.db, scope, "daily") };
       return scope === "private" ? privateJson(body) : publicJson(c.request, body, { maxAge: 60 });
     },
   });
@@ -134,7 +135,9 @@ export function registerFeedRoutes(r: Router): void {
           latest = ex ? archiveBriefOut(ex, view) : null;
         }
       }
-      return privateJson({ today, brief, latest, scheduleNote: await scheduleNote(c) });
+      const errs = [await lastBriefError(c.db, "public", "daily"), c.viewer.role === "owner" ? await lastBriefError(c.db, "private", "daily") : null].filter(Boolean) as Array<{ at: string; code: string; message: string }>;
+      const lastError = brief ? null : (errs.sort((a, b) => b.at.localeCompare(a.at))[0] ?? null);
+      return privateJson({ today, brief, latest, scheduleNote: await scheduleNote(c), lastError });
     },
   });
 

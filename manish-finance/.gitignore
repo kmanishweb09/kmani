@@ -13,3 +13,5 @@ release/manifest.json
 release/SHA256SUMS
 *.zip
 .DS_Store
+release/debug-sourcemaps/
+release/reports/bundle-sizes.json

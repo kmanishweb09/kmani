@@ -41,6 +41,7 @@ interface TodayResponse {
   brief: BriefView | null;
   latest: BriefView | null;
   scheduleNote: string;
+  lastError: { at: string; code: string; message: string } | null;
 }
 
 type SessionLen = "10" | "30" | "60";
@@ -212,6 +213,7 @@ export function DeskPage() {
                   {!brief ? (
                     <div className="mf-callout attention">
                       No brief for today ({dateLabel(today.data.today)}) yet. Showing the latest available brief — <strong>{shownBrief.label}</strong>, cutoff {formatTimestamp(shownBrief.cutoffAt)}. {today.data.scheduleNote}
+                      {today.data.lastError ? <span className="mf-block mf-small">Last compile attempt ({formatTimestamp(today.data.lastError.at)}) did not produce a brief: {today.data.lastError.message}</span> : null}
                     </div>
                   ) : null}
                   <ol className="mf-list" style={{ listStyle: "none", paddingLeft: 0 }}>

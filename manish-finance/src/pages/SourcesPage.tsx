@@ -183,12 +183,53 @@ function CoveragePanel() {
   );
 }
 
+function ReviewSummary({ item }: { item: ReviewItem }) {
+  const p = item.proposal as { dealTitle?: string; match?: string; note?: string; event?: { type?: string; feedType?: string; date?: string; title?: string; statusAfter?: string | null } };
+  const ev = item.evidence as { url?: string; title?: string; publisher?: string; publishedDate?: string | null; excerpt?: string | null; locator?: string };
+  const safeUrl = typeof ev.url === "string" && /^https?:\/\//.test(ev.url) ? ev.url : null;
+  return (
+    <div className="mf-stack tight" style={{ marginTop: 6 }}>
+      <dl className="mf-dl compact">
+        <dt>Deal</dt>
+        <dd>
+          {p.dealTitle ?? item.subjectId}
+          {p.match === "ambiguous" ? <span className="mf-tag attention">name match only</span> : null}
+        </dd>
+        <dt>Proposed event</dt>
+        <dd>
+          {p.event?.title ?? "—"} · {p.event?.type ?? p.event?.feedType ?? "event"} · {p.event?.date ?? "undated"}
+          {p.event?.statusAfter ? ` · status → ${p.event.statusAfter}` : ""}
+        </dd>
+        <dt>Evidence</dt>
+        <dd>
+          {safeUrl ? (
+            <a href={safeUrl} target="_blank" rel="noopener noreferrer">
+              {ev.title ?? safeUrl}
+            </a>
+          ) : (
+            (ev.title ?? "—")
+          )}
+          {ev.publisher ? ` — ${ev.publisher}` : ""}
+          {ev.publishedDate ? `, ${ev.publishedDate}` : ""}
+        </dd>
+        {ev.excerpt ? (
+          <>
+            <dt>Excerpt</dt>
+            <dd>“{ev.excerpt}”</dd>
+          </>
+        ) : null}
+      </dl>
+      {p.note ? <p className="mf-hint">{p.note}</p> : null}
+    </div>
+  );
+}
+
 function OwnerAdmin() {
   const { notify } = useToast();
   const admin = useQuery<{ items: SourceStatusView[]; jobs: JobRow[]; reviewPending: number }>("/api/finance/admin/sources", { scope: "private", staleMs: 10_000 });
   const review = useQuery<{ items: ReviewItem[] }>("/api/finance/admin/review?status=pending", { scope: "private", staleMs: 10_000 });
   const [busy, setBusy] = useState<string | null>(null);
-  const [manual, setManual] = useState({ url: "", publisher: "", title: "", publishedDate: "", eventDate: "", excerpt: "", dealId: "", eventType: "regulatory_approval", statusAfter: "" });
+  const [manual, setManual] = useState({ url: "", publisher: "", title: "", publishedDate: "", eventDate: "", excerpt: "", dealId: "", eventType: "regulatory_approval", statusAfter: "", documentType: "regulatory_order" });
   const act = async (key: string, fn: () => Promise<unknown>, ok: string) => {
     setBusy(key);
     try {
@@ -273,8 +314,7 @@ function OwnerAdmin() {
                     {r.origin} · {formatTimestamp(r.createdAt)}
                   </span>
                 </div>
-                <pre className="mf-formula" style={{ marginTop: 6 }}>{JSON.stringify(r.proposal, null, 2)}</pre>
-                <p className="mf-xsmall mf-muted">Evidence: {JSON.stringify(r.evidence).slice(0, 300)}</p>
+                <ReviewSummary item={r} />
                 <div className="mf-row" style={{ marginTop: 6 }}>
                   <button type="button" className="mf-btn small primary" onClick={() => void act(`p-${r.id}`, () => apiSend("POST", `/api/finance/admin/review/${r.id}/decision`, { decision: "publish" }, { idempotencyKey: newIdempotencyKey() }), "Published with its evidence.")}>
                     Publish
@@ -333,6 +373,18 @@ function OwnerAdmin() {
                 <option value="withdrawal">Withdrawal</option>
                 <option value="revision">Revised terms</option>
                 <option value="subsequent">Subsequent event</option>
+              </select>
+            </div>
+            <div className="mf-field">
+              <label htmlFor="m-doctype">Document type</label>
+              <select id="m-doctype" className="mf-select" value={manual.documentType} onChange={(e) => setManual({ ...manual, documentType: e.target.value })}>
+                <option value="regulatory_order">Regulatory order / approval</option>
+                <option value="regulatory_filing">Regulatory filing</option>
+                <option value="exchange_filing">Exchange filing</option>
+                <option value="press_release">Company press release</option>
+                <option value="court_order">Court / tribunal order</option>
+                <option value="annual_report">Annual report</option>
+                <option value="news_report">News report (secondary)</option>
               </select>
             </div>
             <div className="mf-field">

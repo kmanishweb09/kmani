@@ -27,6 +27,8 @@ export interface SourceDefinition {
   connector: ConnectorKind | null;
   /** Hosts the connector may contact (exact match). Redirects outside this set are rejected. */
   allowedHosts: string[];
+  /** Publisher's local time zone, used to derive publication dates from timestamps. */
+  timeZone?: string;
   /** Registered default sector tags for items from this source. */
   defaultSectors: string[];
   defaultEnabled: boolean;
@@ -55,6 +57,7 @@ export const SOURCES: SourceDefinition[] = [
     staleAfterHours: 36,
     connector: "sec_submissions",
     allowedHosts: ["data.sec.gov"],
+    timeZone: "America/New_York",
     defaultSectors: [],
     defaultEnabled: true,
     requiresEnv: ["FINANCE_SEC_USER_AGENT"],
@@ -91,6 +94,7 @@ export const SOURCES: SourceDefinition[] = [
     staleAfterHours: 48,
     connector: "rss",
     allowedHosts: ["rbi.org.in", "www.rbi.org.in"],
+    timeZone: "Asia/Kolkata",
     defaultSectors: ["fig"],
     defaultEnabled: true,
     verificationNote: "Feed URL taken from the RBI RSS directory listing. Not reachable from the build environment; unverified until a live fetch succeeds.",
@@ -110,6 +114,7 @@ export const SOURCES: SourceDefinition[] = [
     staleAfterHours: 48,
     connector: "rss",
     allowedHosts: ["rbi.org.in", "www.rbi.org.in"],
+    timeZone: "Asia/Kolkata",
     defaultSectors: ["fig"],
     defaultEnabled: true,
     verificationNote: "Feed URL taken from the RBI RSS directory listing. Not reachable from the build environment; unverified until a live fetch succeeds.",
@@ -129,6 +134,7 @@ export const SOURCES: SourceDefinition[] = [
     staleAfterHours: 48,
     connector: "rss",
     allowedHosts: ["www.sebi.gov.in", "sebi.gov.in"],
+    timeZone: "Asia/Kolkata",
     defaultSectors: ["fig"],
     defaultEnabled: true,
     verificationNote: "Feed URL published on sebi.gov.in. Not reachable from the build environment; unverified until a live fetch succeeds.",
@@ -182,6 +188,25 @@ export const SOURCES: SourceDefinition[] = [
     capabilities: ["press_releases", "annual_reports", "investor_presentations"],
     coverage: "Deal announcements, results and annual reports from acquirers and targets.",
     rightsNotes: "Link to originals and store short excerpts only. Official RSS feeds may be registered per company after verification.",
+    refreshIntervalMinutes: null,
+    staleAfterHours: null,
+    connector: null,
+    allowedHosts: [],
+    defaultSectors: [],
+    defaultEnabled: true,
+    verificationNote: "Manual source.",
+  },
+  {
+    id: "owner-manual",
+    name: "Owner-recorded source links",
+    publisher: "Various (recorded by the site owner)",
+    kind: "reference",
+    accessMethod: "manual",
+    endpoint: null,
+    documentationUrl: null,
+    capabilities: ["source_links", "short_excerpts", "deal_event_proposals"],
+    coverage: "Links and short excerpts the owner records for sources without a permitted automated feed. The server stores the link; it never fetches it.",
+    rightsNotes: "Store the link, title, dates and a short excerpt (≤ 300 characters) only.",
     refreshIntervalMinutes: null,
     staleAfterHours: null,
     connector: null,

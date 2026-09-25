@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- TEST FIXTURE authored to the RSS 2.0 format; not captured from rbi.org.in. Titles are fictional test strings. -->
+<rss version="2.0">
+  <channel>
+    <title>Test fixture: press releases</title>
+    <link>https://rbi.org.in/</link>
+    <description>Fixture feed for parser tests</description>
+    <item>
+      <title>Test fixture: Scheme of amalgamation of HDFC Ltd with HDFC Bank – status note</title>
+      <link>https://rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=900001&amp;utm_source=rss#top</link>
+      <description><![CDATA[<p>Fixture summary with <b>markup</b> &amp; an entity reference.</p><script>alert(1)</script>]]></description>
+      <pubDate>Thu, 24 Sep 2026 18:30:00 +0530</pubDate>
+      <guid isPermaLink="false">fixture-900001</guid>
+    </item>
+    <item>
+      <title>Test fixture: Draft directions on acquisition finance – comments invited</title>
+      <link>https://rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=900002</link>
+      <description>Draft for consultation; not a final rule.</description>
+      <pubDate>Wed, 23 Sep 2026 17:00:00 +0530</pubDate>
+      <guid isPermaLink="false">fixture-900002</guid>
+    </item>
+    <item>
+      <title>Test fixture: Monetary penalty imposed on a co-operative bank</title>
+      <link>https://rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=900003</link>
+      <pubDate>Tue, 01 Sep 2026 17:00:00 +0530</pubDate>
+      <guid isPermaLink="false">fixture-900003</guid>
+    </item>
+    <item>
+      <title>Test fixture: item without a usable link</title>
+      <link>javascript:alert(1)</link>
+      <pubDate>Tue, 01 Sep 2026 17:00:00 +0530</pubDate>
+    </item>
+    <item>
+      <title></title>
+      <link>https://rbi.org.in/untitled</link>
+    </item>
+  </channel>
+</rss>

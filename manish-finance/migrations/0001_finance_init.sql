@@ -41,7 +41,9 @@ CREATE TABLE IF NOT EXISTS finance_source_documents (
   excerpt TEXT,
   locator TEXT,
   version INTEGER NOT NULL DEFAULT 1,
-  dedupe_key TEXT NOT NULL UNIQUE
+  dedupe_key TEXT NOT NULL UNIQUE,
+  publisher TEXT,
+  document_type TEXT
 );
 CREATE INDEX IF NOT EXISTS finance_source_documents_source_idx ON finance_source_documents (source_id, retrieved_at);
 CREATE INDEX IF NOT EXISTS finance_source_documents_url_idx ON finance_source_documents (canonical_url);

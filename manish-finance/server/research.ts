@@ -188,8 +188,10 @@ function buildView(changes: PublishedChangeRow[]): ResearchView {
   const companyList = [...companies.values()];
   const aliasIndex: ResearchView["aliasIndex"] = [];
   for (const c of companyList) {
-    for (const a of new Set([c.displayName, c.legalName, ...c.aliases, ...c.formerNames.map((f) => f.name)])) {
-      const n = normalizeSearchText(a);
+    const names = [c.displayName, c.legalName, ...c.aliases, ...c.formerNames.map((f) => f.name)];
+    // "Credit Suisse (historical)" must still match "Credit Suisse" in a headline.
+    const stripped = names.map((a) => a.replace(/\s*\([^)]*\)\s*$/, ""));
+    for (const n of new Set([...names, ...stripped].map(normalizeSearchText))) {
       if (n.length >= 3) aliasIndex.push({ alias: n, type: "company", id: c.id, name: c.displayName });
     }
   }

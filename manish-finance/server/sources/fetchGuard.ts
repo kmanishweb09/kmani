@@ -27,7 +27,7 @@ function looksLikeIpv4(host: string): boolean {
 }
 
 /** Validates a URL against an allowlist. Returns the parsed URL or throws FetchGuardError. */
-export function checkUrl(raw: string, allowedHosts: readonly string[]): URL {
+export function checkUrl(raw: string, allowedHosts: readonly string[] | null): URL {
   let url: URL;
   try {
     url = new URL(raw);
@@ -43,10 +43,16 @@ export function checkUrl(raw: string, allowedHosts: readonly string[]): URL {
   if (host === "localhost" || INTERNAL_SUFFIXES.some((s) => host.endsWith(s)) || !host.includes(".")) {
     throw new FetchGuardError("PRIVATE_HOST", "Internal or single-label host names are rejected.");
   }
-  if (!allowedHosts.map((h) => h.toLowerCase()).includes(host)) {
+  if (allowedHosts !== null && !allowedHosts.map((h) => h.toLowerCase()).includes(host)) {
     throw new FetchGuardError("HOST_NOT_ALLOWED", `Host ${host} is not in this source's registered allowlist.`);
   }
+  url.hostname = host;
   return url;
+}
+
+/** Validates a link that will be stored and shown but never fetched (manual sources, corrections). */
+export function checkPublicLink(raw: string): URL {
+  return checkUrl(raw, null);
 }
 
 export interface GuardedFetchOptions {
@@ -67,6 +73,8 @@ export interface GuardedResponse {
   etag: string | null;
   lastModified: string | null;
   contentType: string | null;
+  /** Raw Retry-After header (seconds or HTTP date), if the upstream sent one. */
+  retryAfter: string | null;
   text: string;
 }
 
@@ -134,7 +142,7 @@ export async function guardedFetch(rawUrl: string, opts: GuardedFetchOptions): P
         }
         continue;
       }
-      const common = { status: res.status, finalUrl: url.toString(), etag: res.headers.get("etag"), lastModified: res.headers.get("last-modified"), contentType: res.headers.get("content-type") };
+      const common = { status: res.status, finalUrl: url.toString(), etag: res.headers.get("etag"), lastModified: res.headers.get("last-modified"), contentType: res.headers.get("content-type"), retryAfter: res.headers.get("retry-after") };
       if (res.status === 304) {
         await res.body?.cancel().catch(() => undefined);
         return { ...common, notModified: true, text: "" };
@@ -159,10 +167,10 @@ export function canonicalizeUrl(raw: string): string {
     for (const k of [...u.searchParams.keys()]) {
       if (/^(utm_|fbclid$|gclid$|mc_cid$|mc_eid$|ref$|ref_src$)/i.test(k)) u.searchParams.delete(k);
     }
-    u.hostname = u.hostname.toLowerCase();
+    u.hostname = u.hostname.toLowerCase().replace(/\.$/, "");
     if ((u.protocol === "https:" && u.port === "443") || (u.protocol === "http:" && u.port === "80")) u.port = "";
-    const s = u.toString();
-    return s.endsWith("/") && u.pathname !== "/" ? s.slice(0, -1) : s;
+    if (u.pathname.length > 1 && u.pathname.endsWith("/")) u.pathname = u.pathname.replace(/\/+$/, "");
+    return u.toString();
   } catch {
     return raw.trim();
   }

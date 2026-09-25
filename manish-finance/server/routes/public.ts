@@ -382,7 +382,8 @@ export function registerPublicRoutes(r: Router): void {
     access: "public",
     handler: async (c) => {
       const id = c.params.id ?? "";
-      if (!/^ev-[a-z0-9]{6,16}$/.test(id) && !/^ev-u-[A-Za-z0-9_-]{8,64}$/.test(id)) throw new HttpError(404, "NOT_FOUND", "Evidence not found.");
+      // Archive claims (ev-<hash>), runtime feed leads (ev-u-), owner-published events (ev-p-) and corrections (ev-c-).
+      if (!/^ev-[a-z0-9]{6,16}$/.test(id) && !/^ev-[upc]-[A-Za-z0-9_-]{8,64}$/.test(id)) throw new HttpError(404, "NOT_FOUND", "Evidence not found.");
       if (id.startsWith("ev-u-")) {
         const rc = await runtimeClaim(c.db, id);
         if (!rc) throw new HttpError(404, "NOT_FOUND", "Evidence not found.");

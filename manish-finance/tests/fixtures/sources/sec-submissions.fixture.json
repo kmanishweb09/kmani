@@ -1,0 +1,19 @@
+{
+  "_fixture": "TEST FIXTURE authored to the EDGAR submissions JSON layout; not captured from data.sec.gov. Accession numbers are synthetic.",
+  "cik": "789019",
+  "entityType": "operating",
+  "name": "MICROSOFT CORP",
+  "tickers": ["MSFT"],
+  "filings": {
+    "recent": {
+      "accessionNumber": ["0000950170-26-000101", "0000950170-26-000102", "0001193125-26-000103", "0001193125-26-000104", "0001193125-26-000105", "not-an-accession"],
+      "filingDate": ["2026-09-20", "2026-09-18", "2026-09-10", "2026-08-01", "2026-06-01", "2026-09-19"],
+      "acceptanceDateTime": ["2026-09-20T16:05:12.000Z", "2026-09-18T08:00:00.000Z", "2026-09-10T17:30:00.000Z", "2026-08-01T12:00:00.000Z", "2026-06-01T12:00:00.000Z", "2026-09-19T12:00:00.000Z"],
+      "form": ["8-K", "8-K", "425", "S-4", "8-K", "8-K"],
+      "items": ["2.01,9.01", "2.02,9.01", "", "", "1.01", "1.01"],
+      "primaryDocument": ["msft-8k_20260920.htm", "msft-8k_20260918.htm", "d425.htm", "../../etc/passwd", "msft-8k_20260601.htm", "x.htm"],
+      "primaryDocDescription": ["8-K", "8-K", "425", "S-4", "8-K", "8-K"]
+    },
+    "files": []
+  }
+}

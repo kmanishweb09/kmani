@@ -86,6 +86,37 @@ interface DocRow {
   content_hash: string;
   excerpt: string | null;
   locator: string | null;
+  publisher: string | null;
+  document_type: string | null;
+}
+
+const PRIMARY_TYPES = new Set(["press_release", "exchange_filing", "regulatory_filing", "regulatory_order", "court_order", "annual_report", "investor_presentation", "company_page"]);
+
+/** Builds the SourceDocument shape for a runtime (D1) document. */
+export function runtimeDocument(row: DocRow): SourceDocument {
+  const src = getSource(row.source_id);
+  const documentType = (row.document_type ??
+    (src?.kind === "regulator" || src?.kind === "competition_authority" ? "regulatory_filing" : src?.kind === "exchange" ? "exchange_filing" : "news_report")) as SourceDocument["documentType"];
+  const manual = !src?.connector;
+  return {
+    id: row.id,
+    publisher: row.publisher ?? src?.publisher ?? row.source_id,
+    url: row.canonical_url,
+    title: row.title,
+    documentType,
+    isPrimary: row.document_type ? PRIMARY_TYPES.has(row.document_type) : src?.kind === "regulator" || src?.kind === "company" || src?.kind === "exchange" || src?.kind === "competition_authority",
+    publishedDate: row.published_date ? { date: row.published_date, precision: "day" } : row.published_at ? { date: row.published_at.slice(0, 10), precision: "day" } : null,
+    retrievedAt: manual ? null : row.retrieved_at,
+    retrievalStatus: manual ? "not_retrieved" : "retrieved",
+    retrievalNote: manual ? "Link and excerpt recorded by the site owner; the server did not fetch the document." : `Feed metadata retrieved from ${src?.name ?? row.source_id}; the linked document itself has not been reviewed.`,
+    contentHash: row.content_hash,
+    language: "en",
+  };
+}
+
+export async function loadRuntimeDocument(db: D1Database, id: string): Promise<SourceDocument | null> {
+  const row = await db.prepare("SELECT * FROM finance_source_documents WHERE id = ?").bind(id).first<DocRow>();
+  return row ? runtimeDocument(row) : null;
 }
 
 /** Evidence for runtime documents: metadata retrieved from a feed, document itself not reviewed (a lead). */
@@ -99,21 +130,8 @@ export async function runtimeClaim(db: D1Database | undefined, claimId: string):
     return null;
   }
   if (!row) return null;
-  const src = getSource(row.source_id);
-  const doc: SourceDocument = {
-    id: row.id,
-    publisher: src?.publisher ?? row.source_id,
-    url: row.canonical_url,
-    title: row.title,
-    documentType: src?.kind === "regulator" || src?.kind === "competition_authority" ? "regulatory_filing" : src?.kind === "exchange" ? "exchange_filing" : "news_report",
-    isPrimary: src?.kind === "regulator" || src?.kind === "company" || src?.kind === "exchange" || src?.kind === "competition_authority",
-    publishedDate: row.published_date ? { date: row.published_date, precision: "day" } : row.published_at ? { date: row.published_at.slice(0, 10), precision: "day" } : null,
-    retrievedAt: row.retrieved_at,
-    retrievalStatus: "retrieved",
-    retrievalNote: `Feed metadata retrieved from ${src?.name ?? row.source_id}; the linked document itself has not been reviewed.`,
-    contentHash: row.content_hash,
-    language: "en",
-  };
+  const doc = runtimeDocument(row);
+  const manual = !getSource(row.source_id)?.connector;
   return {
     id: claimId,
     subject: { type: "brief", id: row.id },
@@ -124,8 +142,8 @@ export async function runtimeClaim(db: D1Database | undefined, claimId: string):
     locator: row.locator ?? "Feed item metadata",
     excerpt: row.excerpt,
     status: "pending",
-    checkedAt: row.retrieved_at.slice(0, 10),
-    method: "document_retrieval",
+    checkedAt: manual ? null : row.retrieved_at.slice(0, 10),
+    method: manual ? "owner_entry" : "document_retrieval",
     note: "A lead until the underlying document is read and checked.",
   };
 }
