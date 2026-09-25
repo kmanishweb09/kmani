@@ -1,0 +1,15 @@
+node_modules/
+.local/
+.env
+.env.*
+!.env.example
+test-results/
+playwright-report/
+release/assets/
+release/server/
+release/migrations/
+release/integration/
+release/manifest.json
+release/SHA256SUMS
+*.zip
+.DS_Store

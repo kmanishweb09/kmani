@@ -1,0 +1,40 @@
+{
+  "measuredAt": "2026-09-25T12:44:23.431Z",
+  "browser": {
+    "files": [
+      {
+        "file": "finance-app-LDCG6NBB.js",
+        "bytes": 222003,
+        "gzipBytes": 68867
+      },
+      {
+        "file": "finance.css",
+        "bytes": 48,
+        "gzipBytes": 68
+      },
+      {
+        "file": "finance.html",
+        "bytes": 1089,
+        "gzipBytes": 563
+      }
+    ],
+    "initialJsFiles": [
+      "finance-app-LDCG6NBB.js"
+    ],
+    "initialJsGzipBytes": 68867,
+    "cssGzipBytes": 68,
+    "totalGzipBytes": 69498,
+    "budgetInitialJsGzipBytes": 307200
+  },
+  "server": {
+    "file": "release/server/finance.mjs",
+    "bytes": 287211,
+    "gzipBytes": 65922
+  },
+  "combinedHarnessWorker": {
+    "file": ".local/harness/worker.mjs",
+    "note": "Simulated host bundle: host sentinels + embedded finance assets + finance module. Compare with the real host's Worker size limit.",
+    "bytes": 515781,
+    "gzipBytes": 136505
+  }
+}
