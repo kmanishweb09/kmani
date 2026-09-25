@@ -355,7 +355,7 @@ export function CompanyDetailPage({ id }: { id: string }) {
                   </table>
                 </div>
               ) : (
-                <EmptyState title="No verified financial observations recorded">Fields stay empty rather than filled from memory. Add figures through a sourced correction or a future connector.</EmptyState>
+                <EmptyState title="No verified financial observations recorded">Fields stay empty rather than filled from memory. Figures are added only as dated observations with a cited source, through owner research maintenance (Sources → Research maintenance); corrections cover identity fields only.</EmptyState>
               )}
               <HistoryTable observations={c.observations} />
             </div>

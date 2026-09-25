@@ -1,8 +1,8 @@
-import type { DealSummary } from "./api";
+import type { DealSummary, MultipleDetail } from "./api";
 import { formatDateValue } from "./dates";
 import { type MultipleValue, summarizeMultiples, type MultipleStats } from "./calc/multiples";
 import { formatAsReported, type ScaleUnit } from "./money/units";
-import { BUYER_TYPE_LABEL, DEAL_STATUS_LABEL, DEAL_TYPE_LABEL, SECTOR_NAMES, VALUE_BASIS_LABEL } from "./labels";
+import { BUYER_TYPE_LABEL, DEAL_STATUS_LABEL, DEAL_TYPE_LABEL, PEER_GROUP_LABEL, SECTOR_NAMES, VALUE_BASIS_LABEL } from "./labels";
 import { countryName } from "./geo";
 
 /**
@@ -27,8 +27,26 @@ export interface ComparisonRow {
 export interface MetricComparison {
   metric: "evRevenue" | "evEbitda" | "priceToBook";
   label: string;
-  observations: Array<{ dealId: string; value: MultipleValue }>;
+  /** Every selected deal's value (or why it has none) and whether it entered the statistics. */
+  observations: Array<{ dealId: string; value: MultipleValue; eligible: boolean; excludedReason: string | null; basisLabel: string | null }>;
+  /** Statistics over eligible observations only; empty when fewer than MIN_SAMPLE are eligible. */
   stats: MultipleStats;
+  /** The reference observation that defines the eligible group (peer group, period type, accounting basis). */
+  reference: { dealId: string; peerGroup: string | null; periodType: string | null; accountingBasis: string | null } | null;
+  statsNote: string | null;
+}
+
+/** Summary statistics need at least this many eligible observations. */
+export const MIN_SAMPLE = 3;
+
+function basisLabel(d: MultipleDetail | null): string | null {
+  if (!d?.basis) return null;
+  const b = d.basis;
+  return `${b.periodType} ${b.periodLabel} · ${b.accountingBasis === "not_stated" ? "accounting basis not stated" : b.accountingBasis}${b.adjusted ? " · adjusted" : ""} · ${b.perimeter}`;
+}
+
+function emptyStats(base: MultipleStats): MultipleStats {
+  return { ...base, mean: null, median: null, q1: null, q3: null, min: null, max: null };
 }
 
 export interface DealComparison {
@@ -98,18 +116,53 @@ export function compareDeals(deals: DealSummary[]): DealComparison {
     { metric: "evEbitda", label: "EV / EBITDA (disclosed)", appliesTo: (d) => (d.sector === "fig" ? "EV/EBITDA does not apply to financial institutions" : null) },
     { metric: "priceToBook", label: "P / B (disclosed)", appliesTo: (d) => (d.sector === "fig" ? null : "P/B is mainly used for balance-sheet businesses such as banks and insurers") },
   ];
+  // Eligibility: a multiple enters the statistics only when it is sourced, has a recorded denominator
+  // basis, and matches the reference observation's peer group, denominator period type and accounting
+  // basis. Everything else stays visible with the reason it was excluded; nothing is treated as zero.
   const metrics: MetricComparison[] = metricDefs.map((m) => {
-    const observations = deals.map((d) => {
+    const raw = deals.map((d) => {
       const na = m.appliesTo(d);
+      const detail = d.multipleDetails?.[m.metric] ?? null;
       const v = d.multiples[m.metric];
       let value: MultipleValue;
       if (na) value = { kind: "not_applicable", reason: na };
       else if (v === null) value = { kind: "not_available", reason: "No sourced transaction multiple in this database" };
       else if (v <= 0) value = { kind: "NM", reason: "Zero or negative multiple" };
       else value = { kind: "value", value: v };
-      return { dealId: d.id, value };
+      return { d, detail, value };
     });
-    return { metric: m.metric, label: m.label, observations, stats: summarizeMultiples(observations.map((o) => ({ id: o.dealId, value: o.value }))) };
+    const ref = raw.find((o) => o.value.kind === "value" && o.detail?.basis && o.d.peerGroup) ?? null;
+    const observations = raw.map((o) => {
+      const value = o.value;
+      let excludedReason: string | null = value.kind === "value" ? null : "reason" in value && value.reason ? value.reason : value.kind.replace("_", " ");
+      if (value.kind === "value") {
+        const b = o.detail?.basis;
+        let reason: string | null = null;
+        if (!b) reason = "Denominator period and accounting basis are not recorded";
+        else if (!o.d.peerGroup) reason = "No peer group recorded for this deal";
+        else if (ref && o.d.peerGroup !== ref.d.peerGroup)
+          reason = `Different peer group (${PEER_GROUP_LABEL[o.d.peerGroup]}) from the reference deal (${ref.d.peerGroup ? PEER_GROUP_LABEL[ref.d.peerGroup] : "none"})`;
+        else if (ref?.detail?.basis && b.periodType !== ref.detail.basis.periodType) reason = `Different denominator period (${b.periodType} vs ${ref.detail.basis.periodType})`;
+        else if (ref?.detail?.basis && b.accountingBasis !== ref.detail.basis.accountingBasis)
+          reason = `Different or unstated accounting basis (${b.accountingBasis} vs ${ref.detail.basis.accountingBasis})`;
+        excludedReason = reason;
+      }
+      return { dealId: o.d.id, value, eligible: excludedReason === null, excludedReason, basisLabel: basisLabel(o.detail) };
+    });
+    const stats = summarizeMultiples(observations.map((o) => ({ id: o.dealId, value: o.eligible ? o.value : ({ kind: "not_applicable", reason: o.excludedReason ?? "Not eligible" } as MultipleValue) })));
+    const enough = stats.n >= MIN_SAMPLE;
+    return {
+      metric: m.metric,
+      label: m.label,
+      observations,
+      stats: enough ? stats : emptyStats(stats),
+      reference: ref ? { dealId: ref.d.id, peerGroup: ref.d.peerGroup, periodType: ref.detail?.basis?.periodType ?? null, accountingBasis: ref.detail?.basis?.accountingBasis ?? null } : null,
+      statsNote: enough
+        ? null
+        : stats.n
+          ? `Only ${stats.n} eligible observation${stats.n === 1 ? "" : "s"}: individual values are shown, but no median or quartiles (minimum ${MIN_SAMPLE}).`
+          : "No eligible observations for summary statistics.",
+    };
   });
   notes.push("Statistics cover only the selected deals within this curated database; they do not describe the market.");
   return { dealIds: deals.map((d) => d.id), rows, metrics, notes };

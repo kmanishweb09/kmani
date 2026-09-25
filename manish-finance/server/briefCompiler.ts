@@ -1,5 +1,5 @@
 import type { CompiledDeal } from "../shared/archive/compile";
-import { addDays, localDate } from "../shared/dates";
+import { addDays, daysBetween, localDate } from "../shared/dates";
 import { DEAL_STATUS_LABEL, EVENT_TYPE_LABEL, SECTOR_NAMES, type SectorSlugValue } from "../shared/labels";
 import type { BriefItemOut, BriefOut, BriefRow } from "./briefs";
 import { newId, parseJsonColumn } from "./db";
@@ -123,6 +123,127 @@ interface Candidate {
   recencyDate: string;
   uncertainty: string;
   sourceLabel: string;
+  /** Documents behind the candidate (archive document IDs and canonical URLs) — used to merge duplicates. */
+  docKeys: string[];
+  /** Authored, item-specific analysis; otherwise a context-specific or generic explanation is built. */
+  whyItMatters: string | null;
+  /** Deal context used to make a generic explanation specific (status move), when known. */
+  dealContext: { title: string; statusAfter: string | null } | null;
+  /** Other origins merged into this candidate (e.g. "Sector playbook"). */
+  alsoIn: string[];
+}
+
+function urlKey(u: string | null | undefined): string | null {
+  if (!u) return null;
+  try {
+    const x = new URL(u);
+    return `url:${x.hostname.replace(/^www\./, "").toLowerCase()}${x.pathname.replace(/\/+$/, "")}${x.search}`;
+  } catch {
+    return null;
+  }
+}
+
+function claimDocKeys(view: ResearchView, ev: string[]): string[] {
+  const keys = new Set<string>();
+  for (const id of ev) {
+    const docId = view.claims[id]?.documentId;
+    if (!docId) continue;
+    keys.add(`doc:${docId}`);
+    const k = urlKey(view.documents[docId]?.url);
+    if (k) keys.add(k);
+  }
+  return [...keys];
+}
+
+function titleTokens(t: string): Set<string> {
+  const stop = new Set(["the", "a", "an", "of", "on", "in", "and", "to", "for", "with", "by", "at", "its", "is", "as", "from", "that", "this", "not", "yet"]);
+  return new Set(
+    t
+      .toLowerCase()
+      .replace(/[^a-z0-9 ]+/g, " ")
+      .split(/\s+/)
+      .filter((w) => w.length > 1 && !stop.has(w)),
+  );
+}
+
+function jaccard(a: Set<string>, b: Set<string>): number {
+  let inter = 0;
+  for (const x of a) if (b.has(x)) inter += 1;
+  const union = a.size + b.size - inter;
+  return union ? inter / union : 0;
+}
+
+const ORIGIN_PRIORITY = (c: Candidate): number => (c.curated && c.entities.some((e) => e.type === "deal") ? 0 : c.curated ? 1 : c.primary ? 2 : 3);
+
+/**
+ * One development reported through several origins (feed item, deal timeline, sector playbook) becomes
+ * one brief item. Two candidates are the same development when their dates are within a day and they
+ * share a source document or URL, or their titles overlap strongly and they concern the same entity or
+ * sector. The richest origin leads; evidence, entities and sectors are combined.
+ */
+export function mergeDuplicateCandidates(cands: Candidate[]): Candidate[] {
+  const parent = cands.map((_, i) => i);
+  const find = (i: number): number => (parent[i] === i ? i : (parent[i] = find(parent[i] as number)));
+  const tokens = cands.map((c) => titleTokens(c.headline));
+  for (let i = 0; i < cands.length; i++) {
+    for (let j = i + 1; j < cands.length; j++) {
+      const a = cands[i] as Candidate;
+      const b = cands[j] as Candidate;
+      if (Math.abs(daysBetween(a.eventDate.date, b.eventDate.date)) > 1) continue;
+      const sharedDoc = a.docKeys.some((k) => b.docKeys.includes(k));
+      const sharedSubject =
+        a.entities.some((e) => b.entities.some((f) => f.type === e.type && f.id === e.id && e.confidence !== "ambiguous" && f.confidence !== "ambiguous")) || a.sectors.some((s) => b.sectors.includes(s));
+      if (sharedDoc || (sharedSubject && jaccard(tokens[i] as Set<string>, tokens[j] as Set<string>) >= 0.5)) parent[find(i)] = find(j);
+    }
+  }
+  const groups = new Map<number, Candidate[]>();
+  cands.forEach((c, i) => {
+    const r = find(i);
+    groups.set(r, [...(groups.get(r) ?? []), c]);
+  });
+  const out: Candidate[] = [];
+  for (const members of groups.values()) {
+    if (members.length === 1) {
+      out.push(members[0] as Candidate);
+      continue;
+    }
+    const sorted = [...members].sort((a, b) => ORIGIN_PRIORITY(a) - ORIGIN_PRIORITY(b) || a.key.localeCompare(b.key));
+    const lead = sorted[0] as Candidate;
+    const others = sorted.slice(1);
+    const strongest = [...members].sort((a, b) => (EVENT_WEIGHT[b.eventType] ?? 0) - (EVENT_WEIGHT[a.eventType] ?? 0))[0] as Candidate;
+    const entities = [...lead.entities];
+    for (const o of others) for (const e of o.entities) if (!entities.some((x) => x.type === e.type && x.id === e.id)) entities.push(e);
+    const alsoIn = [...new Set(others.map((o) => o.sourceLabel).filter((l) => l !== lead.sourceLabel))];
+    const proposal = members.some((m) => m.uncertainty.startsWith("Proposed, not effective."));
+    out.push({
+      ...lead,
+      key: sorted.map((m) => m.key).join("+"),
+      eventType: strongest.eventType,
+      sectors: [...new Set(members.flatMap((m) => m.sectors))],
+      entities,
+      ev: [...new Set(members.flatMap((m) => m.ev))],
+      docKeys: [...new Set(members.flatMap((m) => m.docKeys))],
+      primary: members.some((m) => m.primary),
+      curated: members.some((m) => m.curated),
+      newlyDiscovered: members.every((m) => m.newlyDiscovered),
+      whyItMatters: lead.whyItMatters ?? others.find((o) => o.whyItMatters)?.whyItMatters ?? null,
+      dealContext: lead.dealContext ?? others.find((o) => o.dealContext)?.dealContext ?? null,
+      uncertainty: proposal && !lead.uncertainty.startsWith("Proposed, not effective.") ? `Proposed, not effective. ${lead.uncertainty}` : lead.uncertainty,
+      alsoIn: [...new Set([...lead.alsoIn, ...alsoIn])],
+    });
+  }
+  return out;
+}
+
+/** Item-specific explanation when authored or derivable from the deal's status move; otherwise the generic note for the event type. */
+export function explainWhy(c: Pick<Candidate, "whyItMatters" | "eventType" | "dealContext">): { text: string; basis: "item" | "generic" } {
+  if (c.whyItMatters) return { text: c.whyItMatters, basis: "item" };
+  const generic = WHY[c.eventType] ?? WHY.subsequent ?? "";
+  if (c.dealContext?.statusAfter) {
+    const label = DEAL_STATUS_LABEL[c.dealContext.statusAfter as keyof typeof DEAL_STATUS_LABEL] ?? c.dealContext.statusAfter;
+    return { text: `${c.dealContext.title} moved to “${label}”. ${generic}`, basis: "item" };
+  }
+  return { text: generic, basis: "generic" };
 }
 
 export function scoreCandidate(c: Pick<Candidate, "entities" | "sectors" | "eventType" | "primary" | "curated" | "newlyDiscovered" | "recencyDate">, ctx: RankContext, view: Pick<ResearchView, "dealById" | "companyById">, today: string): { score: number; reasons: string[] } {
@@ -236,6 +357,10 @@ async function feedCandidates(db: D1Database | undefined, sinceIso: string, sinc
       recencyDate: date,
       uncertainty: feedUncertainty(entities, primary),
       sourceLabel: src?.name ?? lead.source_id,
+      docKeys: [...new Set(list.flatMap((r) => [`feeddoc:${r.document_id}`, urlKey(r.url)]).filter((k): k is string => Boolean(k)))],
+      whyItMatters: null,
+      dealContext: null,
+      alsoIn: [],
     });
   }
   return out;
@@ -262,7 +387,11 @@ function archiveCandidates(view: ResearchView, sinceDate: string, today: string)
         newlyDiscovered: false,
         recencyDate: e.date.date,
         uncertainty: claimUncertainty(view, e.ev),
-        sourceLabel: e.origin === "published_update" ? "Owner-published update" : "Research archive",
+        sourceLabel: e.origin === "published_update" ? "Owner-published update" : "Deal timeline",
+        docKeys: claimDocKeys(view, e.ev),
+        whyItMatters: e.whyItMatters ?? null,
+        dealContext: { title: d.title, statusAfter: e.statusAfter },
+        alsoIn: [],
       });
     }
   }
@@ -286,7 +415,11 @@ function archiveCandidates(view: ResearchView, sinceDate: string, today: string)
         newlyDiscovered: false,
         recencyDate: w.date,
         uncertainty: `${w.stage === "proposal" || w.stage === "consultation" ? "Proposed, not effective. " : ""}${claimUncertainty(view, w.ev)}`,
-        sourceLabel: "Sector playbook",
+        sourceLabel: `${s.name} playbook`,
+        docKeys: claimDocKeys(view, w.ev),
+        whyItMatters: w.whyItMatters ?? null,
+        dealContext: null,
+        alsoIn: [],
       });
     }
   }
@@ -300,13 +433,15 @@ function sentenceList(parts: string[]): string {
 
 function toItem(c: Candidate, rank: number, reasons: string[]): BriefItemOut {
   const why = reasons.length ? `Appears because it is ${sentenceList(reasons)}.` : "Appears as the most recent item in the window.";
+  const explained = explainWhy(c);
   return {
     rank,
     headline: c.headline.slice(0, 240),
-    whatChanged: c.whatChanged.slice(0, 700),
+    whatChanged: `${c.whatChanged}${c.alsoIn.length ? ` Also recorded in: ${c.alsoIn.join(", ")}.` : ""}`.slice(0, 700),
     eventDate: c.eventDate,
     publishedDate: c.publishedDate,
-    whyItMatters: WHY[c.eventType] ?? WHY.subsequent ?? "",
+    whyItMatters: explained.text,
+    whyBasis: explained.basis,
     uncertainty: c.uncertainty,
     eventType: c.eventType,
     sectors: c.sectors,
@@ -348,7 +483,7 @@ export async function compileBriefContent(input: CompileInput): Promise<CompileR
     windowDays = days;
     const sinceDate = addDays(today, -days);
     const sinceIso = new Date(now.getTime() - days * 86_400_000).toISOString();
-    const cands = [...(await feedCandidates(input.db, sinceIso, sinceDate)), ...archiveCandidates(view, sinceDate, today)];
+    const cands = mergeDuplicateCandidates([...(await feedCandidates(input.db, sinceIso, sinceDate)), ...archiveCandidates(view, sinceDate, today)]);
     chosen = cands
       .map((c) => ({ c, ...scoreCandidate(c, input.ctx, view, today) }))
       .sort((a, b) => b.score - a.score || b.c.recencyDate.localeCompare(a.c.recencyDate) || a.c.headline.localeCompare(b.c.headline))

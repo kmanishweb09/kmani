@@ -16,6 +16,8 @@ export interface BriefItemOut {
   eventDate: { date: string; precision: "day" | "month" | "quarter" | "year" };
   publishedDate: string | null;
   whyItMatters: string;
+  /** "item": written for this development; "generic": the general note for its event type. */
+  whyBasis?: "item" | "generic";
   uncertainty: string;
   eventType: string;
   sectors: string[];

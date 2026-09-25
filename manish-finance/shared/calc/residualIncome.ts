@@ -70,7 +70,16 @@ export function residualIncomeValuation(input: RiInput): CalcResult<RiOutput> {
   const rows: RiRow[] = [];
   const warnings: CalcIssue[] = [];
   let sum = 0;
-  input.years.forEach((y, i) => {
+  for (const [i, y] of input.years.entries()) {
+    // ROE and the equity charge are undefined on zero or negative book equity: stop rather than
+    // return Infinity/NaN or a meaningless value.
+    if (book <= 0) {
+      return fail({
+        code: "NON_POSITIVE_OPENING_BOOK",
+        field: `years[${i}]`,
+        message: `Opening book equity for year ${i + 1} is ${book === 0 ? "zero" : "negative"} after the year ${i} loss or distributions, so ROE and the equity charge are undefined. Add a capital injection in year ${i}, reduce the loss or distributions, or end the horizon at year ${i}.`,
+      });
+    }
     const ni = y.netIncome as number;
     const dist = y.distributions as number;
     const cap = y.capitalChanges as number;
@@ -80,11 +89,13 @@ export function residualIncomeValuation(input: RiInput): CalcResult<RiOutput> {
     const pv = ri * df;
     const closing = book + ni - dist + cap;
     rows.push({ year: i + 1, openingBook: book, netIncome: ni, roe: ni / book, equityCharge, residualIncome: ri, distributions: dist, capitalChanges: cap, closingBook: closing, discountFactor: df, pvResidualIncome: pv });
-    if (closing <= 0) warnings.push({ code: "NON_POSITIVE_BOOK", message: `Closing book equity in year ${i + 1} is zero or negative.` });
+    if (closing <= 0) warnings.push({ code: "NON_POSITIVE_BOOK", message: `Closing book equity in year ${i + 1} is zero or negative; the bank would need new capital.` });
     sum += pv;
     book = closing;
-  });
+  }
   const equityValue = opening + sum;
+  const finite = [equityValue, sum, ...rows.flatMap((r) => [r.roe, r.equityCharge, r.residualIncome, r.closingBook, r.pvResidualIncome])].every(Number.isFinite);
+  if (!finite) return fail({ code: "NOT_FINITE", message: "The inputs produce a non-finite result; check the magnitudes entered." });
   warnings.push({
     code: "FINITE_HORIZON",
     message: "Terminal assumption: no residual income after the forecast horizon. Growth that earns only the cost of equity adds no value.",

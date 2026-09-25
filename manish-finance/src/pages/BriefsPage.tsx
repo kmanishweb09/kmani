@@ -19,6 +19,7 @@ export interface BriefItemView {
   eventDate: { date: string; precision: "day" | "month" | "quarter" | "year" };
   publishedDate: string | null;
   whyItMatters: string;
+  whyBasis?: "item" | "generic";
   uncertainty: string;
   eventType: string;
   sectors: SectorSlugValue[];
@@ -95,7 +96,8 @@ export function BriefItem({ item }: { item: BriefItemView }) {
         <ProvTag kind="fact" /> {item.whatChanged}
       </p>
       <p className="mf-small" style={{ marginTop: 6 }}>
-        <ProvTag kind="analysis" /> {item.whyItMatters}
+        <ProvTag kind="analysis" /> {item.whyBasis === "generic" ? <span className="mf-muted">General note on this type of development: </span> : null}
+        {item.whyItMatters}
       </p>
       <div className="mf-meta">
         <span>Event {dateLabel(item.eventDate)}</span>

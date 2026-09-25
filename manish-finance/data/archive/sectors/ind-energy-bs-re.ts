@@ -250,7 +250,7 @@ export const realEstate: SectorInput = {
   whatChanged: [
     { date: "2024-03-08", stage: "rule", title: "SEBI notifies the small and medium REIT (SM REIT) framework", detail: "Allows REIT schemes for assets of ₹50 crore and above, versus ₹500 crore for regular REITs.", cites: [ws("sebi-smreit-faq-2024-09"), ws("nishith-smreit-2024")] },
     { date: "2025-12-09", stage: "rule", title: "SEBI amends REIT and InvIT regulations", detail: "Includes a broader strategic-investor definition.", cites: [ws("lexology-reit-invit-2025-12")] },
-    { date: "2026-09-22", stage: "rule", title: "RBI clarifies bank valuation of REIT and InvIT units", detail: "Quoted units valued as quoted securities; unquoted units at the trust's disclosed NAV.", cites: [ws("taxguru-rbi-invit-2026-09")] },
+    { date: "2026-09-22", stage: "rule", title: "RBI clarifies bank valuation of REIT and InvIT units", detail: "Quoted units valued as quoted securities; unquoted units at the trust's disclosed NAV.", whyItMatters: "How banks must value REIT and InvIT units sets the mark-to-market swings of holding them, and so banks' appetite to invest in rental and infrastructure platforms — one of the buyer pools these vehicles rely on when raising capital.", cites: [ws("taxguru-rbi-invit-2026-09")] },
   ],
   players: [
     { companyId: "dlf", group: "India — developers" },

@@ -1,5 +1,4 @@
-import type { CompanyDetail, DealDetail, DealSummary, Page, SearchHit } from "../../shared/api";
-import { collectEvidenceIds } from "../../shared/archive/derive";
+import type { CompanyDetail, DealSummary, Page, SearchHit } from "../../shared/api";
 import { compareDeals } from "../../shared/compare";
 import { dealQueryToParams, filtersOnly, matchesFilters, normalizeSearchText, parseDealQuery, sortDeals } from "../../shared/dealQuery";
 import { APAC_COUNTRIES } from "../../shared/geo";
@@ -7,7 +6,9 @@ import { SECTOR_NAMES, SECTOR_SLUGS, type SectorSlugValue as SectorSlug } from "
 import { toCsv } from "../../shared/text/csv";
 import { HttpError, publicJson, textResponse } from "../http";
 import { runtimeClaim } from "../feedStore";
-import { archive, evidenceMap, getResearch, type ResearchView } from "../research";
+import { archive, dealDetail, evidenceMap, getResearch, type ResearchView } from "../research";
+
+export { dealDetail };
 import type { Router } from "../router";
 
 const ID_PARAM = /^[a-z0-9][a-z0-9-]{0,95}$/;
@@ -15,34 +16,6 @@ const ID_PARAM = /^[a-z0-9][a-z0-9-]{0,95}$/;
 function checkId(id: string | undefined, what: string): string {
   if (!id || !ID_PARAM.test(id)) throw new HttpError(404, "NOT_FOUND", `${what} not found.`);
   return id;
-}
-
-export function dealDetail(view: ResearchView, id: string): DealDetail | null {
-  const d = view.dealById.get(id);
-  const s = view.summaryById.get(id);
-  if (!d || !s) return null;
-  return {
-    ...s,
-    perimeter: d.perimeter,
-    stakeNote: d.stake.note,
-    stakeEv: d.stake.ev,
-    effective: d.effective,
-    otherParties: d.otherParties,
-    terms: d.terms,
-    payment: d.payment,
-    financing: d.financing,
-    events: [...d.events].sort((a, b) => a.date.date.localeCompare(b.date.date)),
-    advisers: d.advisers,
-    rationale: d.rationale,
-    sectorContext: d.sectorContext,
-    comparables: d.comparables.map((c) => ({ ...c, title: view.dealById.get(c.dealId)?.title ?? null })),
-    afterDeal: d.afterDeal,
-    autopsy: d.autopsy,
-    researchCutoff: d.researchCutoff,
-    recordUpdated: d.recordUpdated,
-    evidence: evidenceMap(view, collectEvidenceIds(d)),
-    archiveVersion: view.archiveVersion,
-  };
 }
 
 function filteredDeals(view: ResearchView, params: URLSearchParams): { items: DealSummary[]; query: ReturnType<typeof parseDealQuery>["query"] } {

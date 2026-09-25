@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { DealDetail, TermView } from "../../shared/api";
 import type { CompiledAutopsy } from "../../shared/archive/compile";
+import { announcedCutoff, dealAsOf, type HistoricalDeal } from "../../shared/archive/historical";
 import { countryName } from "../../shared/geo";
 import { BUYER_TYPE_LABEL, CARD_TYPE_LABEL, DEAL_TYPE_LABEL, PAYMENT_LABEL, SECTOR_NAMES } from "../../shared/labels";
 import type { Note } from "../../shared/schemas/private";
@@ -313,7 +314,7 @@ function MemoryDialog({ deal, open, onClose }: { deal: DealDetail; open: boolean
   );
 }
 
-function DealActions({ deal }: { deal: DealDetail }) {
+function DealActions({ deal, historical }: { deal: DealDetail; historical: HistoricalDeal | null }) {
   const { isOwner, status } = useSession();
   const { notify } = useToast();
   const watches = useQuery<{ items: WatchItem[] }>(isOwner ? "/api/finance/watchlist" : null, { scope: "private" });
@@ -346,7 +347,7 @@ function DealActions({ deal }: { deal: DealDetail }) {
       location.assign(signInHref());
       return;
     }
-    const d = dealNoteDraft(deal, status?.app.archiveCutoff ?? deal.researchCutoff);
+    const d = dealNoteDraft(deal, status?.app.archiveCutoff ?? deal.researchCutoff, historical);
     try {
       const r = await apiSend<{ note: Note }>("POST", "/api/finance/notes", { title: d.title, body: d.body, template: "deal_note", tags: [SECTOR_NAMES[deal.sector]], links: [{ type: "deal", id: deal.id }], evidenceIds: d.evidenceIds.slice(0, 100) }, { idempotencyKey: newIdempotencyKey() });
       invalidate("/api/finance/notes");
@@ -387,10 +388,15 @@ export function DealDetailPage({ id }: { id: string }) {
   const { prefs } = usePrefs();
   const q = useQuery<DealDetail>(`/api/finance/deals/${id}`);
   const deal = q.data;
-  useRegisterEvidence(deal?.evidence);
   const tab = TABS.some((t) => t.id === route.query.get("tab")) ? (route.query.get("tab") as string) : "snapshot";
   const mode: Mode = route.query.get("mode") === "announced" ? "announced" : "now";
   const system = prefs.inrNumberSystem;
+  const cutoff = deal ? announcedCutoff(deal) : undefined;
+  // In "As announced" mode the whole page (header, values, parties, narrative, evidence, note and AI
+  // actions) renders from the historical view, so nothing learned after the cutoff leaks in.
+  const historical = useMemo(() => (deal && mode === "announced" && cutoff ? dealAsOf(deal, cutoff) : null), [deal, mode, cutoff]);
+  const shown = historical?.deal ?? deal;
+  useRegisterEvidence(shown?.evidence);
 
   useEffect(() => {
     if (deal) {
@@ -404,13 +410,6 @@ export function DealDetailPage({ id }: { id: string }) {
     }
   }, [deal]);
 
-  const cutoff = deal?.autopsy ? (deal.autopsy as CompiledAutopsy).asAnnounced.cutoff : deal?.announced.date;
-  const visibleTerms = useMemo(() => {
-    if (!deal) return [];
-    if (mode === "announced") return deal.terms.filter((t) => t.asOf <= (cutoff ?? deal.announced.date) && t.kind !== "final");
-    return deal.terms;
-  }, [deal, mode, cutoff]);
-
   if (q.error) {
     return (
       <div className="mf-stack">
@@ -419,7 +418,7 @@ export function DealDetailPage({ id }: { id: string }) {
       </div>
     );
   }
-  if (!deal) {
+  if (!deal || !shown) {
     return (
       <div className="mf-stack">
         <PageHead title="Loading deal…" crumbs={[{ to: "/finance/deals", label: "Deals" }]} />
@@ -428,13 +427,15 @@ export function DealDetailPage({ id }: { id: string }) {
     );
   }
   const autopsy = deal.autopsy as CompiledAutopsy | null;
-  const h = headlineText(deal.headline, system);
+  const h = headlineText(shown.headline, system);
   const announcedMode = mode === "announced";
+  const withheld = (field: string) => Boolean(historical?.hiddenFields.includes(field));
+  const unavailable = <span className="mf-muted">Unavailable at this cutoff</span>;
 
   return (
     <div className="mf-stack">
       <PageHead
-        title={deal.title}
+        title={shown.title}
         crumbs={[
           { to: "/finance/deals", label: "Deals" },
           { to: `/finance/sectors/${deal.sector}`, label: SECTOR_NAMES[deal.sector] },
@@ -442,24 +443,36 @@ export function DealDetailPage({ id }: { id: string }) {
         eyebrow={`${DEAL_TYPE_LABEL[deal.dealType]} · ${deal.subsector}`}
         sub={
           <span className="mf-row" style={{ gap: 8 }}>
-            {announcedMode ? <span className="mf-pill accent">Announced (as of {dateLabel(cutoff)})</span> : <StatusPill status={deal.status} />}
+            {announcedMode ? <span className="mf-pill accent">As announced (information cutoff {dateLabel(cutoff)})</span> : <StatusPill status={deal.status} />}
             {!announcedMode ? <Ev ids={deal.statusEv} label="status" /> : null}
             <span>
-              Announced {dateLabel(deal.announced)}
-              <Ev ids={deal.announced.ev} label="announcement date" />
+              Announced {dateLabel(shown.announced)}
+              <Ev ids={shown.announced.ev} label="announcement date" />
             </span>
-            {deal.headline ? (
+            {shown.headline ? (
               <span>
                 · {h.value} <span className="mf-basis">{h.basis}</span>
-                <Ev ids={deal.headline.ev} label="headline value" />
+                <Ev ids={shown.headline.ev} label="headline value" />
               </span>
             ) : (
-              <span>· Value undisclosed</span>
+              <span>· {announcedMode ? "Value not in sources available at the cutoff" : "Value undisclosed"}</span>
             )}
           </span>
         }
-        actions={<DealActions deal={deal} />}
+        actions={<DealActions deal={shown} historical={historical} />}
       />
+      {historical ? (
+        <div className="mf-callout attention" data-testid="historical-banner">
+          <strong>As announced — information cutoff {dateLabel(historical.cutoff)}.</strong> Values, parties, narrative and evidence come only from sources published by then.
+          {historical.titleReplaced ? " The title is shown as announced." : ""}
+          {historical.hidden.length ? (
+            <>
+              {" "}
+              Withheld: {historical.hidden.map((x) => `${x.label} (${x.reason.toLowerCase()})`).join("; ")}.
+            </>
+          ) : null}
+        </div>
+      ) : null}
 
       <div className="mf-row spread">
         <Segmented<Mode>
@@ -485,73 +498,83 @@ export function DealDetailPage({ id }: { id: string }) {
                 <dl className="mf-dl">
                   <dt>Acquirer / investor</dt>
                   <dd>
-                    {deal.acquirer.companyId ? <Link to={`/finance/companies/${deal.acquirer.companyId}`}>{deal.acquirer.name}</Link> : deal.acquirer.name} ({countryName(deal.acquirer.country)})
-                    <Ev ids={deal.acquirer.ev} label="acquirer" />
+                    {shown.acquirer.companyId ? <Link to={`/finance/companies/${shown.acquirer.companyId}`}>{shown.acquirer.name}</Link> : shown.acquirer.name} ({countryName(shown.acquirer.country)})
+                    <Ev ids={shown.acquirer.ev} label="acquirer" />
                   </dd>
                   <dt>Target</dt>
                   <dd>
-                    {deal.target.companyId ? <Link to={`/finance/companies/${deal.target.companyId}`}>{deal.target.name}</Link> : deal.target.name} ({countryName(deal.target.country)})
-                    <Ev ids={deal.target.ev} label="target" />
+                    {shown.target.companyId ? <Link to={`/finance/companies/${shown.target.companyId}`}>{shown.target.name}</Link> : shown.target.name} ({countryName(shown.target.country)})
+                    <Ev ids={shown.target.ev} label="target" />
                   </dd>
-                  {deal.otherParties.map((p) => (
+                  {shown.otherParties.map((p) => (
                     <FragmentRow key={`${p.role}-${p.name}`} label={p.role.replace(/_/g, " ")}>
                       {p.companyId ? <Link to={`/finance/companies/${p.companyId}`}>{p.name}</Link> : p.name} ({countryName(p.country)})
                       <Ev ids={p.ev} label={p.role} />
                     </FragmentRow>
                   ))}
                   <dt>Perimeter</dt>
-                  <dd>{deal.perimeter}</dd>
+                  <dd>{shown.perimeter || unavailable}</dd>
                   <dt>Structure</dt>
                   <dd>
-                    {DEAL_TYPE_LABEL[deal.dealType]} · {BUYER_TYPE_LABEL[deal.buyerType]} buyer
+                    {DEAL_TYPE_LABEL[shown.dealType]} · {BUYER_TYPE_LABEL[shown.buyerType]} buyer
                   </dd>
                   <dt>Stake</dt>
                   <dd>
-                    {deal.stake.acquiredPct !== null ? `${deal.stake.acquiredPct}% acquired` : "Not disclosed"}
-                    {deal.stake.resultingPct !== null ? ` · ${deal.stake.resultingPct}% held after` : ""}
-                    <Ev ids={deal.stakeEv} label="stake" />
-                    {deal.stakeNote ? <div className="mf-hint">{deal.stakeNote}</div> : null}
+                    {withheld("stake") ? unavailable : shown.stake.acquiredPct !== null ? `${shown.stake.acquiredPct}% acquired` : "Not disclosed"}
+                    {shown.stake.resultingPct !== null ? ` · ${shown.stake.resultingPct}% held after` : ""}
+                    <Ev ids={shown.stakeEv} label="stake" />
+                    {shown.stakeNote ? <div className="mf-hint">{shown.stakeNote}</div> : null}
                   </dd>
                   <dt>Value</dt>
                   <dd>
-                    {deal.headline ? (
+                    {shown.headline ? (
                       <>
-                        {h.value} <span className="mf-basis">{h.basis}</span> <Ev ids={deal.headline.ev} label="value" />
+                        {h.value} <span className="mf-basis">{h.basis}</span> <Ev ids={shown.headline.ev} label="value" />
                         <div className="mf-hint">See Price & structure for every disclosed term with its basis.</div>
                       </>
+                    ) : announcedMode ? (
+                      unavailable
                     ) : (
                       "Undisclosed"
                     )}
                   </dd>
                   <dt>Consideration</dt>
                   <dd>
-                    {deal.paymentMix.map((p) => PAYMENT_LABEL[p]).join(", ")} — {deal.payment.text}
-                    <Ev ids={deal.payment.ev} label="consideration" />
+                    {withheld("payment") ? (
+                      unavailable
+                    ) : (
+                      <>
+                        {shown.paymentMix.map((p) => PAYMENT_LABEL[p]).join(", ")} — {shown.payment.text}
+                        <Ev ids={shown.payment.ev} label="consideration" />
+                      </>
+                    )}
                   </dd>
                   <dt>Financing</dt>
                   <dd>
-                    {deal.financing ? (
+                    {shown.financing ? (
                       <>
-                        {deal.financing.text}
-                        <Ev ids={deal.financing.ev} label="financing" />
+                        {shown.financing.text}
+                        <Ev ids={shown.financing.ev} label="financing" />
                       </>
+                    ) : withheld("financing") ? (
+                      unavailable
                     ) : (
                       <span className="mf-muted">Not disclosed / not researched</span>
                     )}
                   </dd>
                   <dt>Announced</dt>
                   <dd>
-                    {dateLabel(deal.announced)}
-                    <Ev ids={deal.announced.ev} label="announcement" />
+                    {dateLabel(shown.announced)}
+                    <Ev ids={shown.announced.ev} label="announcement" />
                   </dd>
                   <dt>Effective / completed</dt>
                   <dd>
                     {announcedMode ? (
-                      <span className="mf-muted">Hidden in As announced mode</span>
-                    ) : deal.effective ? (
+                      <span className="mf-muted">Not reached at this cutoff</span>
+                    ) : shown.effective ? (
                       <>
-                        {dateLabel(deal.effective)}
-                        <Ev ids={deal.effective.ev} label="effective date" />
+                        {dateLabel(shown.effective)}
+                        <Ev ids={shown.effective.ev} label="effective date" />
                       </>
                     ) : (
                       <span className="mf-muted">Not completed or not recorded</span>
@@ -559,7 +582,7 @@ export function DealDetailPage({ id }: { id: string }) {
                   </dd>
                   <dt>Countries</dt>
                   <dd>
-                    Target {countryName(deal.target.country)} · Acquirer {countryName(deal.acquirer.country)} {deal.crossBorder ? "· cross-border" : "· domestic"}
+                    Target {countryName(shown.target.country)} · Acquirer {countryName(shown.acquirer.country)} {shown.crossBorder ? "· cross-border" : "· domestic"}
                   </dd>
                 </dl>
               </div>
@@ -573,11 +596,11 @@ export function DealDetailPage({ id }: { id: string }) {
                 </div>
                 <div className="mf-panel-body mf-small">
                   <ul className="mf-bullets" style={{ paddingLeft: 18 }}>
-                    <li>{deal.verification.source_checked} source checked</li>
-                    <li>{deal.verification.search_corroborated} search-corroborated</li>
-                    <li>{deal.verification.pending} pending check</li>
-                    <li>{deal.verification.conflict} conflicting</li>
-                    <li>{deal.verification.human_reviewed} human reviewed</li>
+                    <li>{shown.verification.source_checked} source checked</li>
+                    <li>{shown.verification.search_corroborated} search-corroborated</li>
+                    <li>{shown.verification.pending} pending check</li>
+                    <li>{shown.verification.conflict} conflicting</li>
+                    <li>{shown.verification.human_reviewed} human reviewed</li>
                   </ul>
                   <p className="mf-hint" style={{ marginTop: 8 }}>
                     Click the evidence icon next to any value to see its source, locator and verification method.
@@ -591,9 +614,9 @@ export function DealDetailPage({ id }: { id: string }) {
                   </h2>
                 </div>
                 <div className="mf-panel-body">
-                  {deal.comparables.length ? (
+                  {shown.comparables.length ? (
                     <ul className="mf-list">
-                      {deal.comparables.map((c) => (
+                      {shown.comparables.map((c) => (
                         <li key={c.dealId}>
                           <Link to={`/finance/deals/${c.dealId}`}>{c.title ?? c.dealId}</Link>
                           <div className="mf-hint">{c.reason}</div>
@@ -601,11 +624,11 @@ export function DealDetailPage({ id }: { id: string }) {
                       ))}
                     </ul>
                   ) : (
-                    <p className="mf-hint">No comparable deals linked yet.</p>
+                    <p className="mf-hint">{announcedMode ? "No linked comparable deals were announced by the cutoff." : "No comparable deals linked yet."}</p>
                   )}
                 </div>
               </section>
-              <AiAssist subject={{ type: "deal", id: deal.id }} subjectTitle={deal.title} ops={["summarize", "questions", "explain", "draft_note"]} />
+              <AiAssist subject={{ type: "deal", id: shown.id }} subjectTitle={shown.title} asOf={historical?.cutoff ?? null} ops={["summarize", "questions", "explain", "draft_note"]} />
             </aside>
           </div>
         ) : null}
@@ -614,9 +637,9 @@ export function DealDetailPage({ id }: { id: string }) {
           <div className="mf-stack">
             <section className="mf-section">
               <h2>Management’s stated rationale</h2>
-              {deal.rationale.length ? (
+              {shown.rationale.length ? (
                 <ul className="mf-bullets">
-                  {deal.rationale.map((r) => (
+                  {shown.rationale.map((r) => (
                     <li key={r.text}>
                       <ProvTag kind="management" /> {r.text}
                       <Ev ids={r.ev} label="stated rationale" />
@@ -624,7 +647,7 @@ export function DealDetailPage({ id }: { id: string }) {
                   ))}
                 </ul>
               ) : (
-                <p className="mf-muted">No stated rationale recorded.</p>
+                <p className="mf-muted">{withheld("rationale") ? "Stated rationale is sourced only to documents published after the cutoff." : "No stated rationale recorded."}</p>
               )}
             </section>
             {autopsy ? (
@@ -699,7 +722,7 @@ export function DealDetailPage({ id }: { id: string }) {
 
         {tab === "price" ? (
           <div className="mf-stack">
-            <TermsTable terms={visibleTerms} system={system} caption={announcedMode ? `Terms known at announcement (cutoff ${dateLabel(cutoff)})` : "All recorded terms, including revisions; superseded terms stay visible"} />
+            <TermsTable terms={shown.terms} system={system} caption={announcedMode ? `Terms known at announcement (cutoff ${dateLabel(cutoff)})` : "All recorded terms, including revisions; superseded terms stay visible"} />
             {autopsy && !announcedMode ? (
               <section className="mf-section">
                 <h3>How the price and structure work</h3>
@@ -723,14 +746,27 @@ export function DealDetailPage({ id }: { id: string }) {
         {tab === "timeline" ? (
           <section className="mf-panel">
             <div className="mf-panel-body">
-              <EventSpine events={deal.events} hiddenAfter={announcedMode ? (cutoff ?? deal.announced.date) : null} />
+              <EventSpine events={shown.events} />
+              {historical && historical.hiddenFields.some((f) => f.startsWith("events.")) ? (
+                <p className="mf-hint" style={{ marginTop: 8 }}>
+                  {historical.hidden
+                    .filter((x) => x.field.startsWith("events."))
+                    .map((x) => `${x.label} withheld (${x.reason.toLowerCase()})`)
+                    .join("; ")}
+                  . Switch to What we know now to see the full timeline.
+                </p>
+              ) : null}
             </div>
           </section>
         ) : null}
 
         {tab === "sector" ? (
           <div className="mf-stack">
-            {deal.sectorContext ? <p style={{ maxWidth: 820 }}>{deal.sectorContext}</p> : <p className="mf-muted">No deal-specific sector note recorded.</p>}
+            {shown.sectorContext ? (
+              <p style={{ maxWidth: 820 }}>{shown.sectorContext}</p>
+            ) : (
+              <p className="mf-muted">{withheld("sectorContext") ? "The deal-specific sector note is written with hindsight and is hidden in As announced mode." : "No deal-specific sector note recorded."}</p>
+            )}
             <p>
               Read the <Link to={`/finance/sectors/${deal.sector}`}>{SECTOR_NAMES[deal.sector]} playbook</Link> for economics, metrics, valuation approaches and diligence questions.
             </p>
@@ -739,7 +775,7 @@ export function DealDetailPage({ id }: { id: string }) {
 
         {tab === "advisers" ? (
           <div className="mf-stack">
-            {deal.advisers.list.length ? (
+            {shown.advisers.list.length ? (
               <div className="mf-table-wrap">
                 <table className="mf-table compact">
                   <thead>
@@ -750,7 +786,7 @@ export function DealDetailPage({ id }: { id: string }) {
                     </tr>
                   </thead>
                   <tbody>
-                    {deal.advisers.list.map((a) => (
+                    {shown.advisers.list.map((a) => (
                       <tr key={`${a.side}-${a.role}-${a.name}`}>
                         <td>{a.side}</td>
                         <td>{a.role.replace(/_/g, " ")}</td>
@@ -764,11 +800,11 @@ export function DealDetailPage({ id }: { id: string }) {
                 </table>
               </div>
             ) : (
-              <EmptyState title={deal.advisers.disclosure === "not_researched" ? "Advisers not yet researched" : "Advisers not disclosed in the sources reviewed"}>
+              <EmptyState title={shown.advisers.disclosure === "not_researched" ? "Advisers not yet researched" : "Advisers not disclosed in the sources reviewed"}>
                 Advisers are listed only with a source for their role. Banks and law firms are never inferred.
               </EmptyState>
             )}
-            {deal.advisers.note ? <p className="mf-hint">{deal.advisers.note}</p> : null}
+            {shown.advisers.note ? <p className="mf-hint">{shown.advisers.note}</p> : null}
           </div>
         ) : null}
 

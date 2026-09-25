@@ -125,6 +125,7 @@ export function registerAiRoutes(r: Router): void {
         enabled: cfg.enabled,
         reason: cfg.reason,
         alternative: ALTERNATIVE[op],
+        header: pack.header,
         items: pack.items.map((i) => ({ id: i.id, label: i.label, chars: i.text.length, private: i.id.startsWith("note:") || i.id === "answer:self" })),
         instruction: pack.operationInstruction,
         estimatedInputTokens: inputTokens,

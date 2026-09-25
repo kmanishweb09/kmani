@@ -1,9 +1,10 @@
 import { useMemo } from "react";
 import type { DealDetail, DealSummary, Page } from "../../../shared/api";
 import { enterpriseValueFromEquity, reconcileEnterpriseValue } from "../../../shared/calc/bridge";
+import { impliedValueFromStake } from "../../../shared/calc/stake";
 import { evToEbitda, evToRevenue, formatMultiple, type MultipleValue, offerPremium, type PremiumConvention, priceToBook, priceToEarnings, summarizeMultiples } from "../../../shared/calc/multiples";
 import { trainingModels } from "../../../data/training/models";
-import { VALUE_BASIS_SHORT } from "../../../shared/labels";
+import { PEER_GROUP_LABEL, VALUE_BASIS_SHORT } from "../../../shared/labels";
 import { useQuery } from "../../app/query";
 import { Link } from "../../app/router";
 import { Ev, useRegisterEvidence } from "../../components/Evidence";
@@ -96,7 +97,7 @@ export function computeComps(a: CompsAssumptions) {
   const recon = bridge.ok && a.bridge.disclosedEv !== null ? reconcileEnterpriseValue(bridge.value.enterpriseValue, a.bridge.disclosedEv) : null;
   const premium =
     a.premium.refPrice !== null ? offerPremium(a.premium.offerPrice, { price: a.premium.refPrice, date: a.premium.refDate, convention: a.premium.convention, announcementDate: a.premium.announcementDate }) : null;
-  const minorityImplied = a.minority.consideration !== null && a.minority.stakePct !== null && a.minority.stakePct > 0 ? a.minority.consideration / (a.minority.stakePct / 100) : null;
+  const minority = impliedValueFromStake(a.minority);
   return {
     rows,
     stats,
@@ -105,7 +106,7 @@ export function computeComps(a: CompsAssumptions) {
     bridge,
     recon,
     premium,
-    minorityImplied,
+    minority,
   };
 }
 
@@ -334,19 +335,22 @@ export function ComparablesTab({ sc, dealId }: { sc: ScenarioApi<CompsAssumption
               <option value="primary">New shares issued (primary)</option>
             </select>
           </label>
-          {r.minorityImplied !== null ? (
-            <ResultFigure
-              label={a.minority.structure === "primary" ? "Implied post-money equity value" : "Implied 100% equity value"}
-              value={fmtNum(r.minorityImplied, 1)}
-              kind="calculated"
-              sub={
-                a.minority.structure === "primary"
-                  ? `Pre-money = ${fmtNum(r.minorityImplied - (a.minority.consideration ?? 0), 1)}. Post-money includes the new cash.`
-                  : "Implied by proportional extrapolation — valid only if the stake has no special rights, control premium, earn-out or put/call terms."
-              }
-            />
+          {r.minority.ok ? (
+            <>
+              <ResultFigure
+                label={r.minority.value.basis === "post_money" ? "Implied post-money equity value" : "Implied 100% equity value"}
+                value={fmtNum(r.minority.value.impliedEquityValue, 1)}
+                kind="calculated"
+                sub={
+                  r.minority.value.basis === "post_money"
+                    ? `Pre-money = ${fmtNum(r.minority.value.preMoney, 1)}. Post-money includes the new cash.`
+                    : "Implied by proportional extrapolation — valid only if the stake has no special rights, control premium, earn-out or put/call terms."
+                }
+              />
+              <IssueList warnings={r.minority.warnings} />
+            </>
           ) : (
-            <p className="mf-muted mf-small">Enter a consideration and a positive stake.</p>
+            <IssueList errors={r.minority.errors} />
           )}
         </LabSection>
       </div>
@@ -395,38 +399,87 @@ function DealContext({ dealId }: { dealId: string }) {
         </tbody>
       </table>
       {precedents.data ? (
-        <>
-          <h3 className="mf-h3">Precedent transactions in {d.sector.toUpperCase()}</h3>
-          <div className="mf-table-wrap">
-            <table className="mf-table compact">
-              <caption className="mf-sr-only">Precedent transactions in the same sector</caption>
-              <thead>
-                <tr>
-                  <th scope="col">Deal</th>
-                  <th scope="col">Announced</th>
-                  <th scope="col">Headline value</th>
-                  <th scope="col">EV/EBITDA</th>
-                </tr>
-              </thead>
-              <tbody>
-                {precedents.data.items.slice(0, 12).map((p) => (
-                  <tr key={p.id}>
-                    <td>
-                      <Link to={`/finance/deals/${p.id}`}>{p.title}</Link>
-                    </td>
-                    <td>{dateLabel(p.announced)}</td>
-                    <td className="mf-num">{p.headline ? `${headlineText(p.headline).value} (${headlineText(p.headline).basis})` : "not disclosed"}</td>
-                    <td className="mf-muted" title="Transaction multiples are shown only when disclosed or calculable from sourced inputs.">
-                      n.d.
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <p className="mf-xsmall mf-muted">Headline values mix enterprise, equity and stake bases — they are not comparable without adjustment. Multiples are not shown unless disclosed with a matching period.</p>
-        </>
+        <PrecedentTable deal={d} items={precedents.data.items} />
       ) : null}
     </LabSection>
+  );
+}
+
+type MultipleKey = "evRevenue" | "evEbitda" | "priceToBook";
+
+/** Precedent table: multiples come from sourced deal terms with their denominator basis, never a placeholder. */
+export function precedentRows(deal: Pick<DealSummary, "id" | "sector" | "peerGroup">, items: DealSummary[]) {
+  const keys: MultipleKey[] = deal.sector === "fig" ? ["priceToBook"] : ["evEbitda", "evRevenue"];
+  const rows = items
+    .filter((p) => p.id !== deal.id)
+    .map((p) => ({
+      deal: p,
+      samePeerGroup: Boolean(deal.peerGroup) && p.peerGroup === deal.peerGroup,
+      cells: keys.map((k) => ({ key: k, detail: p.multipleDetails?.[k] ?? null })),
+    }))
+    .sort((a, b) => Number(b.samePeerGroup) - Number(a.samePeerGroup) || b.deal.announced.date.localeCompare(a.deal.announced.date));
+  return { keys, rows };
+}
+
+const MULT_LABEL: Record<MultipleKey, string> = { evRevenue: "EV/Revenue", evEbitda: "EV/EBITDA", priceToBook: "P/B" };
+
+function PrecedentTable({ deal, items }: { deal: DealDetail; items: DealSummary[] }) {
+  const { keys, rows } = precedentRows(deal, items);
+  const withMultiples = rows.filter((r) => r.cells.some((c) => c.detail)).length;
+  return (
+    <>
+      <h3 className="mf-h3">Precedent transactions in {deal.sector.toUpperCase()}</h3>
+      <div className="mf-table-wrap">
+        <table className="mf-table compact">
+          <caption className="mf-sr-only">Precedent transactions in the same sector, same peer group first</caption>
+          <thead>
+            <tr>
+              <th scope="col">Deal</th>
+              <th scope="col">Peer group</th>
+              <th scope="col">Announced</th>
+              <th scope="col">Headline value</th>
+              {keys.map((k) => (
+                <th scope="col" key={k}>
+                  {MULT_LABEL[k]}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.slice(0, 12).map(({ deal: p, samePeerGroup, cells }) => (
+              <tr key={p.id}>
+                <td>
+                  <Link to={`/finance/deals/${p.id}`}>{p.title}</Link>
+                </td>
+                <td className={samePeerGroup ? undefined : "mf-muted"}>{p.peerGroup ? PEER_GROUP_LABEL[p.peerGroup] : "—"}</td>
+                <td>{dateLabel(p.announced)}</td>
+                <td className="mf-num">{p.headline ? `${headlineText(p.headline).value} (${headlineText(p.headline).basis})` : "not disclosed"}</td>
+                {cells.map(({ key, detail }) => (
+                  <td key={key}>
+                    {detail ? (
+                      <>
+                        <span className="mf-num">{detail.value.toFixed(1)}×</span>
+                        <Ev ids={detail.ev} label={`${p.title} ${MULT_LABEL[key]}`} />
+                        <div className="mf-xsmall mf-muted">
+                          {detail.status === "reported" ? "Disclosed" : "Calculated from sourced inputs"}
+                          {detail.basis ? ` · ${detail.basis.periodType} ${detail.basis.periodLabel} · ${detail.basis.accountingBasis === "not_stated" ? "basis not stated" : detail.basis.accountingBasis}` : ""}
+                        </div>
+                      </>
+                    ) : (
+                      <span className="mf-muted" title="No transaction multiple with a sourced denominator is recorded for this deal.">
+                        not sourced
+                      </span>
+                    )}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="mf-xsmall mf-muted">
+        {withMultiples} of {rows.length} precedents have a sourced multiple. Headline values mix enterprise, equity and stake bases and are not comparable without adjustment. Multiples are pooled only within one peer group, denominator period and accounting basis (see Compare).
+      </p>
+    </>
   );
 }

@@ -1,7 +1,7 @@
 import ARCHIVE from "virtual:finance-archive";
-import type { ClaimView, CompanySummary, DealSummary, EventView, TermView } from "../shared/api";
+import type { ClaimView, CompanySummary, DealDetail, DealSummary, EventView, TermView } from "../shared/api";
 import type { CompiledArchive, CompiledClaim, CompiledCompany, CompiledDeal } from "../shared/archive/compile";
-import { summarizeDeal } from "../shared/archive/derive";
+import { collectEvidenceIds, summarizeDeal } from "../shared/archive/derive";
 import { dealSearchText, normalizeSearchText } from "../shared/dealQuery";
 import type { SourceDocument } from "../shared/schemas/research";
 import { parseJsonColumn } from "./db";
@@ -264,4 +264,37 @@ export function evidenceMap(view: ResearchView, ids: Iterable<string>): Record<s
     if (v) out[id] = v;
   }
   return out;
+}
+
+/** Full public deal record (current view) with its evidence map. */
+export function dealDetail(view: ResearchView, id: string): DealDetail | null {
+  const d = view.dealById.get(id);
+  const s = view.summaryById.get(id);
+  if (!d || !s) return null;
+  return {
+    ...s,
+    perimeter: d.perimeter,
+    stakeNote: d.stake.note,
+    stakeEv: d.stake.ev,
+    effective: d.effective,
+    otherParties: d.otherParties,
+    terms: d.terms,
+    payment: d.payment,
+    financing: d.financing,
+    events: [...d.events].sort((a, b) => a.date.date.localeCompare(b.date.date)),
+    advisers: d.advisers,
+    rationale: d.rationale,
+    sectorContext: d.sectorContext,
+    comparables: d.comparables.map((c) => {
+      const other = view.dealById.get(c.dealId);
+      return { ...c, title: other?.title ?? null, announced: other?.announced.date ?? null };
+    }),
+    asAnnounced: d.asAnnounced ?? null,
+    afterDeal: d.afterDeal,
+    autopsy: d.autopsy,
+    researchCutoff: d.researchCutoff,
+    recordUpdated: d.recordUpdated,
+    evidence: evidenceMap(view, collectEvidenceIds(d)),
+    archiveVersion: view.archiveVersion,
+  };
 }

@@ -1,4 +1,4 @@
-import type { DealSummary, HeadlineValue, TermView, VerificationSummary } from "../api";
+import type { DealSummary, HeadlineValue, MultipleDetail, TermView, VerificationSummary } from "../api";
 import type { CompiledClaim, CompiledDeal } from "./compile";
 
 /** Derives list-level fields from a compiled (and possibly overlaid) deal. Deterministic and cheap. */
@@ -56,6 +56,9 @@ export function collectEvidenceIds(d: CompiledDeal): string[] {
     ...d.rationale.flatMap((r) => r.ev),
     ...d.afterDeal.flatMap((a) => a.ev),
     ...(d.autopsy?.whatWeKnowNow.facts.flatMap((f) => f.ev) ?? []),
+    ...(d.asAnnounced?.payment?.ev ?? []),
+    ...(d.asAnnounced?.stake?.ev ?? []),
+    ...(d.asAnnounced?.financing?.ev ?? []),
   ];
   return [...new Set(ids)];
 }
@@ -69,9 +72,22 @@ export function verificationSummary(ids: string[], claims: Record<string, Pick<C
   return s;
 }
 
-function ratioOf(terms: TermView[], metric: string): number | null {
-  const t = terms.find((x) => x.metric === metric && x.ratio !== null && !x.correction);
-  return t ? (t.ratio as number) : null;
+/** The current (not superseded) multiple for a metric, preferring reported over calculated, then the latest. */
+export function multipleOf(terms: TermView[], metric: string): MultipleDetail | null {
+  const candidates = terms
+    .filter((x) => x.metric === metric && x.ratio !== null && Number.isFinite(x.ratio) && !x.correction && x.kind !== "implied")
+    .sort((a, b) => (a.status === b.status ? b.asOf.localeCompare(a.asOf) : a.status === "reported" ? -1 : b.status === "reported" ? 1 : 0));
+  const t = candidates[0];
+  if (!t) return null;
+  return { value: t.ratio as number, termId: t.id, status: t.status, basis: t.multipleBasis ?? null, reference: t.reference, ev: t.ev };
+}
+
+export function multiplesOf(terms: TermView[]): Pick<DealSummary, "multiples" | "multipleDetails"> {
+  const multipleDetails = { evRevenue: multipleOf(terms, "ev_revenue"), evEbitda: multipleOf(terms, "ev_ebitda"), priceToBook: multipleOf(terms, "price_to_book") };
+  return {
+    multipleDetails,
+    multiples: { evRevenue: multipleDetails.evRevenue?.value ?? null, evEbitda: multipleDetails.evEbitda?.value ?? null, priceToBook: multipleDetails.priceToBook?.value ?? null },
+  };
 }
 
 export function summarizeDeal(d: CompiledDeal, claims: Record<string, Pick<CompiledClaim, "status">>, lastChangedAt?: string): DealSummary {
@@ -85,6 +101,7 @@ export function summarizeDeal(d: CompiledDeal, claims: Record<string, Pick<Compi
     buyerType: d.buyerType,
     sector: d.sector,
     subsector: d.subsector,
+    peerGroup: d.peerGroup ?? null,
     acquirer: d.acquirer,
     target: d.target,
     announced: d.announced,
@@ -102,6 +119,6 @@ export function summarizeDeal(d: CompiledDeal, claims: Record<string, Pick<Compi
     latestEvent: latest ? { type: latest.type, date: latest.date, title: latest.title } : null,
     adviserNames: d.advisers.list.map((a) => a.name),
     tags: d.tags,
-    multiples: { evRevenue: ratioOf(d.terms, "ev_revenue"), evEbitda: ratioOf(d.terms, "ev_ebitda"), priceToBook: ratioOf(d.terms, "price_to_book") },
+    ...multiplesOf(d.terms),
   };
 }

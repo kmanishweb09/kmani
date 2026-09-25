@@ -25,6 +25,7 @@ export const deal: DealInput = {
   buyerType: "strategic",
   sector: "fig",
   subsector: "Banks and housing finance",
+  peerGroup: "banks",
   acquirer: { companyId: "hdfc-bank", name: "HDFC Bank Limited", country: "IN", cites: [ws("hdfcbank-pr-2022-04-04")] },
   target: { companyId: "hdfc-ltd", name: "Housing Development Finance Corporation Limited (HDFC Ltd)", country: "IN", cites: [ws("hdfcbank-pr-2022-04-04")] },
   otherParties: [],

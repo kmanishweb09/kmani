@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ClaimView } from "../../shared/api";
 import { INTERVIEW_RUBRIC } from "../../shared/interview";
 import { ApiError, apiSend, errorMessage, newIdempotencyKey } from "../app/api";
@@ -190,12 +190,15 @@ export function AiAssist({
   ops,
   attemptId,
   compact,
+  asOf,
 }: {
   subject?: { type: "deal" | "company" | "sector"; id: string };
   subjectTitle: string;
   ops: AiOp[];
   attemptId?: string;
   compact?: boolean;
+  /** Historical cutoff: the server builds the evidence pack only from sources published by this date. */
+  asOf?: string | null;
 }) {
   const { isOwner } = useSession();
   const status = useAiStatus();
@@ -209,7 +212,14 @@ export function AiAssist({
   const [error, setError] = useState<{ message: string; alternative?: string } | null>(null);
   const glossary = useQuery<{ items: Array<{ id: string; term: string }> }>(op === "explain" ? "/api/finance/glossary" : null, { staleMs: 600_000 });
   const notes = useQuery<{ items: Array<{ id: string; title: string }> }>(isOwner && op === "draft_note" ? "/api/finance/notes?limit=50" : null, { scope: "private" });
-  const body = useMemo(() => ({ ...(subject ? { subject } : {}), ...(attemptId ? { attemptId } : {}), ...(op === "explain" && termId ? { termId } : {}), ...(op === "draft_note" ? { noteIds } : { noteIds: [] }) }), [subject, attemptId, op, termId, noteIds]);
+  const body = useMemo(
+    () => ({ ...(subject ? { subject } : {}), ...(attemptId ? { attemptId } : {}), ...(asOf ? { asOf } : {}), ...(op === "explain" && termId ? { termId } : {}), ...(op === "draft_note" ? { noteIds } : { noteIds: [] }) }),
+    [subject, attemptId, asOf, op, termId, noteIds],
+  );
+  useEffect(() => {
+    setResult(null);
+    setPreview(null);
+  }, [asOf]);
   if (!isOwner || !status) return null;
   const opInfo = status.operations.find((o) => o.id === op);
 
@@ -280,7 +290,7 @@ export function AiAssist({
           </p>
         ) : (
           <p className="mf-hint">
-            Uses only the stored evidence you review first. Today: est. US${status.spentTodayUsd.toFixed(2)} of US${status.dailyBudgetUsd.toFixed(2)}, {status.requestsToday}/{status.dailyRequestCap} requests.
+            {asOf ? `Historical view: only sources published by ${asOf} are sent. ` : ""}Uses only the stored evidence you review first. Today: est. US${status.spentTodayUsd.toFixed(2)} of US${status.dailyBudgetUsd.toFixed(2)}, {status.requestsToday}/{status.dailyRequestCap} requests.
           </p>
         )}
         {ops.length > 1 ? (

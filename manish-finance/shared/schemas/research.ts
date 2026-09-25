@@ -7,6 +7,7 @@ import {
   DEAL_TYPE_LABEL,
   DEAL_TYPES,
   PAYMENT_TYPES,
+  PEER_GROUPS,
   SECTOR_NAMES,
   SECTOR_SLUGS,
   VALUE_BASES,
@@ -133,6 +134,20 @@ export const TERM_METRICS = [
   "other",
 ] as const;
 
+export const ACCOUNTING_BASES = ["IFRS", "Ind AS", "US GAAP", "J-GAAP", "other", "not_stated"] as const;
+export const zMultipleBasis = z.object({
+  /** LTM, fiscal year, calendar year or next-twelve-months denominator. */
+  periodType: z.enum(["LTM", "FY", "CY", "NTM"]),
+  periodEnd: zIsoDate,
+  periodLabel: z.string().min(2).max(80),
+  accountingBasis: z.enum(ACCOUNTING_BASES),
+  /** Business perimeter the denominator covers (e.g. "Target group, consolidated"; "Carved-out division"). */
+  perimeter: z.string().min(5).max(300),
+  /** True when the denominator is a company-defined adjusted figure (e.g. adjusted EBITDA). */
+  adjusted: z.boolean().default(false),
+});
+export type MultipleBasis = z.infer<typeof zMultipleBasis>;
+
 export const zDealTerm = z.object({
   metric: z.enum(TERM_METRICS),
   label: z.string().max(160).nullish(),
@@ -152,6 +167,8 @@ export const zDealTerm = z.object({
   /** Reference info for premiums/multiples: date and convention, or the period of the denominator. */
   reference: z.string().max(300).nullish(),
   status: z.enum(["reported", "calculated", "derived"]).default("reported"),
+  /** Required for transaction multiples: what the denominator is and how it was measured. */
+  multipleBasis: zMultipleBasis.nullish(),
   cites: z.array(zCite).min(1),
   note: z.string().max(500).nullish(),
 });
@@ -174,6 +191,7 @@ export const EVENT_TYPES = [
 ] as const;
 export const zEventType = z.enum(EVENT_TYPES);
 export type EventType = z.infer<typeof zEventType>;
+export type PeerGroup = (typeof PEER_GROUPS)[number];
 
 export const zDealEvent = z.object({
   type: zEventType,
@@ -185,6 +203,8 @@ export const zDealEvent = z.object({
   authority: z.string().max(120).nullish(),
   /** Status the deal moved to because of this event, if any. */
   statusAfter: zDealStatus.nullish(),
+  /** Item-specific analysis of why this development matters (shown in briefs; labelled as analysis). */
+  whyItMatters: z.string().min(20).max(600).nullish(),
   cites: z.array(zCite).min(1),
 });
 export type DealEvent = z.infer<typeof zDealEvent>;
@@ -233,6 +253,8 @@ export const zDeal = z.object({
   buyerType: zBuyerType,
   sector: zSectorSlug,
   subsector: z.string().min(2).max(80),
+  /** Target's business peer group: only deals in the same group have their multiples aggregated. */
+  peerGroup: z.enum(PEER_GROUPS),
   acquirer: zPartyRef,
   target: zPartyRef,
   otherParties: z.array(zPartyRef.extend({ role: z.enum(["seller", "co_investor", "merger_partner", "jv_partner", "competing_bidder", "regulator", "other"]) })).default([]),
@@ -251,6 +273,20 @@ export const zDeal = z.object({
   comparables: z.array(z.object({ dealId: zId, reason: z.string().max(300) })).default([]),
   afterDeal: z.array(z.object({ date: zIsoDate.nullish(), kind: z.enum(["fact", "interpretation"]), text: z.string().max(800), cites: z.array(zCite).default([]) })).default([]),
   autopsy: zAutopsy.nullish(),
+  /**
+   * Facts as they stood at announcement where the current record differs (e.g. a later revised
+   * offer). Each value needs contemporaneous citations; the historical view uses them instead of
+   * the current values. The title must not use hindsight.
+   */
+  asAnnounced: z
+    .object({
+      title: z.string().min(5).max(160).nullish(),
+      perimeter: z.string().min(10).max(600).nullish(),
+      payment: z.object({ mix: z.array(zPaymentType).min(1), text: z.string().max(500), cites: z.array(zCite).min(1) }).nullish(),
+      stake: z.object({ acquiredPct: z.number().min(0).max(100).nullable(), resultingPct: z.number().min(0).max(100).nullable(), note: z.string().max(400).nullish(), cites: z.array(zCite).min(1) }).nullish(),
+      financing: zTextWithCites.extend({ cites: z.array(zCite).min(1) }).nullish(),
+    })
+    .nullish(),
   tags: z.array(z.string()).default([]),
   researchCutoff: zIsoDate,
   recordUpdated: zIsoDate,
@@ -392,6 +428,8 @@ export const zSector = z.object({
         stage: z.enum(["proposal", "consultation", "rule", "approval", "effective", "market_event"]),
         title: z.string(),
         detail: z.string(),
+        /** Item-specific analysis of why this change matters (shown in briefs; labelled as analysis). */
+        whyItMatters: z.string().min(20).max(600).nullish(),
         cites: z.array(zCite).min(1),
       }),
     )

@@ -1,5 +1,6 @@
 import type { ClaimView, DealSummary } from "../../shared/api";
 import { formatMultiple } from "../../shared/calc/multiples";
+import { PEER_GROUP_LABEL, type PeerGroupValue } from "../../shared/labels";
 import type { DealComparison } from "../../shared/compare";
 import { useQuery } from "../app/query";
 import { Link, useRoute } from "../app/router";
@@ -97,19 +98,26 @@ export function ComparePage() {
               <div className="mf-panel-body mf-stack tight">
                 <ul className="mf-list">
                   {m.observations.map((o) => (
-                    <li key={o.dealId} className="mf-row spread">
-                      <span className="mf-small">{deals.find((d) => d.id === o.dealId)?.title}</span>
-                      <span className="mf-mono">{formatMultiple(o.value)}</span>
+                    <li key={o.dealId}>
+                      <div className="mf-row spread">
+                        <span className="mf-small">{deals.find((d) => d.id === o.dealId)?.title}</span>
+                        <span className={o.eligible ? "mf-mono" : "mf-mono mf-muted"}>
+                          {formatMultiple(o.value)}
+                          {o.value.kind === "value" && !o.eligible ? " (not pooled)" : ""}
+                        </span>
+                      </div>
+                      {o.basisLabel ? <div className="mf-xsmall mf-muted">{o.basisLabel}</div> : null}
                     </li>
                   ))}
                 </ul>
                 <p className="mf-small">
-                  {m.stats.n ? (
+                  {m.stats.median !== null ? (
                     <>
-                      Median <span className="mf-mono">{m.stats.median?.toFixed(1)}×</span> · n = {m.stats.n}
+                      Median <span className="mf-mono">{m.stats.median.toFixed(1)}×</span> · n = {m.stats.n}
+                      {m.reference?.peerGroup ? ` · ${PEER_GROUP_LABEL[m.reference.peerGroup as PeerGroupValue]}, ${m.reference.periodType}, ${m.reference.accountingBasis}` : ""}
                     </>
                   ) : (
-                    <>No eligible observations (n = 0)</>
+                    <>{m.statsNote}</>
                   )}
                 </p>
                 {m.stats.excluded.length ? (

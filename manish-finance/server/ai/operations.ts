@@ -8,7 +8,8 @@ import { EVENT_TYPES } from "../../shared/schemas/research";
 import { newId, parseJsonColumn } from "../db";
 import { runtimeClaim } from "../feedStore";
 import { HttpError } from "../http";
-import { archive, evidenceMap, type ResearchView } from "../research";
+import { dealAsOf } from "../../shared/archive/historical";
+import { archive, dealDetail, evidenceMap, type ResearchView } from "../research";
 import type { D1Database } from "../types";
 import type { AiConfig } from "./config";
 import { groundSections, type HeldSection, type PackItem, sanitiseForPrompt, type Section } from "./grounding";
@@ -38,6 +39,8 @@ export const zAiRequest = z.object({
   noteIds: z.array(z.string().max(80)).max(5).default([]),
   attemptId: z.string().max(80).nullish(),
   documentId: z.string().max(80).nullish(),
+  /** Historical ("as announced") cutoff for a deal subject: only evidence published by this date is used. */
+  asOf: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullish(),
 });
 export type AiRequestBody = z.infer<typeof zAiRequest>;
 
@@ -163,7 +166,15 @@ async function evidenceItems(view: ResearchView, db: D1Database | undefined, ids
   return out;
 }
 
-async function subjectPack(view: ResearchView, db: D1Database | undefined, subject: NonNullable<AiRequestBody["subject"]>): Promise<{ header: string; items: PackItem[] }> {
+async function subjectPack(view: ResearchView, db: D1Database | undefined, subject: NonNullable<AiRequestBody["subject"]>, asOf?: string | null): Promise<{ header: string; items: PackItem[] }> {
+  if (subject.type === "deal" && asOf) {
+    const detail = dealDetail(view, subject.id);
+    if (!detail) throw new HttpError(404, "NOT_FOUND", "Deal not found.");
+    const h = dealAsOf(detail, asOf);
+    const s = h.deal;
+    const header = `Deal record as it stood on ${asOf} (historical view): ${s.title}. Acquirer: ${s.acquirer.name}. Target: ${s.target.name}. Sector: ${SECTOR_NAMES[s.sector as SectorSlugValue] ?? s.sector}. Status at that date: ${s.status}. Only evidence published on or before ${asOf} is included; do not mention later events, revisions or outcomes.`;
+    return { header, items: await evidenceItems(view, db, Object.keys(s.evidence)) };
+  }
   if (subject.type === "deal") {
     const d = view.dealById.get(subject.id);
     if (!d) throw new HttpError(404, "NOT_FOUND", "Deal not found.");
@@ -234,7 +245,8 @@ export async function buildPack(op: AiOperation, body: AiRequestBody, view: Rese
     schema = EXTRACT_SCHEMA as unknown as Record<string, unknown>;
   } else {
     if (!body.subject) throw new HttpError(400, "SUBJECT_REQUIRED", "Choose a deal, company or sector.");
-    const p = await subjectPack(view, db, body.subject);
+    if (body.asOf && body.subject.type !== "deal") throw new HttpError(400, "AS_OF_DEAL_ONLY", "A historical cutoff applies to deals only.");
+    const p = await subjectPack(view, db, body.subject, body.asOf);
     header = p.header;
     items.push(...p.items);
     if (op === "explain") {
@@ -266,7 +278,7 @@ export async function buildPack(op: AiOperation, body: AiRequestBody, view: Rese
   if (!capped.some((i) => i.id !== "answer:self" && !i.id.startsWith("note:") && !i.id.startsWith("glossary:"))) {
     throw new HttpError(422, "NO_EVIDENCE", "There is no stored evidence for this record to ground an AI response. Use the deterministic view instead.");
   }
-  return { header, items: capped, noteIds, version: `${view.version}${noteIds.length ? `|notes:${noteIds.join(",")}` : ""}`, operationInstruction: instruction, schema, attempt, dealId, documentId };
+  return { header, items: capped, noteIds, version: `${view.version}${body.asOf ? `|asOf:${body.asOf}` : ""}${noteIds.length ? `|notes:${noteIds.join(",")}` : ""}`, operationInstruction: instruction, schema, attempt, dealId, documentId };
 }
 
 export function userMessage(pack: BuiltPack): string {

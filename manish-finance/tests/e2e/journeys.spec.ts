@@ -49,6 +49,35 @@ test("signed-out visitor: filter deals, open a deal and inspect the source behin
   await expect(page.getByRole("region", { name: "AI assist" })).toHaveCount(0);
 });
 
+test("As announced mode shows only what was known at the cutoff, including the drafted note (Disney–Fox regression)", async ({ page }) => {
+  await signIn(page, "owner", "/finance/deals/disney-21st-century-fox");
+  // Control: the current view carries the revised $71.3bn cash-and-stock terms.
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("bidding contest");
+  await expect(page.locator("main")).toContainText("71.3");
+  await page.goto("/finance/deals/disney-21st-century-fox?mode=announced");
+  const h1 = page.getByRole("heading", { level: 1 });
+  await expect(h1).toContainText("$52.4bn in stock");
+  await expect(h1).not.toContainText(/bidding contest|Comcast/);
+  await expect(page.getByTestId("historical-banner")).toContainText("information cutoff");
+  const main = page.locator("main");
+  await expect(main).toContainText("52.4");
+  await expect(main).toContainText("all stock");
+  for (const tab of ["Snapshot", "Price & structure", "Timeline", "Sector context", "Why this deal"]) {
+    await page.getByRole("tab", { name: tab }).click();
+    await expect(main).not.toContainText("71.3");
+    await expect(main).not.toContainText("Comcast");
+    await expect(main).not.toContainText("Amended");
+  }
+  await page.getByRole("tab", { name: "Snapshot" }).click();
+  await checkA11y(page, "deal-as-announced");
+  await page.getByRole("button", { name: "Draft Deal Note" }).click();
+  await expect(page).toHaveURL(/\/finance\/notebook\/n_/);
+  const body = await page.locator("textarea").first().inputValue();
+  expect(body).toContain("Historical view: information cutoff 2017-12-14");
+  expect(body).toContain("52.4");
+  expect(body).not.toMatch(/71\.3|Comcast|Amended|bidding contest/);
+});
+
 test("owner: draft a deal note, reload and recover it; export Markdown with citations", async ({ page }) => {
   await signIn(page, "owner", "/finance/deals/hdfc-hdfc-bank-merger");
   await page.getByRole("button", { name: "Draft Deal Note" }).click();
@@ -74,6 +103,7 @@ test("compare two deals: incompatible metrics are excluded with reasons", async 
   await page.goto("/finance/deals/compare?ids=hdfc-hdfc-bank-merger,axis-citi-india-consumer");
   await expect(page.getByRole("heading", { name: "Compare deals" })).toBeVisible();
   await expect(page.getByText(/excluded/i).first()).toBeVisible();
+  await expect(page.getByText(/No eligible observations|eligible observation/).first()).toBeVisible();
   await checkA11y(page, "compare");
 });
 
@@ -90,6 +120,31 @@ test("owner: follow a company, open its sector and save a research question", as
   await page.getByRole("button", { name: "Save research question" }).click();
   await expect(page).toHaveURL(/\/finance\/notebook\/n_/);
   await expect(page.locator("textarea").first()).not.toHaveValue("");
+});
+
+test("Lab rejects impossible inputs on the rendered path: 150% stake, negative consideration, zero-book residual income", async ({ page }) => {
+  await page.goto("/finance/lab?tab=comparables");
+  const stake = page.getByRole("textbox", { name: /^Stake acquired/ });
+  await stake.fill("150");
+  await stake.blur();
+  await expect(page.getByRole("alert").filter({ hasText: "Stake acquired must be above 0% and at most 100%." })).toBeVisible();
+  await expect(page.getByText("Implied 100% equity value")).toHaveCount(0);
+  await stake.fill("25");
+  const consideration = page.getByRole("textbox", { name: /^Consideration for the stake/ });
+  await consideration.fill("-500");
+  await consideration.blur();
+  await expect(page.getByRole("alert").filter({ hasText: "Consideration must be a positive amount." })).toBeVisible();
+  await page.goto("/finance/lab?tab=fig");
+  await page.getByRole("radio", { name: "Direct NI" }).click();
+  await page.getByRole("textbox", { name: /^Opening common book equity/ }).fill("100");
+  await page.getByRole("textbox", { name: /^Cost of equity/ }).first().fill("10");
+  await page.getByRole("textbox", { name: /^Net income Y1/ }).fill("-100");
+  await page.getByRole("button", { name: "Add year" }).click();
+  await page.getByRole("textbox", { name: /^Net income Y2/ }).fill("5");
+  await page.getByRole("textbox", { name: /^Distributions Y2/ }).fill("0");
+  await page.getByRole("textbox", { name: /^Distributions Y2/ }).blur();
+  await expect(page.getByRole("alert").filter({ hasText: /Opening book equity for year 2 is zero/ })).toBeVisible();
+  await expect(page.locator("main")).not.toContainText("Infinity");
 });
 
 test("Lab: load the training DCF, change WACC, see the sensitivity grid, save and reopen", async ({ page }) => {

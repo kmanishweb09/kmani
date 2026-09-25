@@ -41,6 +41,62 @@ export const DEAL_TYPE_LABEL: Record<DealTypeValue, string> = {
   proposal: "Announced proposal",
 };
 
+/**
+ * Peer group of the target's business, used to decide which transaction multiples may be aggregated.
+ * Multiples from different peer groups (e.g. software and pharma) are never pooled.
+ */
+export const PEER_GROUPS = [
+  "banks",
+  "nbfc",
+  "insurance",
+  "it-services",
+  "software",
+  "semiconductors",
+  "media",
+  "video-games",
+  "consumer-internet",
+  "consumer-brands",
+  "retail",
+  "pharma",
+  "biotech",
+  "hospitals",
+  "cement",
+  "steel",
+  "autos",
+  "industrial-machinery",
+  "upstream-oil-gas",
+  "renewable-power",
+  "commercial-real-estate",
+  "residential-real-estate",
+  "cx-outsourcing",
+] as const;
+export type PeerGroupValue = (typeof PEER_GROUPS)[number];
+export const PEER_GROUP_LABEL: Record<PeerGroupValue, string> = {
+  banks: "Banks",
+  nbfc: "Non-bank lenders (NBFCs)",
+  insurance: "Insurance",
+  "it-services": "IT services",
+  software: "Software",
+  semiconductors: "Semiconductors",
+  media: "Media and entertainment",
+  "video-games": "Video games",
+  "consumer-internet": "Consumer internet platforms",
+  "consumer-brands": "Consumer brands",
+  retail: "Retail",
+  pharma: "Pharmaceuticals",
+  biotech: "Biotech",
+  hospitals: "Hospitals",
+  cement: "Cement",
+  steel: "Steel",
+  autos: "Automotive",
+  "industrial-machinery": "Industrial machinery",
+  "upstream-oil-gas": "Upstream oil and gas",
+  "renewable-power": "Renewable power",
+  "commercial-real-estate": "Commercial real estate",
+  "residential-real-estate": "Residential real estate",
+  "cx-outsourcing": "Customer-experience outsourcing",
+};
+
 export const DEAL_STATUSES = ["rumoured", "proposed", "announced", "pending_approvals", "approved", "completed", "withdrawn", "terminated"] as const;
 export type DealStatusValue = (typeof DEAL_STATUSES)[number];
 export const DEAL_STATUS_LABEL: Record<DealStatusValue, string> = {

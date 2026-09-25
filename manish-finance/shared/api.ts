@@ -6,6 +6,8 @@ import type {
   DealType,
   EventType,
   PaymentType,
+  MultipleBasis,
+  PeerGroup,
   SectorSlug,
   SourceDocument,
   ValueBasis,
@@ -68,6 +70,8 @@ export interface TermView {
   status: "reported" | "calculated" | "derived";
   note: string | null;
   headline: boolean;
+  /** For transaction multiples: denominator period, accounting basis and perimeter. */
+  multipleBasis?: MultipleBasis | null;
   ev: string[];
   /** Set when a published owner correction/revision supersedes this term. */
   correction?: { publishedAt: string; note: string } | null;
@@ -83,6 +87,7 @@ export interface EventView {
   jurisdiction: string | null;
   authority: string | null;
   statusAfter: DealStatus | null;
+  whyItMatters?: string | null;
   ev: string[];
   origin: "archive" | "published_update";
 }
@@ -108,6 +113,7 @@ export interface DealSummary {
   buyerType: BuyerType;
   sector: SectorSlug;
   subsector: string;
+  peerGroup: PeerGroup | null;
   acquirer: PartyView;
   target: PartyView;
   announced: DateValue & { ev: string[] };
@@ -126,6 +132,25 @@ export interface DealSummary {
   adviserNames: string[];
   tags: string[];
   multiples: { evRevenue: number | null; evEbitda: number | null; priceToBook: number | null };
+  /** Basis behind each multiple (null when no sourced multiple exists). */
+  multipleDetails: Record<"evRevenue" | "evEbitda" | "priceToBook", MultipleDetail | null>;
+}
+
+export interface MultipleDetail {
+  value: number;
+  termId: string;
+  status: "reported" | "calculated" | "derived";
+  basis: MultipleBasis | null;
+  reference: string | null;
+  ev: string[];
+}
+
+export interface AsAnnouncedView {
+  title: string | null;
+  perimeter: string | null;
+  payment: { mix: PaymentType[]; text: string; ev: string[] } | null;
+  stake: { acquiredPct: number | null; resultingPct: number | null; note: string | null; ev: string[] } | null;
+  financing: { text: string; ev: string[] } | null;
 }
 
 export interface DealDetail extends DealSummary {
@@ -141,7 +166,9 @@ export interface DealDetail extends DealSummary {
   advisers: { disclosure: string; list: Array<{ side: string; role: string; name: string; ev: string[] }>; note: string | null };
   rationale: Array<{ text: string; ev: string[] }>;
   sectorContext: string | null;
-  comparables: Array<{ dealId: string; reason: string; title: string | null }>;
+  comparables: Array<{ dealId: string; reason: string; title: string | null; announced?: string | null }>;
+  /** Authored facts as they stood at announcement, used by the historical view where current values differ. */
+  asAnnounced: AsAnnouncedView | null;
   afterDeal: Array<{ date: string | null; kind: "fact" | "interpretation"; text: string; ev: string[] }>;
   autopsy: unknown | null;
   researchCutoff: string;

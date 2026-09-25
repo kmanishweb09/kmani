@@ -1,4 +1,4 @@
-import type { ClaimView, EventView, PartyView, TermView } from "../api";
+import type { AsAnnouncedView, ClaimView, EventView, PartyView, TermView } from "../api";
 import { type DateValue, formatDateValue } from "../dates";
 import { formatAsReported, type ScaleUnit } from "../money/units";
 import type {
@@ -34,6 +34,7 @@ export interface CompiledDeal {
   buyerType: Deal["buyerType"];
   sector: Deal["sector"];
   subsector: string;
+  peerGroup: Deal["peerGroup"] | null;
   acquirer: PartyView;
   target: PartyView;
   otherParties: Array<PartyView & { role: string }>;
@@ -52,6 +53,7 @@ export interface CompiledDeal {
   comparables: Array<{ dealId: string; reason: string }>;
   afterDeal: Array<{ date: string | null; kind: "fact" | "interpretation"; text: string; ev: string[] }>;
   autopsy: CompiledAutopsy | null;
+  asAnnounced: AsAnnouncedView | null;
   tags: string[];
   researchCutoff: string;
   recordUpdated: string;
@@ -213,6 +215,7 @@ export function compileDeal(d: Deal, col: ClaimCollector): CompiledDeal {
       status: t.status,
       note: t.note ?? null,
       headline: t.headline ?? false,
+      multipleBasis: t.multipleBasis ?? null,
       ev: col.add(subject, `terms.${i}`, label, termDisplay({ ...t, amount: t.amount ?? null }), t.cites),
     };
   });
@@ -226,6 +229,7 @@ export function compileDeal(d: Deal, col: ClaimCollector): CompiledDeal {
     jurisdiction: e.jurisdiction ?? null,
     authority: e.authority ?? null,
     statusAfter: e.statusAfter ?? null,
+    whyItMatters: e.whyItMatters ?? null,
     ev: col.add(subject, `events.${i}`, e.title, `${formatDateValue(e.date)}: ${e.title}`, e.cites),
     origin: "archive" as const,
   }));
@@ -251,6 +255,7 @@ export function compileDeal(d: Deal, col: ClaimCollector): CompiledDeal {
     buyerType: d.buyerType,
     sector: d.sector,
     subsector: d.subsector,
+    peerGroup: d.peerGroup,
     acquirer: party(col, d.id, "acquirer", "Acquirer", d.acquirer),
     target: party(col, d.id, "target", "Target", d.target),
     otherParties: d.otherParties.map((p, i) => ({ ...party(col, d.id, `otherParties.${i}`, `Party (${p.role.replace("_", " ")})`, p), role: p.role })),
@@ -280,6 +285,24 @@ export function compileDeal(d: Deal, col: ClaimCollector): CompiledDeal {
     comparables: d.comparables,
     afterDeal: d.afterDeal.map((a, i) => ({ date: a.date ?? null, kind: a.kind, text: a.text, ev: col.add(subject, `afterDeal.${i}`, a.kind === "fact" ? "Subsequent fact" : "Interpretation", a.text.slice(0, 160), a.cites) })),
     autopsy,
+    asAnnounced: d.asAnnounced
+      ? {
+          title: d.asAnnounced.title ?? null,
+          perimeter: d.asAnnounced.perimeter ?? null,
+          payment: d.asAnnounced.payment
+            ? { mix: d.asAnnounced.payment.mix, text: d.asAnnounced.payment.text, ev: col.add(subject, "asAnnounced.payment", "Consideration (as announced)", d.asAnnounced.payment.text, d.asAnnounced.payment.cites) }
+            : null,
+          stake: d.asAnnounced.stake
+            ? {
+                acquiredPct: d.asAnnounced.stake.acquiredPct,
+                resultingPct: d.asAnnounced.stake.resultingPct,
+                note: d.asAnnounced.stake.note ?? null,
+                ev: col.add(subject, "asAnnounced.stake", "Stake (as announced)", stakeDisplay(d.asAnnounced.stake), d.asAnnounced.stake.cites),
+              }
+            : null,
+          financing: d.asAnnounced.financing ? { text: d.asAnnounced.financing.text, ev: col.add(subject, "asAnnounced.financing", "Financing (as announced)", d.asAnnounced.financing.text, d.asAnnounced.financing.cites) } : null,
+        }
+      : null,
     tags: d.tags,
     researchCutoff: d.researchCutoff,
     recordUpdated: d.recordUpdated,

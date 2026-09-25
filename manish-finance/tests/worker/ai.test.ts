@@ -224,3 +224,23 @@ describe("spending cap", () => {
     }
   });
 });
+
+describe("historical cutoff (As announced mode) limits the evidence pack", () => {
+  it("sends only evidence published by the cutoff and labels the header as historical", async () => {
+    const disney = { type: "deal", id: "disney-21st-century-fox" };
+    const now = await api<Preview>(h, "/api/finance/ai/summarize/preview", { method: "POST", as: "owner", body: { subject: disney } });
+    const then = await api<Preview>(h, "/api/finance/ai/summarize/preview", { method: "POST", as: "owner", body: { subject: disney, asOf: "2017-12-14" } });
+    expect(now.status).toBe(200);
+    expect(then.status).toBe(200);
+    expect(then.json.items.length).toBeGreaterThan(0);
+    expect(then.json.items.length).toBeLessThan(now.json.items.length);
+    for (const item of then.json.items) {
+      const ev = await api<{ document: { publishedDate: { date: string } | null } }>(h, `/api/finance/evidence/${item.id}`);
+      expect(ev.json.document.publishedDate?.date ?? "9999", item.id).toBe("2017-12-14");
+    }
+    expect(JSON.stringify(then.json)).not.toMatch(/71\.3|Comcast|amended|bidding contest/i);
+    expect((then.json as unknown as { header: string }).header).toMatch(/as it stood on 2017-12-14 \(historical view\)/);
+    const bad = await api(h, "/api/finance/ai/summarize/preview", { method: "POST", as: "owner", body: { subject: { type: "company", id: "disney" }, asOf: "2017-12-14" } });
+    expect(bad.status).toBe(400);
+  });
+});
