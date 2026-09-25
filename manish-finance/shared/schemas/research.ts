@@ -240,7 +240,7 @@ export const zDeal = z.object({
   stake: z.object({ acquiredPct: z.number().min(0).max(100).nullable(), resultingPct: z.number().min(0).max(100).nullable(), note: z.string().max(400).nullish(), cites: z.array(zCite).default([]) }),
   announced: zDateValue.extend({ cites: z.array(zCite).min(1) }),
   effective: zDateValue.extend({ cites: z.array(zCite).min(1) }).nullish(),
-  status: z.object({ value: zDealStatus, asOf: zIsoDate, cites: z.array(zCite).min(1) }),
+  status: z.object({ value: zDealStatus, asOf: zIsoDate, note: z.string().max(400).nullish(), cites: z.array(zCite).min(1) }),
   terms: z.array(zDealTerm).default([]),
   payment: z.object({ mix: z.array(zPaymentType).min(1), text: z.string().max(500), cites: z.array(zCite).default([]) }),
   financing: zTextWithCites.nullish(),

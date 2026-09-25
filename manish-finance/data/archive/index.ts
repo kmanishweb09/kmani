@@ -1,6 +1,8 @@
 import type { ArchiveSource } from "../../shared/archive/compile";
 import type { Brief, Company, Deal, GlossaryTerm, LearningModule, Question, Sector, SourceDocument, TrainingModel } from "../../shared/schemas/research";
 import * as figIndia from "./companies/fig-india";
+import * as apac from "./deals/apac";
+import * as global from "./deals/global";
 import * as hdfc from "./deals/hdfc-hdfc-bank";
 import * as indiaAutopsies from "./deals/india-autopsies";
 import * as indiaDeals from "./deals/india-deals";
@@ -25,7 +27,7 @@ interface CompanyModule {
   companies: unknown[];
 }
 
-const DEAL_MODULES: DealModule[] = [hdfc, indiaFig, indiaAutopsies, indiaDeals];
+const DEAL_MODULES: DealModule[] = [hdfc, indiaFig, indiaAutopsies, indiaDeals, apac, global];
 const COMPANY_MODULES: CompanyModule[] = [figIndia];
 
 export function loadArchiveSource(): ArchiveSource {

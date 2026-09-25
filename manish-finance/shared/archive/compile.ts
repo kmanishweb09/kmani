@@ -41,7 +41,7 @@ export interface CompiledDeal {
   stake: { acquiredPct: number | null; resultingPct: number | null; note: string | null; ev: string[] };
   announced: DateValue & { ev: string[] };
   effective: (DateValue & { ev: string[] }) | null;
-  status: { value: Deal["status"]["value"]; asOf: string; ev: string[] };
+  status: { value: Deal["status"]["value"]; asOf: string; note: string | null; ev: string[] };
   terms: TermView[];
   payment: { mix: Deal["payment"]["mix"]; text: string; ev: string[] };
   financing: { text: string; ev: string[] } | null;
@@ -184,6 +184,14 @@ function party(col: ClaimCollector, dealId: string, field: string, label: string
   return { companyId: p.companyId ?? null, name: p.name, country: p.country, ev: col.add({ type: "deal", id: dealId }, field, label, p.name, p.cites) };
 }
 
+function stakeDisplay(s: Deal["stake"]): string {
+  const parts: string[] = [];
+  if (s.acquiredPct !== null) parts.push(`${s.acquiredPct}% acquired`);
+  if (s.resultingPct !== null) parts.push(`${s.resultingPct}% held after`);
+  if (!parts.length) return s.note ?? "Stake not disclosed";
+  return parts.join("; ");
+}
+
 export function compileDeal(d: Deal, col: ClaimCollector): CompiledDeal {
   const subject = { type: "deal" as const, id: d.id };
   const terms: TermView[] = d.terms.map((t, i) => {
@@ -251,13 +259,13 @@ export function compileDeal(d: Deal, col: ClaimCollector): CompiledDeal {
       acquiredPct: d.stake.acquiredPct,
       resultingPct: d.stake.resultingPct,
       note: d.stake.note ?? null,
-      ev: col.add(subject, "stake", "Stake", `${d.stake.acquiredPct ?? "?"}% acquired${d.stake.resultingPct !== null ? `; ${d.stake.resultingPct}% held after` : ""}`, d.stake.cites),
+      ev: col.add(subject, "stake", "Stake", stakeDisplay(d.stake), d.stake.cites),
     },
     announced: { date: d.announced.date, precision: d.announced.precision, ev: col.add(subject, "announced", "Announcement date", formatDateValue(d.announced), d.announced.cites) },
     effective: d.effective
       ? { date: d.effective.date, precision: d.effective.precision, ev: col.add(subject, "effective", "Effective/completion date", formatDateValue(d.effective), d.effective.cites) }
       : null,
-    status: { value: d.status.value, asOf: d.status.asOf, ev: col.add(subject, "status", "Status", `${DEAL_STATUS_LABEL[d.status.value]} (as of ${formatDateValue(d.status.asOf)})`, d.status.cites) },
+    status: { value: d.status.value, asOf: d.status.asOf, note: d.status.note ?? null, ev: col.add(subject, "status", "Status", `${DEAL_STATUS_LABEL[d.status.value]} (as of ${formatDateValue(d.status.asOf)})`, d.status.cites) },
     terms,
     payment: { mix: d.payment.mix, text: d.payment.text, ev: col.add(subject, "payment", "Consideration", d.payment.text, d.payment.cites) },
     financing: d.financing ? { text: d.financing.text, ev: col.add(subject, "financing", "Financing", d.financing.text, d.financing.cites) } : null,
@@ -392,7 +400,61 @@ export function compileArchive(src: ArchiveSource): CompiledArchive {
   const companies = src.companies.map((c) => compileCompany(c, col));
   const sectors = src.sectors.map((s) => compileSector(s, col));
   const briefs = src.briefs.map((b) => compileBrief(b, col));
+  resolveReferences(deals, companies, sectors);
   const body = { documents, claims: col.claims, deals, companies, sectors, glossary: src.glossary, modules: src.modules, questions: src.questions, briefs, training: src.training };
   const version = `archive-${src.cutoff}-${shortHash(stableStringify(body), 10)}`;
   return { format: "manish-finance-archive", version, cutoff: src.cutoff, ...body };
+}
+
+export interface UnresolvedReference {
+  from: string;
+  field: string;
+  ref: string;
+}
+
+/**
+ * Links between records must resolve, so the UI never links to a missing dossier. Unresolved company
+ * links are dropped to plain names; unresolved comparables and sector players are removed.
+ * `findUnresolvedReferences` reports the same set so `verify:content` can list them.
+ */
+function resolveReferences(deals: CompiledDeal[], companies: CompiledCompany[], sectors: CompiledSector[]): void {
+  const companyIds = new Set(companies.map((c) => c.id));
+  const dealIds = new Set(deals.map((d) => d.id));
+  const fix = (p: PartyView) => {
+    if (p.companyId && !companyIds.has(p.companyId)) p.companyId = null;
+  };
+  for (const d of deals) {
+    fix(d.acquirer);
+    fix(d.target);
+    d.otherParties.forEach(fix);
+    d.comparables = d.comparables.filter((c) => dealIds.has(c.dealId) && c.dealId !== d.id);
+  }
+  for (const c of companies) {
+    c.peers = c.peers.filter((p) => companyIds.has(p.companyId));
+    if (c.lifecycle.successorId && !companyIds.has(c.lifecycle.successorId)) c.lifecycle.successorId = null;
+    if (c.lifecycle.parentId && !companyIds.has(c.lifecycle.parentId)) c.lifecycle.parentId = null;
+  }
+  for (const s of sectors) s.players = s.players.filter((p) => companyIds.has(p.companyId));
+}
+
+export function findUnresolvedReferences(src: ArchiveSource): UnresolvedReference[] {
+  const companyIds = new Set(src.companies.map((c) => c.id));
+  const dealIds = new Set(src.deals.map((d) => d.id));
+  const out: UnresolvedReference[] = [];
+  const party = (from: string, field: string, id: string | null | undefined) => {
+    if (id && !companyIds.has(id)) out.push({ from, field, ref: id });
+  };
+  for (const d of src.deals) {
+    party(`deal:${d.id}`, "acquirer", d.acquirer.companyId);
+    party(`deal:${d.id}`, "target", d.target.companyId);
+    d.otherParties.forEach((p, i) => party(`deal:${d.id}`, `otherParties.${i}`, p.companyId));
+    for (const c of d.comparables) if (!dealIds.has(c.dealId)) out.push({ from: `deal:${d.id}`, field: "comparables", ref: c.dealId });
+  }
+  for (const c of src.companies) {
+    for (const p of c.peers) if (!companyIds.has(p.companyId)) out.push({ from: `company:${c.id}`, field: "peers", ref: p.companyId });
+    party(`company:${c.id}`, "lifecycle.successorId", c.lifecycle.successorId);
+    party(`company:${c.id}`, "lifecycle.parentId", c.lifecycle.parentId);
+  }
+  for (const s of src.sectors) for (const p of s.players) if (!companyIds.has(p.companyId)) out.push({ from: `sector:${s.slug}`, field: "players", ref: p.companyId });
+  return out;
 }

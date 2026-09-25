@@ -120,7 +120,7 @@ function buildView(changes: PublishedChangeRow[]): ResearchView {
         const e = payload.event as EventView | undefined;
         if (!d || !e) break;
         d.events.push({ ...e, ev: e.ev?.length ? e.ev : evIds, origin: "published_update" });
-        if (e.statusAfter) d.status = { value: e.statusAfter, asOf: e.date.date, ev: evIds };
+        if (e.statusAfter) d.status = { value: e.statusAfter, asOf: e.date.date, note: null, ev: evIds };
         lastChanged.set(d.id, ch.published_at);
         break;
       }
