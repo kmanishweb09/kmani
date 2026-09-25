@@ -1,5 +1,5 @@
 {
-  "measuredAt": "2026-09-25T13:49:07.867Z",
+  "measuredAt": "2026-09-25T13:58:59.830Z",
   "browser": {
     "files": [
       {
@@ -44,13 +44,13 @@
   },
   "server": {
     "file": "release/server/finance.mjs",
-    "bytes": 1030964,
-    "gzipBytes": 194854
+    "bytes": 1228253,
+    "gzipBytes": 228926
   },
   "combinedHarnessWorker": {
     "file": ".local/harness/worker.mjs",
     "note": "Simulated host bundle: host sentinels + embedded finance assets + finance module. Compare with the real host's Worker size limit.",
-    "bytes": 1496342,
-    "gzipBytes": 327345
+    "bytes": 1693631,
+    "gzipBytes": 361308
   }
 }

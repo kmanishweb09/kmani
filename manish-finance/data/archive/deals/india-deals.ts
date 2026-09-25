@@ -55,6 +55,8 @@ export const documents = [
   // Bajaj – Allianz
   doc("bt-bajaj-allianz-2025-03-17", "Business Today", "https://www.businesstoday.in/amp/markets/stocks/story/bajaj-to-buy-allianzs-26-stake-in-insurance-arms-for-rs24180-crore-in-landmark-split-468234-2025-03-17", "Bajaj to buy Allianz’s 26% stake in insurance arms for ₹24,180 crore", "news_report", false, "2025-03-17"),
   doc("bajajgroup-allianz-2025-03-18", "Bajaj Group", "https://www.bajajgroup.company/blog/2025/03/18/bajaj-finserv-to-buy-allianzs-26-stake-in-bajaj-allianz-life-and-general-insurance-for-rs-24000-crore/", "Bajaj Finserv to buy Allianz’s 26% stake in Bajaj Allianz Life and General Insurance", "company_page", true, "2025-03-18"),
+  doc("scanx-bajaj-final-3pct-2026-03", "ScanX", "https://scanx.trade/stock-market-news/orders-deals/allianz-se-completes-exit-from-indian-insurance-joint-ventures-through-buyback-transaction/34839703", "Bajaj Finserv completes acquisition of remaining 3% stake from Allianz SE", "news_report", false, "2026-03", "month"),
+  doc("mondaq-bajaj-allianz-2026", "Mondaq", "https://www.mondaq.com/india/insurance-laws-and-products/1741274/bajaj-consolidates-full-control-allianz-exits-joint-venture", "Bajaj consolidates full control: Allianz exits joint venture", "reference", false, "2026", "year"),
   doc("allianz-pr-2026-01-08", "Allianz SE", "https://www.allianz.com/en/mediacenter/news/media-releases/260108-allianz-divestment-joint-ventures-bajaj.html", "Completion of divestment of first major tranche in Bajaj joint ventures", "press_release", true, "2026-01-08"),
 ];
 
@@ -427,10 +429,10 @@ export const deals: DealInput[] = [
     target: { companyId: null, name: "Bajaj Allianz General Insurance and Bajaj Allianz Life Insurance (renamed Bajaj General Insurance and Bajaj Life Insurance)", country: "IN", cites: [ws("bt-bajaj-allianz-2025-03-17")] },
     otherParties: [{ role: "seller", companyId: null, name: "Allianz SE", country: "DE", cites: [ws("allianz-pr-2026-01-08")] }],
     perimeter: "Allianz's 26% stake in each of the two insurance joint ventures, bought by Bajaj Finserv (1.01%), Bajaj Holdings & Investment (19.95%) and Jamnalal Sons (5.04%).",
-    stake: { acquiredPct: 26, resultingPct: 100, note: "A first tranche of 23% completed in January 2026, lifting the Bajaj group to about 97%; the final 3% was expected by the second quarter of 2026 (completion not verified).", cites: [ws("allianz-pr-2026-01-08"), ws("bt-bajaj-allianz-2025-03-17")] },
+    stake: { acquiredPct: 26, resultingPct: 100, note: "A first tranche of 23% completed on 8 January 2026; the final 3% was acquired through buyback offers completed on 12 March 2026, after which the Bajaj group held 100%.", cites: [ws("allianz-pr-2026-01-08"), ws("scanx-bajaj-final-3pct-2026-03")] },
     announced: { ...day("2025-03-17"), cites: [ws("bt-bajaj-allianz-2025-03-17")] },
-    effective: null,
-    status: { value: "approved", asOf: "2026-01-08", cites: [ws("allianz-pr-2026-01-08")] },
+    effective: { ...day("2026-03-12"), cites: [ws("scanx-bajaj-final-3pct-2026-03"), ws("mondaq-bajaj-allianz-2026")] },
+    status: { value: "completed", asOf: "2026-03-12", cites: [ws("scanx-bajaj-final-3pct-2026-03")] },
     terms: [
       { metric: "stake_consideration", label: "Total for 26% of both insurers", amount: 24180, currency: "INR", unit: "crore", valueBasis: "stake", ownershipPct: 26, kind: "announced", asOf: "2025-03-17", status: "reported", headline: true, note: "₹13,780 crore for the general insurer and ₹10,400 crore for the life insurer.", cites: [ws("bt-bajaj-allianz-2025-03-17")] },
       { metric: "equity_value", label: "Implied 100% equity value, general insurer", amount: 53000, currency: "INR", unit: "crore", valueBasis: "equity", ownershipPct: 100, kind: "implied", asOf: "2025-03-17", status: "calculated", reference: "₹13,780 crore ÷ 26% ≈ ₹53,000 crore", note: "Calculated by Finance Desk assuming proportional extrapolation, which may not hold for a minority stake with contractual exit terms.", cites: [ws("bt-bajaj-allianz-2025-03-17", "Input amount")] },
@@ -440,6 +442,7 @@ export const deals: DealInput[] = [
     events: [
       { type: "announcement", date: day("2025-03-17"), publishedDate: "2025-03-17", title: "Agreements for the Bajaj group to buy Allianz's 26% stakes", jurisdiction: "IN", statusAfter: "pending_approvals", cites: [ws("bt-bajaj-allianz-2025-03-17")] },
       { type: "completion", date: day("2026-01-08"), publishedDate: "2026-01-08", title: "First major tranche (23%) completed", jurisdiction: "IN", statusAfter: "approved", cites: [ws("allianz-pr-2026-01-08")] },
+      { type: "completion", date: day("2026-03-12"), title: "Final 3% acquired through buyback offers; Allianz fully exits", jurisdiction: "IN", statusAfter: "completed", cites: [ws("scanx-bajaj-final-3pct-2026-03")] },
     ],
     advisers: { disclosure: "not_researched", list: [] },
     rationale: [{ text: "End a 24-year joint venture and give the Bajaj group full ownership of its insurance businesses.", cites: [ws("bt-bajaj-allianz-2025-03-17")] }],
