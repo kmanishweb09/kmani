@@ -228,11 +228,7 @@ export function SettingsPage() {
             <span className="mf-label">Indian rupee units</span>
             <Segmented label="INR units" value={prefs.inrNumberSystem} onChange={(v) => update({ inrNumberSystem: v })} options={[{ value: "indian", label: "Lakh / crore" }, { value: "international", label: "Million / billion" }]} />
           </div>
-          <div className="mf-row spread">
-            <span className="mf-label">Currency display</span>
-            <Segmented label="Currency display" value={prefs.displayCurrency} onChange={(v) => update({ displayCurrency: v })} options={[{ value: "original", label: "Original" }, { value: "INR", label: "INR" }, { value: "USD", label: "USD" }]} />
-          </div>
-          <p className="mf-hint">Original reported currency is always shown first. Converted INR/USD figures appear only where a dated FX rate with a source exists; the archive does not yet include dated FX rates, so values stay in their reported currency.</p>
+          <p className="mf-hint">Amounts are shown in the currency and scale the source reported. The archive holds no dated, sourced FX rates, and restating historical deal values at today's rate would misstate them, so no currency conversion is applied.</p>
           <div className="mf-row spread">
             <label className="mf-label" htmlFor="tz">
               Timezone

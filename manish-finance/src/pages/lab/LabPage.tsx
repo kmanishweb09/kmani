@@ -132,6 +132,7 @@ function ScenarioBar({ tab, sc, outputsFor, modelId, dealId }: { tab: LabTab; sc
   const [saveState, setSaveState] = useState<SaveStateKind>("idle");
   const [loaded, setLoaded] = useState<SavedModel | null>(null);
   const [compareOpen, setCompareOpen] = useState(false);
+  const [renaming, setRenaming] = useState<string | null>(null);
   const { confirm, element: confirmElement } = useConfirm();
   const [title, setTitle] = useState("");
   const modelType = TABS.find((t) => t.id === tab)?.modelType ?? "comparables";
@@ -213,10 +214,7 @@ function ScenarioBar({ tab, sc, outputsFor, modelId, dealId }: { tab: LabTab; sc
             <button
               type="button"
               className="mf-btn small ghost"
-              onClick={() => {
-                const name = window.prompt("Scenario name", sc.current.name);
-                if (name) sc.rename(sc.state.active, name);
-              }}
+              onClick={() => setRenaming(sc.current.name)}
             >
               <Icon name="edit" size={14} /> Rename
             </button>
@@ -277,6 +275,42 @@ function ScenarioBar({ tab, sc, outputsFor, modelId, dealId }: { tab: LabTab; sc
         )}
       </div>
       {confirmElement}
+      <Dialog
+        open={renaming !== null}
+        onClose={() => setRenaming(null)}
+        title="Rename scenario"
+        footer={
+          <>
+            <button type="button" className="mf-btn" onClick={() => setRenaming(null)}>
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="mf-btn primary"
+              disabled={!renaming?.trim()}
+              onClick={() => {
+                if (renaming?.trim()) sc.rename(sc.state.active, renaming.trim());
+                setRenaming(null);
+              }}
+            >
+              Rename
+            </button>
+          </>
+        }
+      >
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (renaming?.trim()) sc.rename(sc.state.active, renaming.trim());
+            setRenaming(null);
+          }}
+        >
+          <div className="mf-field">
+            <label htmlFor="scenario-name">Scenario name</label>
+            <input id="scenario-name" className="mf-input" maxLength={80} value={renaming ?? ""} onChange={(e) => setRenaming(e.target.value)} />
+          </div>
+        </form>
+      </Dialog>
       <Dialog open={compareOpen} onClose={() => setCompareOpen(false)} title="Compare scenarios">
         <CompareScenarios tab={tab} sc={sc} outputsFor={outputsFor} />
       </Dialog>
